@@ -3,13 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { SidebarCounts } from "@/lib/stats";
-import { useShell } from "./shell-context";
 
 type NavLink = { href: string; label: string; count?: number; alert?: boolean };
 
 export function Sidebar({ counts }: { counts: SidebarCounts }) {
   const pathname = usePathname();
-  const { setPaletteOpen } = useShell();
 
   const top: NavLink[] = [
     { href: "/", label: "Início" },
@@ -28,19 +26,19 @@ export function Sidebar({ counts }: { counts: SidebarCounts }) {
   return (
     <aside className="app-sidebar">
       <div className="app-sidebar__top">
-        <Link href="/" className="app-sidebar__logo">
-          <span className="navbar__mark">E</span>
-          <span className="navbar__name">EloSys</span>
+        <Link href="/" className="app-sidebar__logo group" style={{ textDecoration: "none" }}>
+          <span className="navbar__mark">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3" fill="currentColor" />
+              <path d="M12 3a9 9 0 0 1 9 9" />
+              <path d="M12 21a9 9 0 0 1-9-9" />
+            </svg>
+          </span>
+          <div className="flex flex-col">
+            <span className="navbar__name text-[16.5px] font-bold tracking-tight text-[var(--fg-1)]">eletto</span>
+            <span className="text-[10px] text-[var(--muted-2)] font-mono font-medium leading-tight">inteligência eleitoral</span>
+          </div>
         </Link>
-        <button
-          type="button"
-          className="btn btn--icon"
-          onClick={() => setPaletteOpen(true)}
-          aria-label="Buscar"
-          title="Buscar (Ctrl K)"
-        >
-          ⌕
-        </button>
       </div>
 
       <nav className="app-sidebar__nav" aria-label="navegação principal">
