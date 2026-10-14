@@ -51,7 +51,7 @@ export function FloatingEdge(props: EdgeProps & { data?: GraphEdgeData }) {
               transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
               pointerEvents: "none",
             }}
-            className="rounded-sm border border-[var(--border-2)] bg-[var(--card-tone)] px-1.5 py-0.5 font-mono text-[8.5px] whitespace-nowrap text-[var(--fg-2)]"
+            className="rounded-md border border-[var(--border-2)] bg-[var(--surface)] px-2 py-0.5 font-mono text-[9.5px] font-medium whitespace-nowrap text-[var(--fg-1)] shadow-md"
           >
             {formatBRL(data.amountCents)}
           </div>

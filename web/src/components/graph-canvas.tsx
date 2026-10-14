@@ -426,62 +426,106 @@ function GraphCanvasInner() {
   }, [nodes, visibleEdges, amountFilterActive, selected, roots]);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex flex-wrap items-center gap-3 border-b border-[var(--border-1)] px-6 py-4">
-        <div ref={boxRef} className="relative w-full max-w-md">
-          <input
-            value={q}
-            onChange={(e) => onQueryChange(e.target.value)}
-            onFocus={() => results.length > 0 && setOpen(true)}
-            onBlur={() => setTimeout(() => setOpen(false), 150)}
-            placeholder="buscar candidato/empresa, ou colar CPF/CNPJ…"
-            className="w-full rounded-sm border border-[var(--border-1)] bg-[var(--card-tone)] px-3 py-2.5 font-mono text-[12px] text-foreground placeholder:text-[var(--muted-2)] outline-none focus:border-[var(--border-2)]"
-          />
+    <div className="flex min-h-0 flex-1 flex-col h-full bg-[var(--bg)] text-[var(--fg-1)]">
+      {/* Enterprise Top Toolbar */}
+      <div className="flex flex-wrap items-center gap-3 border-b border-[var(--border-1)] bg-[var(--surface)] px-6 py-3 shrink-0 z-10 shadow-xs">
+        <div ref={boxRef} className="relative w-full max-w-sm">
+          <div className="relative flex items-center">
+            <svg
+              className="absolute left-3 size-4 text-[var(--muted-2)] pointer-events-none"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <circle cx="11" cy="11" r="7" strokeWidth="2" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+            <input
+              value={q}
+              onChange={(e) => onQueryChange(e.target.value)}
+              onFocus={() => results.length > 0 && setOpen(true)}
+              onBlur={() => setTimeout(() => setOpen(false), 200)}
+              placeholder="Buscar candidato, CPF ou CNPJ…"
+              className="w-full rounded-md border border-[var(--border-2)] bg-[var(--card-tone)] pl-9 pr-8 py-2 font-sans text-[13px] text-[var(--fg-1)] placeholder:text-[var(--muted-2)] outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all"
+            />
+            {q ? (
+              <button
+                type="button"
+                onClick={() => { setQ(""); setResults([]); }}
+                className="absolute right-2.5 text-[var(--muted-2)] hover:text-[var(--fg-1)] text-xs p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            ) : null}
+          </div>
+
           {open && (searching || results.length > 0) ? (
-            <div className="absolute z-20 mt-1.5 max-h-[50vh] w-full overflow-y-auto rounded-sm border border-[var(--border-1)] bg-[var(--card-tone)] shadow-2xl">
+            <div className="absolute left-0 top-full z-50 mt-1.5 max-h-[380px] w-full overflow-y-auto rounded-lg border border-[var(--border-2)] bg-[var(--card-tone)] shadow-2xl backdrop-blur-md divide-y divide-[var(--border-1)]">
               {searching && results.length === 0
-                ? Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="flex items-center gap-3 border-b border-[var(--border-1)] px-3 py-2.5 last:border-0">
+                ? Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-3 px-3 py-2.5">
                       <Skeleton className="h-4 w-14 flex-none" />
-                      <Skeleton className="h-3.5 flex-1" />
+                      <Skeleton className="h-4 flex-1" />
                     </div>
                   ))
                 : results.map((r) => (
                     <button
                       key={r.cpfCnpj}
                       onMouseDown={() => addNode(r)}
-                      className="flex w-full items-center gap-3 border-b border-[var(--border-1)] px-3 py-2.5 text-left transition-colors last:border-0 hover:bg-[var(--hover)]"
+                      className="flex w-full items-center gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-[var(--hover)] group cursor-pointer"
                     >
-                      <span className="flex-none rounded-sm border border-[var(--border-1)] px-1.5 py-0.5 font-mono text-[8.5px] tracking-[0.08em] text-[var(--muted)] uppercase">
+                      <span
+                        className={`flex-none rounded px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-wider ${
+                          r.type === "person"
+                            ? "bg-blue-500/15 text-blue-400 border border-blue-500/30"
+                            : "bg-purple-500/15 text-purple-400 border border-purple-500/30"
+                        }`}
+                      >
                         {r.type === "person" ? "pessoa" : "empresa"}
                       </span>
-                      <span className="min-w-0 flex-1 truncate text-[13px]">{r.label}</span>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-[13px] font-medium text-[var(--fg-1)] group-hover:text-blue-400 transition-colors">
+                          {r.label}
+                        </div>
+                        {r.sublabel && (
+                          <div className="truncate text-[11px] font-mono text-[var(--muted-2)]">
+                            {r.sublabel}
+                          </div>
+                        )}
+                      </div>
                     </button>
                   ))}
             </div>
           ) : null}
         </div>
+
         <label
-          className="flex items-center gap-1.5 cursor-pointer select-none"
-          title="Ao adicionar, traz TODOS os vínculos diretos desse nó (doadores, fornecedores, candidatos), não só os que conectam com o que já está na tela."
+          className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md border text-[12px] cursor-pointer select-none transition-all ${
+            expandFull
+              ? "border-[var(--accent)] bg-[var(--accent-tint)] text-[var(--fg-1)] font-medium shadow-xs"
+              : "border-[var(--border-1)] bg-[var(--card-tone)] text-[var(--muted)] hover:border-[var(--border-2)]"
+          }`}
+          title="Ao adicionar, traz TODOS os vínculos diretos desse nó, não só os que conectam com o que já está na tela."
         >
           <input
             type="checkbox"
             checked={expandFull}
             onChange={(e) => setExpandFull(e.target.checked)}
-            className="accent-[var(--accent)]"
+            className="accent-[var(--accent)] size-3.5 rounded"
           />
-          <span className="mono-label !text-[var(--muted-2)]">trazer rede inteira</span>
+          <span>Trazer rede inteira</span>
         </label>
-        <div className="flex items-center gap-1.5">
-          <span className="mono-label !text-[var(--muted-2)]">movimentação</span>
+
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-[var(--border-1)] bg-[var(--card-tone)] text-[12px] text-[var(--muted)]">
+          <span className="text-[var(--muted-2)] font-medium">Movimentação:</span>
+          <span className="font-mono text-[11px] text-[var(--muted-2)]">R$</span>
           <input
             type="number"
             inputMode="decimal"
             value={minReais}
             onChange={(e) => setMinReais(e.target.value)}
-            placeholder="mín. R$"
-            className="w-24 rounded-sm border border-[var(--border-1)] bg-[var(--card-tone)] px-2 py-1.5 font-mono text-[11px] text-foreground placeholder:text-[var(--muted-2)] outline-none focus:border-[var(--border-2)]"
+            placeholder="mínimo"
+            className="w-20 bg-transparent border-b border-[var(--border-2)] px-1 py-0.5 font-mono text-[11px] text-[var(--fg-1)] placeholder:text-[var(--muted-2)] outline-none focus:border-[var(--accent)] text-center"
           />
           <span className="text-[var(--muted-2)]">–</span>
           <input
@@ -489,54 +533,106 @@ function GraphCanvasInner() {
             inputMode="decimal"
             value={maxReais}
             onChange={(e) => setMaxReais(e.target.value)}
-            placeholder="máx. R$"
-            className="w-24 rounded-sm border border-[var(--border-1)] bg-[var(--card-tone)] px-2 py-1.5 font-mono text-[11px] text-foreground placeholder:text-[var(--muted-2)] outline-none focus:border-[var(--border-2)]"
+            placeholder="máximo"
+            className="w-20 bg-transparent border-b border-[var(--border-2)] px-1 py-0.5 font-mono text-[11px] text-[var(--fg-1)] placeholder:text-[var(--muted-2)] outline-none focus:border-[var(--accent)] text-center"
           />
           {amountFilterActive ? (
             <button
               onClick={() => { setMinReais(""); setMaxReais(""); }}
-              className="mono-label !text-[var(--muted-2)] hover:!text-[var(--fg-2)]"
+              className="ml-1 text-[11px] font-medium text-[var(--link-primary)] hover:underline cursor-pointer"
             >
-              limpar filtro
+              limpar
             </button>
           ) : null}
         </div>
-        <span className="mono-label !text-[var(--muted-2)]">
-          {visibleNodes.length} {visibleNodes.length === 1 ? "nó" : "nós"} · {visibleEdges.length} ligações
+
+        <div className="px-3 py-1.5 rounded-md border border-[var(--border-1)] bg-[var(--card-tone)] font-mono text-[11px] text-[var(--muted)]">
+          {visibleNodes.length} {visibleNodes.length === 1 ? "nó" : "nós"} · {visibleEdges.length} conexões
           {amountFilterActive ? ` (de ${nodes.length} · ${edges.length})` : ""}
-        </span>
+        </div>
+
         {circularCount > 0 ? (
-          <span className="mono-label flex items-center gap-1.5 !text-elo-red">
-            <span className="size-1.5 animate-pulse rounded-full bg-elo-red" />
-            {circularCount} em doação circular
-          </span>
+          <div className="px-3 py-1.5 rounded-md border border-rose-500/40 bg-rose-500/15 text-rose-300 font-mono text-[11px] flex items-center gap-2">
+            <span className="size-2 rounded-full bg-rose-500 animate-pulse" />
+            <span>{circularCount} em triangulação circular</span>
+          </div>
         ) : null}
+
         {truncatedNotice ? (
           <button
             onClick={() => setTruncatedNotice(null)}
-            className="mono-label !text-elo-amber"
-            title="clique pra dispensar"
+            className="px-3 py-1.5 rounded-md border border-amber-500/40 bg-amber-500/15 text-amber-300 font-mono text-[11px] flex items-center gap-1.5 cursor-pointer"
+            title="Clique para dispensar"
           >
             ⚠ {truncatedNotice}
           </button>
         ) : null}
+
         {nodes.length > 0 ? (
-          <button onClick={clearAll} className="mono-label ml-auto !text-[var(--muted)] hover:!text-[var(--fg-2)]">
-            limpar tudo
+          <button
+            onClick={clearAll}
+            className="ml-auto px-3 py-1.5 rounded-md border border-[var(--border-1)] hover:border-rose-500/40 hover:bg-rose-500/10 text-[var(--muted)] hover:text-rose-400 font-medium text-[11.5px] transition-colors cursor-pointer"
+          >
+            Limpar visualização
           </button>
         ) : null}
       </div>
 
-      <div className="relative flex-1">
+      {/* Main Graph Area */}
+      <div className="relative flex-1 bg-[var(--bg)] overflow-hidden">
         {nodes.length === 0 ? (
-          <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
-            <div className="text-[18px] font-light text-[var(--muted)]">Adicione um candidato ou empresa</div>
-            <p className="max-w-md text-[13px] leading-relaxed text-[var(--muted-2)]">
-              Busque acima ou cole um CPF/CNPJ — por padrão, cada busca adiciona só aquele nó, e ao
-              adicionar o próximo o grafo traz apenas o caminho de até 2 passos entre eles (ligação
-              direta, ou por um doador/fornecedor/candidato em comum). Ligue &ldquo;trazer rede
-              inteira&rdquo; se quiser que cada nó adicionado já venha com TODOS os seus vínculos diretos.
-            </p>
+          <div className="absolute inset-0 flex items-center justify-center p-6 bg-[radial-gradient(ellipse_at_top,_var(--hover)_0%,_var(--bg)_70%)]">
+            <div className="w-full max-w-xl rounded-xl border border-[var(--border-1)] bg-[var(--surface)]/90 backdrop-blur-xl p-8 shadow-2xl text-center">
+              <div className="mx-auto size-12 rounded-xl bg-blue-500/15 border border-blue-500/30 text-blue-400 flex items-center justify-center mb-4 shadow-lg shadow-blue-500/10">
+                <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="6" cy="6" r="3" />
+                  <circle cx="18" cy="18" r="3" />
+                  <circle cx="18" cy="6" r="3" />
+                  <path d="M8.5 7.5l7 9" />
+                  <path d="M8.5 6h7" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-semibold text-[var(--fg-1)] tracking-tight">
+                Investigação de Vínculos em Grafo
+              </h2>
+              <p className="mt-2 text-[13px] leading-relaxed text-[var(--muted)] max-w-md mx-auto">
+                Mapeie triangulações financeiras, fornecedores compartilhados, doações de campanha e conexões societárias entre agentes públicos e empresas.
+              </p>
+
+              <div className="mt-6 pt-5 border-t border-[var(--border-1)]">
+                <div className="text-[11px] font-mono uppercase tracking-wider text-[var(--muted-2)] font-semibold mb-3">
+                  Exemplos para iniciar a análise:
+                </div>
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  {["Lula", "Jair Bolsonaro", "Tarcísio", "Ricardo Nunes", "Guilherme Boulos", "Tabata Amaral"].map((name) => (
+                    <button
+                      key={name}
+                      type="button"
+                      onClick={() => onQueryChange(name)}
+                      className="px-3 py-1.5 rounded-full border border-[var(--border-2)] bg-[var(--card-tone)] hover:bg-[var(--hover)] hover:border-[var(--accent)] text-[12px] font-medium text-[var(--fg-1)] transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
+                    >
+                      <span className="size-1.5 rounded-full bg-[var(--accent)]" />
+                      {name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-6 grid grid-cols-3 gap-3 text-left">
+                <div className="rounded-lg border border-[var(--border-1)] bg-[var(--card-tone)]/50 p-3">
+                  <div className="text-[11px] font-semibold text-[var(--fg-1)]">Caminho Curto</div>
+                  <div className="text-[10px] text-[var(--muted-2)] mt-0.5 leading-tight">Encontra elos de até 2 passos entre entidades</div>
+                </div>
+                <div className="rounded-lg border border-[var(--border-1)] bg-[var(--card-tone)]/50 p-3">
+                  <div className="text-[11px] font-semibold text-[var(--fg-1)]">Doação Circular</div>
+                  <div className="text-[10px] text-[var(--muted-2)] mt-0.5 leading-tight">Detecta repasses em ciclo fechado</div>
+                </div>
+                <div className="rounded-lg border border-[var(--border-1)] bg-[var(--card-tone)]/50 p-3">
+                  <div className="text-[11px] font-semibold text-[var(--fg-1)]">Rede Completa</div>
+                  <div className="text-[10px] text-[var(--muted-2)] mt-0.5 leading-tight">Expande todos os vínculos diretos</div>
+                </div>
+              </div>
+            </div>
           </div>
         ) : (
           <ReactFlow<FlowNode, FlowEdge>
@@ -552,94 +648,135 @@ function GraphCanvasInner() {
             fitView
             minZoom={0.15}
             proOptions={{ hideAttribution: true }}
+            style={{ backgroundColor: "var(--bg)", width: "100%", height: "100%" }}
           >
-            <Background color={colorMode === "dark" ? "rgba(255,255,255,.06)" : "rgba(0,0,0,.07)"} gap={28} size={1.4} />
-            <Controls showInteractive={false} />
+            <Background color={colorMode === "dark" ? "rgba(255,255,255,.08)" : "rgba(0,0,0,.08)"} gap={24} size={1.2} />
+            <Controls showInteractive={false} className="!border !border-[var(--border-1)] !rounded-lg !bg-[var(--surface)]" />
             <MiniMap
               pannable
               zoomable
-              maskColor={colorMode === "dark" ? "rgba(8,8,10,.75)" : "rgba(255,255,255,.75)"}
+              maskColor={colorMode === "dark" ? "rgba(7, 9, 19, 0.85)" : "rgba(248, 250, 252, 0.85)"}
               nodeColor={(n) => NODE_COLOR[(n as FlowNode).data.kind].stroke}
+              className="!border !border-[var(--border-1)] !rounded-lg !bg-[var(--surface)]"
             />
           </ReactFlow>
         )}
 
+        {/* Selected Node Inspector Panel */}
         {selectedNode ? (
-          <div className="absolute top-4 right-4 w-72 rounded-sm border border-[var(--border-1)] bg-[var(--card-tone)] p-4 shadow-2xl">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <div className="mono-label !text-[8.5px]">{NODE_KIND_LABEL[selectedNode.data.kind]}</div>
-                <div className="mt-1 truncate text-[14px]">{selectedNode.data.label}</div>
+          <div className="absolute top-4 right-4 w-80 rounded-xl border border-[var(--border-2)] bg-[var(--surface)]/95 backdrop-blur-xl p-5 shadow-2xl z-20">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span
+                    className="size-2.5 rounded-full shrink-0"
+                    style={{ backgroundColor: NODE_COLOR[selectedNode.data.kind].stroke }}
+                  />
+                  <span className="font-mono text-[9px] font-semibold uppercase tracking-wider text-[var(--muted-2)]">
+                    {NODE_KIND_LABEL[selectedNode.data.kind]}
+                  </span>
+                </div>
+                <div className="mt-1 truncate text-[14.5px] font-semibold text-[var(--fg-1)]">
+                  {selectedNode.data.label}
+                </div>
+                <div className="mt-0.5 font-mono text-[10.5px] text-[var(--muted-2)]">
+                  {selectedNode.id}
+                </div>
               </div>
-              <button onClick={() => setSelected(null)} className="flex-none text-[var(--muted-2)] hover:text-[var(--fg-2)]">
+              <button
+                onClick={() => setSelected(null)}
+                className="size-6 rounded-md hover:bg-[var(--hover)] flex items-center justify-center text-[var(--muted-2)] hover:text-[var(--fg-1)] transition-colors cursor-pointer"
+              >
                 ✕
               </button>
             </div>
+
             {selectedNode.data.sanctioned ? (
-              <div className="mt-2 font-mono text-[9.5px] text-elo-red">⚠ sanção federal (CEIS/CNEP)</div>
+              <div className="mt-3 rounded-md border border-rose-500/30 bg-rose-500/10 px-2.5 py-1.5 font-mono text-[10.5px] text-rose-400 flex items-center gap-1.5">
+                <span>⚠</span> Sanção federal ativa (CEIS/CNEP)
+              </div>
             ) : null}
+
             {selectedNode.data.registryStatus ? (
-              <div className="mt-1 font-mono text-[9.5px] text-[var(--muted-2)]">
-                situação: {selectedNode.data.registryStatus}
+              <div className="mt-2 font-mono text-[10.5px] text-[var(--muted-2)]">
+                Situação cadastral: <span className="text-[var(--fg-1)]">{selectedNode.data.registryStatus}</span>
               </div>
             ) : null}
 
             {selectedEdges.length > 0 ? (
-              <div className="mt-3 flex max-h-40 flex-col gap-2 overflow-y-auto border-t border-[var(--border-1)] pt-3">
-                {selectedEdges.map((e) => (
-                  <div
-                    key={e.id}
-                    className={`font-mono text-[10px] ${e.data?.circular ? "text-elo-red" : "text-[var(--muted)]"}`}
-                  >
-                    {e.source === selectedNode.id ? "→" : "←"}{" "}
-                    {e.data?.kind === "donation" ? "doou pra" : "pagou"}{" "}
-                    {labelFor(e.source === selectedNode.id ? e.target : e.source)}
-                    <span className="text-[var(--muted-2)]"> · {formatBRL(Number(e.data?.amountCents ?? (e.data as unknown as Record<string, unknown>)?.amountcents ?? 0))}</span>
-                    {e.data?.circular ? " ⚠ circular" : ""}
-                  </div>
-                ))}
+              <div className="mt-4 border-t border-[var(--border-1)] pt-3">
+                <div className="font-mono text-[10px] uppercase tracking-wider text-[var(--muted-2)] mb-2 font-semibold">
+                  Vínculos na tela ({selectedEdges.length}):
+                </div>
+                <div className="flex max-h-48 flex-col gap-1.5 overflow-y-auto pr-1">
+                  {selectedEdges.map((e) => (
+                    <div
+                      key={e.id}
+                      className={`flex items-center justify-between gap-2 rounded px-2 py-1 font-mono text-[10.5px] ${
+                        e.data?.circular ? "bg-rose-500/10 text-rose-300" : "bg-[var(--card-tone)] text-[var(--muted)]"
+                      }`}
+                    >
+                      <div className="truncate min-w-0">
+                        <span className="font-bold mr-1">{e.source === selectedNode.id ? "→" : "←"}</span>
+                        <span className="text-[var(--fg-1)] font-medium">
+                          {labelFor(e.source === selectedNode.id ? e.target : e.source)}
+                        </span>
+                      </div>
+                      <span className="font-semibold shrink-0 text-[var(--fg-1)]">
+                        {formatBRL(Number(e.data?.amountCents ?? (e.data as unknown as Record<string, unknown>)?.amountcents ?? 0))}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : null}
 
-            <div className="mt-4 flex gap-2">
+            <div className="mt-4 flex gap-2 pt-3 border-t border-[var(--border-1)]">
               <button
                 onClick={() =>
                   router.push(selectedNode.id.length === 14 ? `/cnpj/${selectedNode.id}` : `/cpf/${selectedNode.id}`)
                 }
-                className="flex-1 rounded-sm bg-foreground py-2 font-mono text-[10px] tracking-[0.1em] text-background uppercase hover:bg-elo-amber"
+                className="flex-1 rounded-md bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white py-2 text-[11px] font-semibold tracking-wide uppercase transition-colors text-center cursor-pointer shadow-md shadow-blue-500/20"
               >
-                ver ficha completa
+                Ver Ficha Completa
               </button>
               <button
                 onClick={() => removeNode(selectedNode.id)}
-                className="rounded-sm border border-[var(--border-2)] px-3 py-2 font-mono text-[10px] tracking-[0.1em] text-[var(--muted)] uppercase hover:border-[var(--border-2)] hover:text-foreground"
+                className="rounded-md border border-[var(--border-1)] hover:border-rose-500/40 hover:bg-rose-500/10 px-3 py-2 text-[11px] font-medium text-[var(--muted)] hover:text-rose-400 uppercase transition-colors cursor-pointer"
               >
-                remover
+                Remover
               </button>
             </div>
           </div>
         ) : null}
       </div>
 
-      <div className="flex flex-wrap gap-4 border-t border-[var(--border-1)] px-6 py-3 font-mono text-[9px] tracking-[0.1em] text-[var(--muted-2)] uppercase">
-        {(Object.keys(NODE_COLOR) as Array<keyof typeof NODE_COLOR>).map((k) => (
-          <span key={k} className="flex items-center gap-1.5">
-            <span
-              className="size-2.5 rounded-full border"
-              style={{ backgroundColor: NODE_COLOR[k].fill, borderColor: NODE_COLOR[k].stroke }}
-            />
-            {NODE_KIND_LABEL[k]}
+      {/* Enterprise Bottom Legend Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-4 border-t border-[var(--border-1)] bg-[var(--surface)] px-6 py-2.5 font-mono text-[10.5px] text-[var(--muted)] shrink-0">
+        <div className="flex flex-wrap items-center gap-4">
+          <span className="text-[9.5px] uppercase tracking-wider text-[var(--muted-2)] font-semibold">Entidades:</span>
+          {(Object.keys(NODE_COLOR) as Array<keyof typeof NODE_COLOR>).map((k) => (
+            <span key={k} className="flex items-center gap-1.5">
+              <span
+                className="size-2.5 rounded-full border"
+                style={{ backgroundColor: NODE_COLOR[k].fill, borderColor: NODE_COLOR[k].stroke }}
+              />
+              <span>{NODE_KIND_LABEL[k]}</span>
+            </span>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-4 border-l border-[var(--border-1)] pl-4">
+          <span className="text-[9.5px] uppercase tracking-wider text-[var(--muted-2)] font-semibold">Fluxos:</span>
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block h-[2.5px] w-4 rounded-full bg-emerald-500" /> Doação
           </span>
-        ))}
-        <span className="ml-2 flex items-center gap-1.5">
-          <span className="inline-block h-[2px] w-4 bg-elo-green" /> doação
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="inline-block h-[2px] w-4" style={{ background: "var(--accent-2)" }} /> pagamento
-        </span>
-        <span className="flex items-center gap-1.5 !text-elo-red">
-          <span className="inline-block h-[2px] w-4 bg-elo-red" /> caminho de doação circular
-        </span>
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block h-[2.5px] w-4 rounded-full bg-sky-500" /> Pagamento
+          </span>
+          <span className="flex items-center gap-1.5 text-rose-400 font-semibold">
+            <span className="inline-block h-[2.5px] w-4 rounded-full bg-rose-500" /> Triangulação Circular
+          </span>
+        </div>
       </div>
     </div>
   );
