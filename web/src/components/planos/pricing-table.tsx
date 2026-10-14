@@ -76,8 +76,8 @@ export function PricingTable() {
                 : "text-[var(--muted)] hover:text-[var(--fg-1)]"
             }`}
           >
-            <span>Faturamento Anual</span>
-            <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-400">
+            <span className="whitespace-nowrap">Faturamento Anual</span>
+            <span className="whitespace-nowrap rounded-full bg-emerald-500/20 px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-400">
               Economize 20%
             </span>
           </button>
@@ -162,9 +162,9 @@ export function PricingTable() {
         </div>
 
         {/* Tier 2: Perito Pro (Featured) */}
-        <div className="relative flex flex-col justify-between rounded-2xl border-2 border-[var(--accent)] bg-[var(--card-tone)] p-8 shadow-xl shadow-[var(--accent)]/10 ring-1 ring-[var(--accent)]/30">
-          <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-            <span className="rounded-full bg-[var(--accent)] px-3.5 py-1 font-mono text-[10.5px] font-bold uppercase tracking-wider text-white shadow-md">
+        <div className="relative flex flex-col justify-between rounded-2xl border-2 border-[var(--accent)] bg-[var(--card-tone)] p-8 pt-9 shadow-xl shadow-[var(--accent)]/10 ring-1 ring-[var(--accent)]/30">
+          <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10">
+            <span className="inline-flex items-center whitespace-nowrap rounded-full bg-[var(--accent)] px-3.5 py-1 font-mono text-[10.5px] font-bold uppercase tracking-wider text-white shadow-md">
               Mais Escolhido por Advogados
             </span>
           </div>
