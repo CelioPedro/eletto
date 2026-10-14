@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/shell/shell-context";
 import { PaginationLinks } from "@/components/ui/pagination-links";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SearchAvatar } from "@/components/search-avatar";
+import { ExportProButton } from "@/components/ui/export-pro-button";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +27,17 @@ export default async function EmendasPage({ searchParams }: PageProps<"/emendas"
 
   return (
     <div className="flex flex-col gap-8">
-      <PageHeader group="eletto" current="Emendas Parlamentares" />
+      <PageHeader
+        group="eletto"
+        current="Emendas Parlamentares"
+        actions={
+          <ExportProButton
+            datasetName="Emendas Orçamentárias para Empresas"
+            label="Exportar Planilha"
+            sampleColumns={["Código da Emenda", "Autor", "CNPJ Favorecido", "Empresa", "Valor Pago", "Ano"]}
+          />
+        }
+      />
 
       <section>
         <h1 className="text-[26px] leading-tight font-medium tracking-tight">
@@ -44,11 +55,19 @@ export default async function EmendasPage({ searchParams }: PageProps<"/emendas"
           empresas
         </div>
 
-        <form className="mt-5 flex flex-wrap items-center gap-2" action="/emendas">
-          <div className="input" style={{ width: 280 }}>
-            <input name="q" defaultValue={q} placeholder="buscar autor ou empresa…" />
-          </div>
-        </form>
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+          <form className="flex flex-wrap items-center gap-2" action="/emendas">
+            <div className="input" style={{ width: 280 }}>
+              <input name="q" defaultValue={q} placeholder="buscar autor ou empresa…" />
+            </div>
+          </form>
+
+          <ExportProButton
+            datasetName="Emendas para Empresas"
+            label="Baixar Planilha Completa"
+            sampleColumns={["Código da Emenda", "Autor", "CNPJ Favorecido", "Empresa", "Valor Pago", "Ano"]}
+          />
+        </div>
       </section>
 
       <section>

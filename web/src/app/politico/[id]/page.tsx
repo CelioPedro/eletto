@@ -20,6 +20,7 @@ import { Skeleton } from "@/components/skeleton";
 import { PageHeader } from "@/components/shell/shell-context";
 import { YearSelect } from "@/components/ui/year-select";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ExportProButton } from "@/components/ui/export-pro-button";
 import { formatBRL, formatCnpj, formatCpf, resultTone } from "@/lib/format";
 
 const DISCOURSE_SHOWN = 8;
@@ -50,7 +51,13 @@ export default async function PoliticoPage({ params, searchParams }: PageProps<"
           group="eletto"
           current={displayName}
           actions={
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2">
+              <ExportProButton
+                datasetName={`Dados de ${displayName}`}
+                label="Exportar Planilha"
+                sampleColumns={["Ano", "Cargo", "Partido", "Bens Declarados", "Total Doações", "Total Despesas"]}
+                size="sm"
+              />
               <Link
                 href={`/politico/${person.id}/dossie`}
                 className="inline-flex items-center gap-1.5 rounded-md bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white px-3 py-1.5 text-[11.5px] font-semibold transition-all shadow-xs"
@@ -110,17 +117,25 @@ export default async function PoliticoPage({ params, searchParams }: PageProps<"
               </SourceZone>
             </div>
 
-            <Link
-              href={`/politico/${person.id}/dossie`}
-              className="inline-flex items-center gap-2 rounded-md border border-[var(--border-2)] bg-[var(--card-tone)] hover:bg-[var(--hover)] hover:border-[var(--accent)] px-3 py-1.5 text-[11.5px] font-medium text-[var(--fg-1)] transition-all shadow-xs"
-            >
-              <svg className="size-3.5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="6 9 6 2 18 2 18 9" />
-                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                <rect x="6" y="14" width="12" height="8" />
-              </svg>
-              <span>Gerar Dossiê Pericial (PDF)</span>
-            </Link>
+            <div className="flex items-center gap-2">
+              <ExportProButton
+                datasetName={`Dados de ${displayName}`}
+                label="Exportar Planilha (Pro)"
+                sampleColumns={["Ano", "Cargo", "Partido", "Bens Declarados", "Total Doações", "Total Despesas"]}
+                size="sm"
+              />
+              <Link
+                href={`/politico/${person.id}/dossie`}
+                className="inline-flex items-center gap-2 rounded-md border border-[var(--border-2)] bg-[var(--card-tone)] hover:bg-[var(--hover)] hover:border-[var(--accent)] px-3 py-1.5 text-[11.5px] font-medium text-[var(--fg-1)] transition-all shadow-xs"
+              >
+                <svg className="size-3.5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="6 9 6 2 18 2 18 9" />
+                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                  <rect x="6" y="14" width="12" height="8" />
+                </svg>
+                <span>Gerar Dossiê Pericial (PDF)</span>
+              </Link>
+            </div>
           </div>
 
           {overviewFinance.donationsCount > 0 || overviewFinance.expensesCount > 0 ? (

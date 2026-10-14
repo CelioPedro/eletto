@@ -25,6 +25,7 @@ import { FloatingEdge } from "./graph/floating-edge";
 import { NODE_COLOR, NODE_KIND_LABEL, type GraphEdgeData, type GraphNodeData } from "./graph/types";
 import { Skeleton } from "./skeleton";
 import { useColorMode } from "@/lib/use-color-mode";
+import { ProUpgradeModal } from "./ui/pro-upgrade-modal";
 
 const WIDTH = 1100;
 const HEIGHT = 700;
@@ -90,6 +91,7 @@ function GraphCanvasInner() {
 
   const [expandFull, setExpandFull] = useState(false);
   const [truncatedNotice, setTruncatedNotice] = useState<string | null>(null);
+  const [proModal, setProModal] = useState<{ open: boolean; title: string; description: string } | null>(null);
 
   const [searching, setSearching] = useState(false);
   const searchAbort = useRef<AbortController | null>(null);
@@ -568,14 +570,35 @@ function GraphCanvasInner() {
           </button>
         ) : null}
 
-        {nodes.length > 0 ? (
+        <div className="ml-auto flex items-center gap-2">
           <button
-            onClick={clearAll}
-            className="ml-auto px-3 py-1.5 rounded-md border border-[var(--border-1)] hover:border-rose-500/40 hover:bg-rose-500/10 text-[var(--muted)] hover:text-rose-400 font-medium text-[11.5px] transition-colors cursor-pointer"
+            type="button"
+            onClick={() =>
+              setProModal({
+                open: true,
+                title: "Exportação de Grafo & Relatório Forense",
+                description:
+                  "Exporte a rede de vínculos investigada em alta definição (SVG/PDF vetorial) ou como matriz de adjacência (CSV, JSON, Gephi) com carimbo criptográfico para instrução probatória.",
+              })
+            }
+            className="px-3 py-1.5 rounded-md border border-[var(--border-1)] hover:border-blue-500/40 hover:bg-blue-500/10 text-[var(--fg-1)] font-medium text-[11.5px] transition-colors cursor-pointer flex items-center gap-1.5"
+            title="Exportar dados e visualização do grafo"
           >
-            Limpar visualização
+            <span>Exportar Grafo</span>
+            <span className="rounded bg-[var(--accent)]/15 px-1.5 py-0.2 font-mono text-[9px] font-bold text-[var(--accent-2)]">
+              PRO
+            </span>
           </button>
-        ) : null}
+
+          {nodes.length > 0 ? (
+            <button
+              onClick={clearAll}
+              className="px-3 py-1.5 rounded-md border border-[var(--border-1)] hover:border-rose-500/40 hover:bg-rose-500/10 text-[var(--muted)] hover:text-rose-400 font-medium text-[11.5px] transition-colors cursor-pointer"
+            >
+              Limpar visualização
+            </button>
+          ) : null}
+        </div>
       </div>
 
       {/* Main Graph Area */}
@@ -731,21 +754,41 @@ function GraphCanvasInner() {
               </div>
             ) : null}
 
-            <div className="mt-4 flex gap-2 pt-3 border-t border-[var(--border-1)]">
+            <div className="mt-4 flex flex-col gap-2 pt-3 border-t border-[var(--border-1)]">
               <button
+                type="button"
                 onClick={() =>
-                  router.push(selectedNode.id.length === 14 ? `/cnpj/${selectedNode.id}` : `/cpf/${selectedNode.id}`)
+                  setProModal({
+                    open: true,
+                    title: `Rastreamento Profundo de Vínculos (${selectedNode.data.label})`,
+                    description:
+                      "Execute uma varredura recursiva de até 5 saltos para revelar intermediários, sócios cruzados, fornecedores satélites e triangulações bancárias ocultas.",
+                  })
                 }
-                className="flex-1 rounded-md bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white py-2 text-[11px] font-semibold tracking-wide uppercase transition-colors text-center cursor-pointer shadow-md shadow-blue-500/20"
+                className="w-full flex items-center justify-center gap-2 rounded-md border border-indigo-500/40 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 hover:text-indigo-300 py-2 text-[11px] font-semibold uppercase tracking-wide transition-colors cursor-pointer"
               >
-                Ver Ficha Completa
+                <span>⚡ Rastrear Vínculos Ocultos</span>
+                <span className="rounded bg-indigo-500/20 px-1.5 py-0.2 font-mono text-[9px] font-bold text-indigo-300">
+                  PRO
+                </span>
               </button>
-              <button
-                onClick={() => removeNode(selectedNode.id)}
-                className="rounded-md border border-[var(--border-1)] hover:border-rose-500/40 hover:bg-rose-500/10 px-3 py-2 text-[11px] font-medium text-[var(--muted)] hover:text-rose-400 uppercase transition-colors cursor-pointer"
-              >
-                Remover
-              </button>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() =>
+                    router.push(selectedNode.id.length === 14 ? `/cnpj/${selectedNode.id}` : `/cpf/${selectedNode.id}`)
+                  }
+                  className="flex-1 rounded-md bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white py-2 text-[11px] font-semibold tracking-wide uppercase transition-colors text-center cursor-pointer shadow-md shadow-blue-500/20"
+                >
+                  Ver Ficha Completa
+                </button>
+                <button
+                  onClick={() => removeNode(selectedNode.id)}
+                  className="rounded-md border border-[var(--border-1)] hover:border-rose-500/40 hover:bg-rose-500/10 px-3 py-2 text-[11px] font-medium text-[var(--muted)] hover:text-rose-400 uppercase transition-colors cursor-pointer"
+                >
+                  Remover
+                </button>
+              </div>
             </div>
           </div>
         ) : null}
@@ -778,6 +821,19 @@ function GraphCanvasInner() {
           </span>
         </div>
       </div>
+
+      <ProUpgradeModal
+        open={Boolean(proModal?.open)}
+        onClose={() => setProModal(null)}
+        featureTitle={proModal?.title ?? "Recurso Avançado Eletto Pro"}
+        featureDescription={proModal?.description ?? "Acesse inteligência pericial de grafos profundos para subsidiar investigações e auditorias de alta complexidade."}
+        benefits={[
+          "Expansão recursiva de nós e relacionamentos em até 5 saltos",
+          "Exportação vetorial em SVG/PDF e matriz de grafos (Gephi, CSV, JSON)",
+          "Detecção de doações circulares multinível e empresas de fachada",
+          "Dossiês periciais ilimitados com chancela SHA-256",
+        ]}
+      />
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { YearSelect } from "@/components/ui/year-select";
 import { PaginationLinks } from "@/components/ui/pagination-links";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SearchAvatar } from "@/components/search-avatar";
+import { ExportProButton } from "@/components/ui/export-pro-button";
 
 export const dynamic = "force-dynamic";
 
@@ -44,9 +45,16 @@ export default async function RankingPage({ searchParams }: PageProps<"/ranking"
         group="eletto"
         current="Ranking"
         actions={
-          tipo === "bens" ? (
-            <YearSelect basePath="/ranking" years={years} value={year} allLabel="todos (declaração mais recente)" />
-          ) : undefined
+          <div className="flex items-center gap-2">
+            {tipo === "bens" ? (
+              <YearSelect basePath="/ranking" years={years} value={year} allLabel="todos (declaração mais recente)" />
+            ) : null}
+            <ExportProButton
+              datasetName="Ranking de Bens Declarados"
+              label="Exportar Planilha"
+              sampleColumns={["Nome", "CPF", "Cargo", "Partido", "Total Declarado", "Ano"]}
+            />
+          </div>
         }
       />
 
@@ -73,16 +81,24 @@ export default async function RankingPage({ searchParams }: PageProps<"/ranking"
           </p>
         )}
 
-        <div className="mt-6 flex flex-wrap items-center gap-2">
-          {TIPOS.map((t) => (
-            <Link
-              key={t.value}
-              href={hrefFor({ tipo: t.value })}
-              className={`btn${tipo === t.value ? " btn--primary" : ""}`}
-            >
-              {t.label}
-            </Link>
-          ))}
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-2">
+            {TIPOS.map((t) => (
+              <Link
+                key={t.value}
+                href={hrefFor({ tipo: t.value })}
+                className={`btn${tipo === t.value ? " btn--primary" : ""}`}
+              >
+                {t.label}
+              </Link>
+            ))}
+          </div>
+
+          <ExportProButton
+            datasetName="Ranking de Bens"
+            label="Exportar Dados em CSV"
+            sampleColumns={["Posição", "Candidato", "CPF", "Total em Bens", "Variação %"]}
+          />
         </div>
       </section>
 
