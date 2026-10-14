@@ -36,6 +36,14 @@ export function Topbar() {
         ) : null}
         <span style={{ marginLeft: "auto", display: "flex", gap: 10, alignItems: "center", flex: "none" }}>
           {header.actions}
+          <Link
+            href="/planos"
+            className="pill-tech hidden sm:inline-flex text-[11px] font-mono hover:border-blue-500 transition-colors"
+            style={{ textDecoration: "none" }}
+          >
+            <span>Planos</span>
+            <span className="pill-dot pill-dot--purple" />
+          </Link>
           <button
             type="button"
             className="btn btn--icon"
