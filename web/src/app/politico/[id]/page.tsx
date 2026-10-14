@@ -47,9 +47,26 @@ export default async function PoliticoPage({ params, searchParams }: PageProps<"
   return (
       <main className="mx-auto w-full max-w-4xl pt-8">
         <PageHeader
-          group="Consulta"
+          group="eletto"
           current={displayName}
-          actions={<YearSelect basePath={`/politico/${person.id}`} years={financeYears} value={year} />}
+          actions={
+            <div className="flex items-center gap-2.5">
+              <Link
+                href={`/politico/${person.id}/dossie`}
+                className="inline-flex items-center gap-1.5 rounded-md bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white px-3 py-1.5 text-[11.5px] font-semibold transition-all shadow-xs"
+                title="Gerar Dossiê Pericial em PDF para este agente político"
+              >
+                <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="16" y1="13" x2="8" y2="13" />
+                  <line x1="16" y1="17" x2="8" y2="17" />
+                </svg>
+                Dossiê Pericial (PDF)
+              </Link>
+              <YearSelect basePath={`/politico/${person.id}`} years={financeYears} value={year} />
+            </div>
+          }
         />
 
         <header className="animate-in pb-8">
@@ -74,22 +91,36 @@ export default async function PoliticoPage({ params, searchParams }: PageProps<"
             </SourceZone>
           ) : null}
 
-          <div className="mt-5 flex flex-wrap gap-x-8 gap-y-3 font-mono text-[11px] text-[var(--muted)]">
-            <SourceZone provenance={header.provenance} inline>
-              <span>
-                <span className="text-[var(--muted-2)]">CPF </span>
-                {formatCpf(person.cpf)}
-                {person.cpf && !person.cpfTrusted ? (
-                  <span className="ml-1.5 text-elo-amber">reconciliado</span>
-                ) : null}
-              </span>
-            </SourceZone>
-            <SourceZone provenance={header.provenance} inline>
-              <span>
-                <span className="text-[var(--muted-2)]">título eleitoral </span>
-                {person.voterId ?? "não disponível"}
-              </span>
-            </SourceZone>
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
+            <div className="flex flex-wrap gap-x-8 gap-y-2 font-mono text-[11px] text-[var(--muted)]">
+              <SourceZone provenance={header.provenance} inline>
+                <span>
+                  <span className="text-[var(--muted-2)]">CPF </span>
+                  {formatCpf(person.cpf)}
+                  {person.cpf && !person.cpfTrusted ? (
+                    <span className="ml-1.5 text-elo-amber">reconciliado</span>
+                  ) : null}
+                </span>
+              </SourceZone>
+              <SourceZone provenance={header.provenance} inline>
+                <span>
+                  <span className="text-[var(--muted-2)]">título eleitoral </span>
+                  {person.voterId ?? "não disponível"}
+                </span>
+              </SourceZone>
+            </div>
+
+            <Link
+              href={`/politico/${person.id}/dossie`}
+              className="inline-flex items-center gap-2 rounded-md border border-[var(--border-2)] bg-[var(--card-tone)] hover:bg-[var(--hover)] hover:border-[var(--accent)] px-3 py-1.5 text-[11.5px] font-medium text-[var(--fg-1)] transition-all shadow-xs"
+            >
+              <svg className="size-3.5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="6 9 6 2 18 2 18 9" />
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                <rect x="6" y="14" width="12" height="8" />
+              </svg>
+              <span>Gerar Dossiê Pericial (PDF)</span>
+            </Link>
           </div>
 
           {overviewFinance.donationsCount > 0 || overviewFinance.expensesCount > 0 ? (

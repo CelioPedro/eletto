@@ -8,6 +8,17 @@ import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
 
 export function AppShell({ counts, children }: { counts: SidebarCounts; children: ReactNode }) {
+  const pathname = usePathname();
+  const isDossie = pathname?.includes("/dossie");
+
+  if (isDossie) {
+    return (
+      <ShellProvider>
+        <div className="min-h-screen bg-[var(--bg)]">{children}</div>
+      </ShellProvider>
+    );
+  }
+
   return (
     <ShellProvider>
       <div className="shell-layout">
