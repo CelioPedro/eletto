@@ -52,6 +52,13 @@ export default async function PoliticoPage({ params, searchParams }: PageProps<"
           current={displayName}
           actions={
             <div className="flex items-center gap-2">
+              <Link
+                href={`/politico/${person.id}/peca-juridica`}
+                className="hidden sm:inline-flex items-center gap-1.5 rounded-md border border-indigo-500/40 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 px-3 py-1.5 text-[11.5px] font-semibold transition-all shadow-xs"
+                title="Redigir Minuta de Notícia-Crime ou Representação com IA"
+              >
+                <span>⚖ Minuta Jurídica (IA)</span>
+              </Link>
               <ExportProButton
                 datasetName={`Dados de ${displayName}`}
                 label="Exportar Planilha"
@@ -117,7 +124,14 @@ export default async function PoliticoPage({ params, searchParams }: PageProps<"
               </SourceZone>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                href={`/politico/${person.id}/peca-juridica`}
+                className="inline-flex items-center gap-1.5 rounded-md border border-indigo-500/40 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 px-3 py-1.5 text-[11.5px] font-semibold transition-all shadow-xs"
+                title="Redigir Petição ou Notícia-Crime Eleitoral com IA"
+              >
+                <span>⚖ Minuta Jurídica (IA)</span>
+              </Link>
               <ExportProButton
                 datasetName={`Dados de ${displayName}`}
                 label="Exportar Planilha (Pro)"

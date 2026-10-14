@@ -37,6 +37,14 @@ export function DossieActions({ personId, candidateName }: { personId: number; c
         </div>
 
         <div className="flex items-center gap-2.5">
+          <Link
+            href={`/politico/${personId}/peca-juridica`}
+            className="inline-flex items-center gap-1.5 rounded-md border border-indigo-500/40 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 px-3 py-1.5 text-[12px] font-semibold transition-all shadow-xs"
+            title="Redigir Minuta de Notícia-Crime ou Representação com IA com base neste dossiê"
+          >
+            <span>⚖ Gerar Peça Jurídica</span>
+          </Link>
+
           <button
             type="button"
             onClick={() => setProModalOpen(true)}

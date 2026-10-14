@@ -9,9 +9,9 @@ import { Topbar } from "./topbar";
 
 export function AppShell({ counts, children }: { counts: SidebarCounts; children: ReactNode }) {
   const pathname = usePathname();
-  const isDossie = pathname?.includes("/dossie");
+  const isFullScreenDoc = pathname?.includes("/dossie") || pathname?.includes("/peca-juridica");
 
-  if (isDossie) {
+  if (isFullScreenDoc) {
     return (
       <ShellProvider>
         <div className="min-h-screen bg-[var(--bg)]">{children}</div>
