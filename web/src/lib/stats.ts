@@ -17,36 +17,71 @@ export type HomeStats = {
   years: string;
 };
 
-// The .db is rewrite-only, so these full-table sums are cached per process.
 const cache = new Map<number, HomeStats>();
 
-export function getHomeStats(year?: number): HomeStats {
+export async function getHomeStats(year?: number): Promise<HomeStats> {
   const key = year ?? 0;
   const hit = cache.get(key);
   if (hit) return hit;
 
-  const yearFilter = year != null ? " WHERE year = ?" : "";
-  const args = year != null ? [year] : [];
-  const c = (sql: string) => (db().prepare(sql).get(...args) as { n: number }).n;
-  const sum = (sql: string) => (db().prepare(sql).get(...args) as { n: number }).n ?? 0;
-  const years = db()
-    .prepare("SELECT min(year) lo, max(year) hi FROM politician_history")
-    .get() as { lo: number; hi: number };
+  try {
+    const yearFilter = year != null ? " WHERE year = ?" : "";
+    const args = year != null ? [year] : [];
+    const c = async (sql: string) =>
+      Number(((await db().prepare(sql).get(...args)) as { n: number } | null)?.n ?? 0);
+    const sum = async (sql: string) =>
+      Number(((await db().prepare(sql).get(...args)) as { n: number } | null)?.n ?? 0);
 
-  const result: HomeStats = {
-    people:
+    const yearsRow = ((await db()
+      .prepare("SELECT min(year) lo, max(year) hi FROM politician_history")
+      .get()) as { lo: number; hi: number } | null) ?? { lo: 0, hi: 0 };
+
+    const [
+      people,
+      candidacies,
+      campaignOrgs,
+      socialMedia,
+      donationsTotalCents,
+      expensesTotalCents,
+    ] = await Promise.all([
       year != null
         ? c("SELECT count(DISTINCT person_id) n FROM politician_history WHERE year = ?")
         : c("SELECT count(*) n FROM people"),
-    candidacies: c(`SELECT count(*) n FROM politician_history${yearFilter}`),
-    campaignOrgs: c(`SELECT count(*) n FROM campaign_org${yearFilter}`),
-    socialMedia: c(`SELECT count(*) n FROM social_media${yearFilter}`),
-    donationsTotalCents: sum(`SELECT coalesce(sum(amount_cents),0) n FROM campaign_donation${yearFilter}`),
-    expensesTotalCents: sum(`SELECT coalesce(sum(amount_cents),0) n FROM campaign_expense${yearFilter}`),
-    years: year != null ? String(year) : years.lo && years.hi ? `${years.lo}–${years.hi}` : "—",
-  };
-  cache.set(key, result);
-  return result;
+      c(`SELECT count(*) n FROM politician_history${yearFilter}`),
+      c(`SELECT count(*) n FROM campaign_org${yearFilter}`),
+      c(`SELECT count(*) n FROM social_media${yearFilter}`),
+      sum(`SELECT coalesce(sum(amount_cents), 0) n FROM campaign_donation${yearFilter}`),
+      sum(`SELECT coalesce(sum(amount_cents), 0) n FROM campaign_expense${yearFilter}`),
+    ]);
+
+    const result: HomeStats = {
+      people,
+      candidacies,
+      campaignOrgs,
+      socialMedia,
+      donationsTotalCents,
+      expensesTotalCents,
+      years:
+        year != null
+          ? String(year)
+          : yearsRow.lo && yearsRow.hi
+            ? `${yearsRow.lo}–${yearsRow.hi}`
+            : "—",
+    };
+    cache.set(key, result);
+    return result;
+  } catch (err) {
+    console.warn("getHomeStats fallback used (database unreachable or query failed):", err);
+    return {
+      people: 0,
+      candidacies: 0,
+      campaignOrgs: 0,
+      socialMedia: 0,
+      donationsTotalCents: 0,
+      expensesTotalCents: 0,
+      years: "—",
+    };
+  }
 }
 
 export type SidebarCounts = {
@@ -59,14 +94,33 @@ export type SidebarCounts = {
 
 let cachedCounts: SidebarCounts | null = null;
 
-export function getSidebarCounts(): SidebarCounts {
+export async function getSidebarCounts(): Promise<SidebarCounts> {
   if (cachedCounts) return cachedCounts;
-  cachedCounts = {
-    circularDonations: getCircularDonationSummary().total,
-    supplierPartner: getSupplierPartnerSummary().total,
-    aiReview: getAiReviewSummary().total,
-    discourse: getDiscourseSummary().total,
-    disproportionateExpense: getDisproportionateExpenseCount(),
-  };
-  return cachedCounts;
+  try {
+    const [circular, supplier, ai, disc, disp] = await Promise.all([
+      getCircularDonationSummary(),
+      getSupplierPartnerSummary(),
+      getAiReviewSummary(),
+      getDiscourseSummary(),
+      getDisproportionateExpenseCount(),
+    ]);
+
+    cachedCounts = {
+      circularDonations: circular?.total ?? 0,
+      supplierPartner: supplier?.total ?? 0,
+      aiReview: ai?.total ?? 0,
+      discourse: disc?.total ?? 0,
+      disproportionateExpense: disp ?? 0,
+    };
+    return cachedCounts;
+  } catch (err) {
+    console.warn("getSidebarCounts fallback used (database unreachable or query failed):", err);
+    return {
+      circularDonations: 0,
+      supplierPartner: 0,
+      aiReview: 0,
+      discourse: 0,
+      disproportionateExpense: 0,
+    };
+  }
 }

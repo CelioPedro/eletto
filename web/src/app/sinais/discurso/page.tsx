@@ -62,10 +62,10 @@ export default async function DiscursoPage({ searchParams }: PageProps<"/sinais/
   const q = typeof sp.q === "string" ? sp.q.trim() || undefined : undefined;
   const page = Math.max(1, Number(sp.page) || 1);
 
-  const summary = getDiscourseSummary();
+  const summary = await getDiscourseSummary();
   const opts = { category, group, severity, q };
-  const count = getDiscourseCount(opts);
-  const signals = getDiscourseSignals({ ...opts, limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE });
+  const count = await getDiscourseCount(opts);
+  const signals = await getDiscourseSignals({ ...opts, limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE });
   const totalPages = Math.max(1, Math.ceil(count / PAGE_SIZE));
 
   const groupTotal = DISCOURSE_GROUP_CATEGORIES.reduce((s, c) => s + (summary.byCategory[c] ?? 0), 0);

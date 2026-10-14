@@ -267,7 +267,10 @@ function GraphCanvasInner() {
               if (!byId.has(id)) {
                 byId.set(id, {
                   id, source: e.source, target: e.target, type: "floating",
-                  data: { amountCents: e.amountCents, kind: e.kind, circular: false, showLabel: true },
+                  data: {
+                    amountCents: Number(e.amountCents ?? (e as unknown as Record<string, unknown>).amountcents ?? 0),
+                    kind: e.kind, circular: false, showLabel: true,
+                  },
                 });
               }
             }
@@ -298,7 +301,10 @@ function GraphCanvasInner() {
                 if (!byId.has(id)) {
                   byId.set(id, {
                     id, source: e.source, target: e.target, type: "floating",
-                    data: { amountCents: e.amountCents, kind: e.kind, circular: false, showLabel: true },
+                    data: {
+                      amountCents: Number(e.amountCents ?? (e as unknown as Record<string, unknown>).amountcents ?? 0),
+                      kind: e.kind, circular: false, showLabel: true,
+                    },
                   });
                 }
               }
@@ -588,7 +594,7 @@ function GraphCanvasInner() {
                     {e.source === selectedNode.id ? "→" : "←"}{" "}
                     {e.data?.kind === "donation" ? "doou pra" : "pagou"}{" "}
                     {labelFor(e.source === selectedNode.id ? e.target : e.source)}
-                    <span className="text-[var(--muted-2)]"> · {formatBRL(e.data?.amountCents ?? 0)}</span>
+                    <span className="text-[var(--muted-2)]"> · {formatBRL(Number(e.data?.amountCents ?? (e.data as unknown as Record<string, unknown>)?.amountcents ?? 0))}</span>
                     {e.data?.circular ? " ⚠ circular" : ""}
                   </div>
                 ))}

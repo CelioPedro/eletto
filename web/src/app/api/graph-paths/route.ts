@@ -9,5 +9,5 @@ export async function POST(request: Request) {
   const existingIds = Array.isArray(body?.existingIds)
     ? body.existingIds.filter((v): v is string => typeof v === "string")
     : [];
-  return NextResponse.json(getGraphPaths(newId, existingIds));
+  return NextResponse.json(await getGraphPaths(newId, existingIds));
 }

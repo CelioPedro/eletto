@@ -10,15 +10,15 @@ export default async function CnpjPage({ params, searchParams }: PageProps<"/cnp
   const digits = digitsOnly(cnpj);
   if (digits.length !== 14) notFound();
 
-  const personId = candidatePersonId(digits);
+  const personId = await candidatePersonId(digits);
   if (personId !== null) redirect(`/politico/${personId}`);
 
   const sp = await searchParams;
   const anoParam = typeof sp.ano === "string" ? Number(sp.ano) : NaN;
-  const years = getExpenseYears();
+  const years = await getExpenseYears();
   const year = Number.isInteger(anoParam) && years.includes(anoParam) ? anoParam : undefined;
 
-  const profile = getEntityProfile(digits, { year });
+  const profile = await getEntityProfile(digits, { year });
   if (!profile) notFound();
 
   return <EntityProfileView profile={profile} years={years} year={year} />;

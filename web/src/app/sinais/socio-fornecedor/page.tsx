@@ -28,9 +28,9 @@ export default async function SocioFornecedorPage({ searchParams }: PageProps<"/
   const q = typeof sp.q === "string" ? sp.q : "";
   const page = Math.max(1, Number(sp.page) || 1);
 
-  const summary = getSupplierPartnerSummary();
-  const count = getSupplierPartnerCount({ filter, q });
-  const rows = getSupplierPartners({ filter, q, limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE });
+  const summary = await getSupplierPartnerSummary();
+  const count = await getSupplierPartnerCount({ filter, q });
+  const rows = await getSupplierPartners({ filter, q, limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE });
   const totalPages = Math.max(1, Math.ceil(count / PAGE_SIZE));
 
   const hrefFor = (p: Record<string, string | undefined>) => {

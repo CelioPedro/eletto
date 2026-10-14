@@ -11,10 +11,10 @@ export const dynamic = "force-dynamic";
 export default async function Home({ searchParams }: PageProps<"/">) {
   const sp = await searchParams;
   const anoParam = typeof sp.ano === "string" ? Number(sp.ano) : NaN;
-  const expenseYears = getExpenseYears();
+  const expenseYears = await getExpenseYears();
   const year = Number.isInteger(anoParam) && expenseYears.includes(anoParam) ? anoParam : undefined;
 
-  const stats = getHomeStats(year);
+  const stats = await getHomeStats(year);
 
   const heroStats = [
     { label: "pessoas", value: stats.people.toLocaleString("pt-BR") },

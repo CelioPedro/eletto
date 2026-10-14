@@ -45,5 +45,5 @@ export async function GET(request: Request) {
     amountMaxCents: parseCents(sp.get("amountMax")),
     onlyPoliticianOwned: sp.get("onlyPoliticianOwned") === "1",
   };
-  return NextResponse.json(getFinancePage(params));
+  return NextResponse.json(await getFinancePage(params));
 }

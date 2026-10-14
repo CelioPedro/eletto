@@ -17,5 +17,5 @@ export async function GET(request: Request) {
   const anoParam = sp.get("ano");
   const year = anoParam != null && anoParam !== ALL && Number.isInteger(Number(anoParam)) ? Number(anoParam) : undefined;
 
-  return NextResponse.json({ rows: getPersonCategoryExpenseDetail(personId, category, year) });
+  return NextResponse.json({ rows: await getPersonCategoryExpenseDetail(personId, category, year) });
 }

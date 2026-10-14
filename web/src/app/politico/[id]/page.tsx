@@ -33,16 +33,16 @@ export default async function PoliticoPage({ params, searchParams }: PageProps<"
 
   const sp = await searchParams;
   const anoParam = typeof sp.ano === "string" ? Number(sp.ano) : NaN;
-  const financeYears = getExpenseYears();
+  const financeYears = await getExpenseYears();
   const year = Number.isInteger(anoParam) && financeYears.includes(anoParam) ? anoParam : undefined;
 
-  const header = getPersonHeader(personId);
+  const header = await getPersonHeader(personId);
   if (!header) notFound();
   const { person, latestCandidacy } = header;
-  const overviewFinance = getPersonFinance(personId, year);
+  const overviewFinance = await getPersonFinance(personId, year);
   const displayName = person.canonicalName ?? "(nome indisponível)";
-  const photoUrl = getPersonPhotoUrl(personId);
-  const photoProvenance = photoUrl ? getPersonPhotoProvenance(personId) : null;
+  const photoUrl = await getPersonPhotoUrl(personId);
+  const photoProvenance = photoUrl ? await getPersonPhotoProvenance(personId) : null;
 
   return (
       <main className="mx-auto w-full max-w-4xl pt-8">
@@ -152,18 +152,29 @@ export default async function PoliticoPage({ params, searchParams }: PageProps<"
 
 
 async function NetworkSection({ personId, displayName }: { personId: number; displayName: string }) {
-  const network = getPoliticianDonationNetwork(personId);
+  const network = await getPoliticianDonationNetwork(personId);
   if (network.donatedTo.length === 0 && network.receivedFrom.length === 0) return null;
+  const centerPhotoUrl = await getPersonPhotoUrl(personId);
   return (
     <Section id="rede-de-doacao" title="rede de doação">
-      <PoliticianNetwork network={network} centerLabel={displayName} centerPhotoUrl={getPersonPhotoUrl(personId)} />
+      <PoliticianNetwork network={network} centerLabel={displayName} centerPhotoUrl={centerPhotoUrl} />
     </Section>
   );
 }
 
 async function SignalsSection({ personId, personCpf }: { personId: number; personCpf: string | null }) {
-  const { signals, signalsCount } = getPersonSignals(personId);
+  const { signals, signalsCount } = await getPersonSignals(personId);
   if (signals.length === 0) return null;
+
+  const edgeAmountsBySignalId = new Map<number, number[]>();
+  await Promise.all(
+    signals.map(async (s) => {
+      if (s.cycleNodes && s.cycleNodes.length > 0) {
+        edgeAmountsBySignalId.set(s.id, await getCycleEdgeAmounts(s.cycleNodes));
+      }
+    })
+  );
+
   return (
     <section id="sinais" data-toc-title="sinais de alerta" className="animate-in py-7">
       <div className="mb-2 flex items-baseline gap-3">
@@ -190,7 +201,7 @@ async function SignalsSection({ personId, personCpf }: { personId: number; perso
                 key={s.id}
                 nodes={s.cycleNodes}
                 selfCpfCnpj={personCpf}
-                edgeAmounts={getCycleEdgeAmounts(s.cycleNodes)}
+                edgeAmounts={edgeAmountsBySignalId.get(s.id) ?? []}
                 severity={s.severity}
                 roleLabel={roleLabel}
                 aiReview={s.aiReview}
@@ -254,9 +265,9 @@ async function SignalsSection({ personId, personCpf }: { personId: number; perso
 }
 
 async function CandidaciesSection({ personId }: { personId: number }) {
-  const candidacies = getPersonCandidacies(personId);
+  const candidacies = await getPersonCandidacies(personId);
   if (candidacies.length === 0) return null;
-  const campaignOrgs = getPersonCampaignOrgs(personId);
+  const campaignOrgs = await getPersonCampaignOrgs(personId);
   const cnpjByYear = new Map(campaignOrgs.map((o) => [o.year, o.cnpj]));
 
   return (
@@ -297,7 +308,7 @@ async function CandidaciesSection({ personId }: { personId: number }) {
 }
 
 async function AssetsSection({ personId }: { personId: number }) {
-  const { declaredAssets, declaredAssetsByYear } = getPersonAssets(personId);
+  const { declaredAssets, declaredAssetsByYear } = await getPersonAssets(personId);
   if (declaredAssets.length === 0) return null;
   return (
     <Section id="bens-declarados" title="bens declarados">
@@ -314,7 +325,7 @@ async function AssetsSection({ personId }: { personId: number }) {
 }
 
 async function EarmarksSection({ personId }: { personId: number }) {
-  const { earmarks, totalCommittedCents, totalPaidCents } = getPersonEarmarks(personId);
+  const { earmarks, totalCommittedCents, totalPaidCents } = await getPersonEarmarks(personId);
   if (earmarks.length === 0) return null;
   return (
     <Section id="emendas-parlamentares" title="emendas parlamentares">
@@ -373,7 +384,7 @@ async function EarmarksSection({ personId }: { personId: number }) {
 async function FinanceSection({
   personId, year,
 }: { personId: number; year: number | undefined }) {
-  const finance = year != null ? getPersonFinance(personId, year) : getPersonFinance(personId);
+  const finance = year != null ? await getPersonFinance(personId, year) : await getPersonFinance(personId);
   return (
     <div id="financas" data-toc-title="finanças">
       {finance.donationsCount > 0 ? (
@@ -410,7 +421,7 @@ async function FinanceSection({
 }
 
 async function SocialMediaSection({ personId }: { personId: number }) {
-  const socialMedia = getPersonSocialMedia(personId);
+  const socialMedia = await getPersonSocialMedia(personId);
   if (socialMedia.length === 0) return null;
   return (
     <Section id="redes-sociais" title="redes sociais declaradas">
@@ -426,9 +437,9 @@ async function SocialMediaSection({ personId }: { personId: number }) {
 }
 
 async function DiscourseSection({ personId, displayName }: { personId: number; displayName: string }) {
-  const discourseCount = getDiscourseCount({ personId });
+  const discourseCount = await getDiscourseCount({ personId });
   if (discourseCount === 0) return null;
-  const discourse = getDiscourseSignals({ personId, limit: DISCOURSE_SHOWN });
+  const discourse = await getDiscourseSignals({ personId, limit: DISCOURSE_SHOWN });
   return (
     <Section id="discurso" tocLabel="discurso" title="posts no X sinalizados pela IA">
       <p className="mb-4 text-[11.5px] text-[var(--muted-2)]">

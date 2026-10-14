@@ -8,7 +8,7 @@ import { YearSelect } from "@/components/ui/year-select";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatBRL, formatCnpj, formatCpf } from "@/lib/format";
 
-export function EntityProfileView({
+export async function EntityProfileView({
   profile, years, year,
 }: {
   profile: EntityProfile;
@@ -20,7 +20,7 @@ export function EntityProfileView({
     donationsGivenTotal, paymentsReceivedTotal, sanctions,
   } = profile;
   const basePath = isCompany ? `/cnpj/${cpfCnpj}` : `/cpf/${cpfCnpj}`;
-  const companyEarmarks = isCompany ? getCompanyEarmarks(cpfCnpj) : null;
+  const companyEarmarks = isCompany ? await getCompanyEarmarks(cpfCnpj) : null;
 
   const formattedId = isCompany ? formatCnpj(cpfCnpj) : formatCpf(cpfCnpj);
   const kindLabel: Record<string, string> = {

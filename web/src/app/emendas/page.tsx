@@ -13,7 +13,7 @@ export default async function EmendasPage({ searchParams }: PageProps<"/emendas"
   const q = typeof sp.q === "string" ? sp.q : "";
   const page = Math.max(1, Number(sp.page) || 1);
 
-  const { rows, total } = getEarmarkPayments({ page, q, order: "desc" });
+  const { rows, total } = await getEarmarkPayments({ page, q, order: "desc" });
   const totalPages = Math.max(1, Math.ceil(total / EARMARK_PAGE_SIZE));
 
   const hrefFor = (p: Record<string, string | undefined>) => {

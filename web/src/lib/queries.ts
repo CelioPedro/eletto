@@ -63,7 +63,7 @@ export type SearchResult =
       canonicalName: string;
     };
 
-export function searchPeople(rawQuery: string, limit = 25): SearchResult[] {
+export async function searchPeople(rawQuery: string, limit = 25): Promise<SearchResult[]> {
   const query = rawQuery.trim();
   if (query.length < 2) return [];
 
@@ -75,7 +75,7 @@ export function searchPeople(rawQuery: string, limit = 25): SearchResult[] {
     WITH matches AS (
       SELECT id, canonical_name, cpf, cpf_trusted
       FROM people
-      WHERE ${looksLikeCpf ? "cpf LIKE ?" : "canonical_name LIKE ?"}
+      WHERE ${looksLikeCpf ? "cpf LIKE ?" : "canonical_name ILIKE ?"}
       LIMIT ?
     )
     SELECT
@@ -93,10 +93,11 @@ export function searchPeople(rawQuery: string, limit = 25): SearchResult[] {
     )
     ORDER BY l.year DESC
   `;
-  const pattern = looksLikeCpf ? `${digits}%` : `%${normalizeName(query)}%`;
-  const candidateRows = (db().prepare(sql).all(pattern, limit * 4) as Array<Record<string, unknown>>)
+  const words = normalizeName(query).split(/\s+/).filter(Boolean);
+  const pattern = looksLikeCpf ? `${digits}%` : `%${words.join("%")}%`;
+  const candidateRows = (await db().prepare(sql).all(pattern, limit * 4) as Array<Record<string, unknown>>)
     .slice(0, limit);
-  const candidatePhotoUrls = batchPhotoUrls(candidateRows.map((r) => r.personId as number));
+  const candidatePhotoUrls = await batchPhotoUrls(candidateRows.map((r) => r.personId as number));
   const candidates: SearchResult[] = candidateRows.map((r) => ({
     kind: "candidato",
     personId: r.personId as number,
@@ -119,8 +120,7 @@ export function searchPeople(rawQuery: string, limit = 25): SearchResult[] {
   let personRows: Array<{ cpf: string; name: string | null }>;
   if (looksLikeCpf) {
     const cpfPattern = `${digits}%`;
-    personRows = db()
-      .prepare(
+    personRows = await db().prepare(
         `WITH matches AS (
            SELECT donor_cpf_cnpj AS cpf, donor_name AS name FROM campaign_donation
            WHERE donor_company_id IS NULL AND donor_cpf_cnpj IS NOT NULL AND length(donor_cpf_cnpj) = 11
@@ -133,17 +133,11 @@ export function searchPeople(rawQuery: string, limit = 25): SearchResult[] {
          SELECT cpf, max(name) AS name FROM matches GROUP BY cpf LIMIT ?`
       )
       .all(cpfPattern, cpfPattern, remaining * 2) as typeof personRows;
-  } else if (hasTable("pessoa_fisica_search")) {
-    const ftsQuery = normalizeName(query)
-      .split(" ")
-      .filter(Boolean)
-      .map((tok) => `"${tok.replace(/"/g, '""')}"*`)
-      .join(" ");
-    personRows = ftsQuery
-      ? (db()
-          .prepare("SELECT cpf, name FROM pessoa_fisica_search WHERE pessoa_fisica_search MATCH ? LIMIT ?")
-          .all(ftsQuery, remaining * 2) as typeof personRows)
-      : [];
+  } else if (await hasTable("pessoa_fisica_search")) {
+    const pattern = `%${normalizeName(query)}%`;
+    personRows = await db()
+      .prepare("SELECT cpf, name FROM pessoa_fisica_search WHERE name ILIKE ? LIMIT ?")
+      .all(pattern, remaining * 2) as typeof personRows;
   } else {
     personRows = [];
   }
@@ -242,7 +236,7 @@ export type CycleNode = {
 // The rule explanation is the only complete ordered record of cycle members (signal_actor drops some)
 const CYCLE_CHAIN_RE = /(\d{11}|\d{14}) \(([^)]*)\)/g;
 
-function parseCycleChain(explanation: string): CycleNode[] {
+async function parseCycleChain(explanation: string): Promise<CycleNode[]> {
   const parsed = Array.from(explanation.matchAll(CYCLE_CHAIN_RE)).map(([, cpfCnpj, label]) => ({
     cpfCnpj,
     label: label === "sem nome" ? "sem nome" : label,
@@ -253,39 +247,38 @@ function parseCycleChain(explanation: string): CycleNode[] {
   const cpfs = parsed.filter((n) => n.type === "person").map((n) => n.cpfCnpj);
   if (cpfs.length > 0) {
     const placeholders = cpfs.map(() => "?").join(", ");
-    const rows = db()
-      .prepare(`SELECT id, cpf FROM people WHERE cpf IN (${placeholders})`)
+    const rows = await db().prepare(`SELECT id, cpf FROM people WHERE cpf IN (${placeholders})`)
       .all(...cpfs) as Array<{ id: number; cpf: string }>;
     const byCpf = new Map(rows.map((r) => [r.cpf, r.id]));
     for (const n of parsed) n.personId = byCpf.get(n.cpfCnpj) ?? null;
-    const photoUrls = batchPhotoUrls(parsed.map((n) => n.personId).filter((id): id is number => id != null));
+    const photoUrls = await batchPhotoUrls(parsed.map((n) => n.personId).filter((id): id is number => id != null));
     for (const n of parsed) if (n.personId != null) n.photoUrl = photoUrls.get(n.personId) ?? null;
   }
   return parsed;
 }
 
 // Per-edge amounts aren't stored on the signal; re-derive them from donations/expenses
-export function getCycleEdgeAmounts(nodes: CycleNode[]): number[] {
+export async function getCycleEdgeAmounts(nodes: CycleNode[]): Promise<number[]> {
   const n = nodes.length;
   if (n < 2) return [];
-  const donationStmt = db().prepare(
+  const donationSql =
     `SELECT coalesce(sum(d.amount_cents), 0) AS total
      FROM campaign_donation d JOIN campaign_org co ON co.id = d.campaign_org_id
      JOIN people p ON p.id = co.person_id
-     WHERE d.donor_cpf_cnpj = ? AND p.cpf = ?`
-  );
-  const expenseStmt = db().prepare(
+     WHERE d.donor_cpf_cnpj = ? AND p.cpf = ?`;
+  const expenseSql =
     `SELECT coalesce(sum(e.amount_cents), 0) AS total
      FROM campaign_expense e JOIN campaign_org co ON co.id = e.campaign_org_id
      JOIN people p ON p.id = co.person_id
-     WHERE p.cpf = ? AND e.supplier_cpf_cnpj = ?`
+     WHERE p.cpf = ? AND e.supplier_cpf_cnpj = ?`;
+  return await Promise.all(
+    nodes.map(async (from, i) => {
+      const to = nodes[(i + 1) % n];
+      const donationRow = (await db().prepare(donationSql).get(from.cpfCnpj, to.cpfCnpj)) as { total: number } | null;
+      const expenseRow = (await db().prepare(expenseSql).get(from.cpfCnpj, to.cpfCnpj)) as { total: number } | null;
+      return Number(donationRow?.total ?? 0) + Number(expenseRow?.total ?? 0);
+    })
   );
-  return nodes.map((from, i) => {
-    const to = nodes[(i + 1) % n];
-    const donation = (donationStmt.get(from.cpfCnpj, to.cpfCnpj) as { total: number }).total;
-    const expense = (expenseStmt.get(from.cpfCnpj, to.cpfCnpj) as { total: number }).total;
-    return donation + expense;
-  });
 }
 
 export type Signal = {
@@ -318,9 +311,8 @@ export type PersonHeader = {
   provenance: Provenance | null;
 };
 
-export function getPersonHeader(personId: number): PersonHeader | null {
-  const person = db()
-    .prepare(
+export async function getPersonHeader(personId: number): Promise<PersonHeader | null> {
+  const person = await db().prepare(
       `SELECT id, cpf, cpf_trusted AS cpfTrusted, voter_id AS voterId, canonical_name AS canonicalName
        FROM people WHERE id = ?`
     )
@@ -329,8 +321,7 @@ export function getPersonHeader(personId: number): PersonHeader | null {
     | undefined;
   if (!person) return null;
 
-  const latest = db()
-    .prepare(
+  const latest = await db().prepare(
       `SELECT t.year, t.office, t.party_abbr AS partyAbbr, t.state, ${PROVENANCE_COLUMNS}
        FROM politician_history t
        ${PROVENANCE_JOIN}
@@ -340,11 +331,10 @@ export function getPersonHeader(personId: number): PersonHeader | null {
     .get(personId) as (Record<string, unknown> & { year: number; office: string | null; partyAbbr: string | null; state: string | null }) | undefined;
 
   const candidacyCount = (
-    db().prepare("SELECT count(*) AS n FROM politician_history WHERE person_id = ?").get(personId) as { n: number }
+    await db().prepare("SELECT count(*) AS n FROM politician_history WHERE person_id = ?").get(personId) as { n: number }
   ).n;
   const signalsCount = (
-    db()
-      .prepare("SELECT count(DISTINCT signal_id) AS n FROM signal_actor WHERE type = 'person' AND actor_id = ?")
+    await db().prepare("SELECT count(DISTINCT signal_id) AS n FROM signal_actor WHERE type = 'person' AND actor_id = ?")
       .get(personId) as { n: number }
   ).n;
 
@@ -363,18 +353,16 @@ export function getPersonHeader(personId: number): PersonHeader | null {
   };
 }
 
-export function getPersonPhotoUrl(personId: number): string | null {
-  if (!hasTable("candidate_photo")) return null;
-  const row = db()
-    .prepare(`SELECT photo_url AS photoUrl FROM candidate_photo WHERE person_id = ? ORDER BY year DESC LIMIT 1`)
+export async function getPersonPhotoUrl(personId: number): Promise<string | null> {
+  if (!await hasTable("candidate_photo")) return null;
+  const row = await db().prepare(`SELECT photo_url AS photoUrl FROM candidate_photo WHERE person_id = ? ORDER BY year DESC LIMIT 1`)
     .get(personId) as { photoUrl: string } | undefined;
   return row?.photoUrl ?? null;
 }
 
-export function getPersonPhotoProvenance(personId: number): Provenance | null {
-  if (!hasTable("candidate_photo")) return null;
-  const row = db()
-    .prepare(
+export async function getPersonPhotoProvenance(personId: number): Promise<Provenance | null> {
+  if (!await hasTable("candidate_photo")) return null;
+  const row = await db().prepare(
       `SELECT ${PROVENANCE_COLUMNS} FROM candidate_photo t ${PROVENANCE_JOIN}
        WHERE t.person_id = ? ORDER BY t.year DESC LIMIT 1`
     )
@@ -382,24 +370,32 @@ export function getPersonPhotoProvenance(personId: number): Provenance | null {
   return row ? pickProvenance(row) : null;
 }
 
-function batchPhotoUrls(personIds: number[]): Map<number, string> {
+function chunkArray<T>(items: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    chunks.push(items.slice(i, i + size));
+  }
+  return chunks;
+}
+
+async function batchPhotoUrls(personIds: number[]): Promise<Map<number, string>> {
   const out = new Map<number, string>();
   const ids = [...new Set(personIds)];
-  if (ids.length === 0 || !hasTable("candidate_photo")) return out;
-  const placeholders = ids.map(() => "?").join(", ");
-  const rows = db()
-    .prepare(
-      `SELECT person_id AS personId, photo_url AS photoUrl, max(year) AS year
-       FROM candidate_photo WHERE person_id IN (${placeholders}) GROUP BY person_id`
-    )
-    .all(...ids) as Array<{ personId: number; photoUrl: string; year: number }>;
-  for (const r of rows) out.set(r.personId, r.photoUrl);
+  if (ids.length === 0 || !await hasTable("candidate_photo")) return out;
+  for (const chunk of chunkArray(ids, 200)) {
+    const placeholders = chunk.map(() => "?").join(", ");
+    const rows = await db().prepare(
+        `SELECT DISTINCT ON (person_id) person_id AS personId, photo_url AS photoUrl, year
+         FROM candidate_photo WHERE person_id IN (${placeholders}) ORDER BY person_id, year DESC`
+      )
+      .all(...chunk) as Array<{ personId: number; photoUrl: string; year: number }>;
+    for (const r of rows) out.set(r.personId, r.photoUrl);
+  }
   return out;
 }
 
-export function getPersonCandidacies(personId: number): Candidacy[] {
-  const rows = db()
-    .prepare(
+export async function getPersonCandidacies(personId: number): Promise<Candidacy[]> {
+  const rows = await db().prepare(
       `SELECT t.id, t.year, t.election_type AS electionType, t.round,
               t.office, t.candidate_number AS candidateNumber,
               t.party_abbr AS partyAbbr, t.party_name AS partyName, t.state,
@@ -446,9 +442,8 @@ export function getPersonCandidacies(personId: number): Candidacy[] {
   }));
 }
 
-export function getPersonCampaignOrgs(personId: number): CampaignOrg[] {
-  const rows = db()
-    .prepare(
+export async function getPersonCampaignOrgs(personId: number): Promise<CampaignOrg[]> {
+  const rows = await db().prepare(
       `SELECT t.id, t.cnpj, t.year, t.office, t.party_abbr AS partyAbbr, t.state,
               ${PROVENANCE_COLUMNS}
        FROM campaign_org t
@@ -469,9 +464,8 @@ export function getPersonCampaignOrgs(personId: number): CampaignOrg[] {
   }));
 }
 
-export function getPersonSocialMedia(personId: number): SocialMediaLink[] {
-  const rows = db()
-    .prepare(
+export async function getPersonSocialMedia(personId: number): Promise<SocialMediaLink[]> {
+  const rows = await db().prepare(
       `SELECT t.id, t.year, t.platform, t.url, t.state,
               ${PROVENANCE_COLUMNS}
        FROM social_media t
@@ -491,11 +485,10 @@ export function getPersonSocialMedia(personId: number): SocialMediaLink[] {
   }));
 }
 
-export function getPersonAssets(
+export async function getPersonAssets(
   personId: number
-): { declaredAssets: DeclaredAsset[]; declaredAssetsByYear: DeclaredAssetsYearSummary[] } {
-  const rows = db()
-    .prepare(
+): Promise<{ declaredAssets: DeclaredAsset[]; declaredAssetsByYear: DeclaredAssetsYearSummary[] }> {
+  const rows = await db().prepare(
       `SELECT t.id, t.year, t.asset_type AS assetType, t.description,
               t.value_cents AS valueCents, t.source_updated_at AS sourceUpdatedAt,
               ${PROVENANCE_COLUMNS}
@@ -544,14 +537,13 @@ export type ParliamentaryEarmark = {
   provenance: Provenance;
 };
 
-export function getPersonEarmarks(
+export async function getPersonEarmarks(
   personId: number
-): { earmarks: ParliamentaryEarmark[]; totalCommittedCents: number; totalPaidCents: number } {
-  if (!hasTable("parliamentary_earmark")) {
+): Promise<{ earmarks: ParliamentaryEarmark[]; totalCommittedCents: number; totalPaidCents: number }> {
+  if (!await hasTable("parliamentary_earmark")) {
     return { earmarks: [], totalCommittedCents: 0, totalPaidCents: 0 };
   }
-  const rows = db()
-    .prepare(
+  const rows = await db().prepare(
       `SELECT t.id, t.earmark_code AS earmarkCode, t.year, t.earmark_type AS earmarkType,
               t.locality, t.state, t.municipality, t.function_name AS functionName,
               t.action_name AS actionName, t.committed_cents AS committedCents,
@@ -597,10 +589,9 @@ export type CompanyEarmark = {
   municipality: string | null;
 };
 
-export function getCompanyEarmarks(cnpj: string): { earmarks: CompanyEarmark[]; totalCents: number } {
-  if (!hasTable("parliamentary_earmark_beneficiary")) return { earmarks: [], totalCents: 0 };
-  const rows = db()
-    .prepare(
+export async function getCompanyEarmarks(cnpj: string): Promise<{ earmarks: CompanyEarmark[]; totalCents: number }> {
+  if (!await hasTable("parliamentary_earmark_beneficiary")) return { earmarks: [], totalCents: 0 };
+  const rows = await db().prepare(
       // aggregate first, then join one author row per code: earmark_code isn't unique (fan-out)
       `WITH agg AS (
          SELECT earmark_code, sum(amount_cents) AS amountCents, count(*) AS monthsCount,
@@ -651,12 +642,12 @@ export type EarmarkPaymentPage = { rows: EarmarkPaymentRow[]; total: number };
 
 export const EARMARK_PAGE_SIZE = 50;
 
-export function getEarmarkPayments(opts: {
+export async function getEarmarkPayments(opts: {
   page?: number;
   q?: string;
   order?: "asc" | "desc";
-}): EarmarkPaymentPage {
-  if (!hasTable("parliamentary_earmark_beneficiary")) return { rows: [], total: 0 };
+}): Promise<EarmarkPaymentPage> {
+  if (!await hasTable("parliamentary_earmark_beneficiary")) return { rows: [], total: 0 };
   const page = Math.max(1, Math.floor(opts.page ?? 1));
   const offset = (page - 1) * EARMARK_PAGE_SIZE;
   const sortDir = opts.order === "asc" ? "ASC" : "DESC";
@@ -680,7 +671,7 @@ export function getEarmarkPayments(opts: {
       WHERE beneficiary_type LIKE 'Pessoa Jur%' AND earmark_code != 'Sem informação'
         AND beneficiary_doc NOT IN (${PASSTHROUGH_CNPJS.map(() => "?").join(", ")})
         AND ${GOV_NAME_PATTERNS.map(() => "beneficiary_name NOT LIKE ?").join(" AND ")}
-      GROUP BY earmark_code, beneficiary_doc
+      GROUP BY earmark_code, beneficiary_doc, beneficiary_name
     ),
     author AS (
       SELECT earmark_code, author_name, author_person_id, year,
@@ -701,15 +692,14 @@ export function getEarmarkPayments(opts: {
 
   const cteArgs = [...PASSTHROUGH_CNPJS, ...GOV_NAME_PATTERNS];
   const total = (
-    db().prepare(`${CTE} SELECT count(*) AS n FROM joined ${where}`).get(...cteArgs, ...qArgs) as { n: number }
+    await db().prepare(`${CTE} SELECT count(*) AS n FROM joined ${where}`).get(...cteArgs, ...qArgs) as { n: number }
   ).n;
-  const rows = db()
-    .prepare(
+  const rows = await db().prepare(
       `${CTE} SELECT * FROM joined ${where} ORDER BY amountCents ${sortDir} LIMIT ? OFFSET ?`
     )
     .all(...cteArgs, ...qArgs, EARMARK_PAGE_SIZE, offset) as Array<Record<string, unknown>>;
 
-  const photoUrls = batchPhotoUrls(
+  const photoUrls = await batchPhotoUrls(
     rows.map((r) => r.authorPersonId as number | null).filter((id): id is number => id != null)
   );
 
@@ -728,36 +718,32 @@ export function getEarmarkPayments(opts: {
   };
 }
 
-export function getPersonFinance(personId: number, year?: number): FinanceSummary {
+export async function getPersonFinance(personId: number, year?: number): Promise<FinanceSummary> {
   const yearClause = year != null ? " AND t.year = ?" : "";
   const yearArgs = year != null ? [year] : [];
 
-  const donationsAgg = db()
-    .prepare(
+  const donationsAgg = await db().prepare(
       `SELECT count(*) AS n, coalesce(sum(t.amount_cents), 0) AS total
        FROM campaign_donation t JOIN campaign_org co ON co.id = t.campaign_org_id
        WHERE co.person_id = ?${yearClause}`
     )
     .get(personId, ...yearArgs) as { n: number; total: number };
 
-  const expensesAgg = db()
-    .prepare(
+  const expensesAgg = await db().prepare(
       `SELECT count(*) AS n, coalesce(sum(t.amount_cents), 0) AS total
        FROM campaign_expense t JOIN campaign_org co ON co.id = t.campaign_org_id
        WHERE co.person_id = ?${yearClause}`
     )
     .get(personId, ...yearArgs) as { n: number; total: number };
 
-  const electoralFundAgg = db()
-    .prepare(
+  const electoralFundAgg = await db().prepare(
       `SELECT count(*) AS n, coalesce(sum(t.amount_cents), 0) AS total
        FROM campaign_donation t JOIN campaign_org co ON co.id = t.campaign_org_id
        WHERE co.person_id = ? AND t.source IN ('FUNDO ESPECIAL', 'FUNDO PARTIDARIO')${yearClause}`
     )
     .get(personId, ...yearArgs) as { n: number; total: number };
 
-  const paymentsAgg = db()
-    .prepare(
+  const paymentsAgg = await db().prepare(
       `SELECT coalesce(sum(p.amount_cents), 0) AS total
        FROM campaign_expense_payment p
        JOIN campaign_expense ce ON ce.id = p.campaign_expense_id
@@ -777,38 +763,32 @@ export function getPersonFinance(personId: number, year?: number): FinanceSummar
   };
 }
 
-export function getPersonSignals(personId: number): { signals: Signal[]; signalsCount: number } {
-  const signalRows = db()
+export async function getPersonSignals(personId: number, limit = 20): Promise<{ signals: Signal[]; signalsCount: number }> {
+  const signalRows = (await db()
     .prepare(
-      `SELECT s.id, s.type, s.severity, s.explanation, sa.role,
-              rr.rule, rr.rule_version AS ruleVersion,
-              s.amount_cents AS amountCents, s.path_length AS pathLength,
-              ar.verdict AS aiVerdict, ar.confidence AS aiConfidence,
-              ar.explanation AS aiExplanation, ar.model AS aiModel
+      `SELECT s.id, s.type, s.severity, s.explanation, sa.role, rr.rule, rr.rule_version,
+              s.amount_cents AS amountCents, s.path_length AS pathLength
        FROM signal_actor sa
        JOIN signal s ON s.id = sa.signal_id
        JOIN rule_run rr ON rr.id = s.rule_run_id
-       LEFT JOIN signal_ai_review ar ON ar.signal_id = s.id
-         AND ar.reviewed_at = (SELECT max(x.reviewed_at) FROM signal_ai_review x WHERE x.signal_id = s.id)
        WHERE sa.type = 'person' AND sa.actor_id = ?
-       ORDER BY CASE s.severity WHEN 'high' THEN 0 WHEN 'medium' THEN 1 ELSE 2 END,
-                coalesce(s.amount_cents, 0) DESC
-       LIMIT 30`
+       ORDER BY CASE s.severity WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END, coalesce(s.amount_cents, 0) DESC, s.id DESC
+       LIMIT ?`
     )
-    .all(personId) as Array<Record<string, unknown>>;
+    .all(personId, limit)) as Array<Record<string, unknown>>;
 
   const expenseSignalIds = signalRows.filter((r) => r.rule === "disproportionate_expense").map((r) => r.id as number);
   const expenseBySignal = new Map<number, Record<string, unknown>>();
   if (expenseSignalIds.length > 0) {
     const ph = expenseSignalIds.map(() => "?").join(", ");
-    for (const row of db()
+    for (const row of (await db()
       .prepare(
         `SELECT se.signal_id AS signalId, ce.id, ce.description, ce.amount_cents AS amountCents,
                 ce.year, ce.supplier_name AS supplierName
          FROM signal_evidence se JOIN campaign_expense ce ON ce.id = se.record_id
          WHERE se.signal_id IN (${ph}) AND se.table_name = 'campaign_expense'`
       )
-      .all(...expenseSignalIds) as Array<Record<string, unknown>>) {
+      .all(...expenseSignalIds)) as Array<Record<string, unknown>>) {
       expenseBySignal.set(row.signalId as number, row);
     }
   }
@@ -817,7 +797,7 @@ export function getPersonSignals(personId: number): { signals: Signal[]; signals
   const graphIdsBySignal = new Map<number, string[]>();
   if (cycleSignalIds.length > 0) {
     const ph = cycleSignalIds.map(() => "?").join(", ");
-    for (const row of db()
+    for (const row of (await db()
       .prepare(
         `SELECT sa.signal_id AS signalId,
                 CASE WHEN sa.type = 'person' THEN p.cpf ELSE c.cnpj END AS cpfCnpj
@@ -825,9 +805,9 @@ export function getPersonSignals(personId: number): { signals: Signal[]; signals
          LEFT JOIN people p ON sa.type = 'person' AND p.id = sa.actor_id
          LEFT JOIN companies c ON sa.type = 'company' AND c.id = sa.actor_id
          WHERE sa.signal_id IN (${ph})
-         ORDER BY sa.rowid`
+         ORDER BY sa.signal_id, sa.actor_id`
       )
-      .all(...cycleSignalIds) as Array<{ signalId: number; cpfCnpj: string | null }>) {
+      .all(...cycleSignalIds)) as Array<{ signalId: number; cpfCnpj: string | null }>) {
       if (!row.cpfCnpj) continue;
       const ids = graphIdsBySignal.get(row.signalId) ?? [];
       ids.push(row.cpfCnpj);
@@ -836,44 +816,43 @@ export function getPersonSignals(personId: number): { signals: Signal[]; signals
   }
 
   const signalsCount = (
-    db()
+    ((await db()
       .prepare("SELECT count(DISTINCT signal_id) AS n FROM signal_actor WHERE type = 'person' AND actor_id = ?")
-      .get(personId) as { n: number }
-  ).n;
+      .get(personId)) as { n: number } | null)?.n ?? 0
+  );
 
-  return {
-    signals: signalRows.map((r) => {
+  const signals: Signal[] = await Promise.all(
+    signalRows.map(async (r) => {
       const id = r.id as number;
       const expenseRow = expenseBySignal.get(id);
       return {
         id,
         type: r.type as string,
-        severity: r.severity as Signal["severity"],
+        severity: r.severity as "low" | "medium" | "high",
         explanation: r.explanation as string,
         role: r.role as string,
         rule: r.rule as string,
-        ruleVersion: r.ruleVersion as string,
-        expense: expenseRow ? {
-          id: expenseRow.id as number,
-          description: (expenseRow.description as string) ?? null,
-          amountCents: (expenseRow.amountCents as number) ?? 0,
-          year: expenseRow.year as number,
-          supplierName: (expenseRow.supplierName as string) ?? null,
-        } : null,
-        graphIds: graphIdsBySignal.get(id) ?? null,
-        cycleNodes: r.rule === "circular_donations" ? parseCycleChain(r.explanation as string) : null,
-        cycleAmountCents: r.rule === "circular_donations" ? ((r.amountCents as number) ?? null) : null,
-        cyclePathLength: r.rule === "circular_donations" ? ((r.pathLength as number) ?? null) : null,
-        aiReview: r.aiVerdict
+        ruleVersion: r.rule_version as string,
+        expense: expenseRow
           ? {
-              verdict: r.aiVerdict as AiVerdict,
-              confidence: (r.aiConfidence as string) ?? null,
-              explanation: (r.aiExplanation as string) ?? "",
-              model: (r.aiModel as string) ?? "",
+              id: expenseRow.id as number,
+              description: expenseRow.description as string,
+              amountCents: expenseRow.amountCents as number,
+              year: expenseRow.year as number,
+              supplierName: expenseRow.supplierName as string,
             }
           : null,
+        graphIds: graphIdsBySignal.get(id) ?? null,
+        cycleNodes: r.rule === "circular_donations" ? await parseCycleChain(r.explanation as string) : null,
+        cycleAmountCents: r.rule === "circular_donations" ? ((r.amountCents as number) ?? null) : null,
+        cyclePathLength: r.rule === "circular_donations" ? ((r.pathLength as number) ?? null) : null,
+        aiReview: null,
       };
-    }),
+    })
+  );
+
+  return {
+    signals,
     signalsCount,
   };
 }
@@ -888,24 +867,32 @@ export type TopSupplier = {
 
 let cachedExpenseYears: number[] | null = null;
 
-export function getExpenseYears(): number[] {
+export async function getExpenseYears(): Promise<number[]> {
   if (cachedExpenseYears) return cachedExpenseYears;
-  const rows = db()
-    .prepare("SELECT DISTINCT year FROM campaign_expense ORDER BY year DESC")
-    .all() as Array<{ year: number }>;
-  cachedExpenseYears = rows.map((r) => r.year);
-  return cachedExpenseYears;
+  if (!(await hasTable("campaign_expense"))) return [];
+  try {
+    const rows = await db().prepare("SELECT DISTINCT year FROM campaign_expense ORDER BY year DESC")
+      .all() as Array<{ year: number }>;
+    cachedExpenseYears = rows.map((r) => r.year);
+    return cachedExpenseYears;
+  } catch {
+    return [];
+  }
 }
 
 let cachedAssetYears: number[] | null = null;
 
-export function getAssetYears(): number[] {
+export async function getAssetYears(): Promise<number[]> {
   if (cachedAssetYears) return cachedAssetYears;
-  const rows = db()
-    .prepare("SELECT DISTINCT year FROM declared_assets ORDER BY year DESC")
-    .all() as Array<{ year: number }>;
-  cachedAssetYears = rows.map((r) => r.year);
-  return cachedAssetYears;
+  if (!(await hasTable("declared_assets"))) return [];
+  try {
+    const rows = await db().prepare("SELECT DISTINCT year FROM declared_assets ORDER BY year DESC")
+      .all() as Array<{ year: number }>;
+    cachedAssetYears = rows.map((r) => r.year);
+    return cachedAssetYears;
+  } catch {
+    return [];
+  }
 }
 
 export type AssetsRankingRow = {
@@ -922,12 +909,12 @@ export type AssetsRankingRow = {
 
 export type AssetsRankingPage = { rows: AssetsRankingRow[]; total: number };
 
-export function getAssetsRanking(opts: {
+export async function getAssetsRanking(opts: {
   year?: number;
   order?: "asc" | "desc";
   limit?: number;
   offset?: number;
-}): AssetsRankingPage {
+}): Promise<AssetsRankingPage> {
   const limit = opts.limit ?? 50;
   const offset = opts.offset ?? 0;
   const sortDir = opts.order === "asc" ? "ASC" : "DESC";
@@ -945,8 +932,7 @@ export function getAssetsRanking(opts: {
   const yearWhere = opts.year != null ? "WHERE da.year = ? AND da.person_id IS NOT NULL" : "WHERE da.person_id IS NOT NULL";
 
   const total = (
-    db()
-      .prepare(
+    await db().prepare(
         `SELECT count(*) AS n FROM (
            SELECT da.person_id FROM declared_assets da ${latestYearJoin} ${yearWhere}
            GROUP BY da.person_id
@@ -955,14 +941,15 @@ export function getAssetsRanking(opts: {
       .get(...yearArgs) as { n: number }
   ).n;
 
-  const rows = db()
-    .prepare(
+  const rows = await db().prepare(
       `WITH agg AS (
          SELECT da.person_id, count(*) AS assetCount, coalesce(sum(da.value_cents), 0) AS assetTotalCents
          FROM declared_assets da
          ${latestYearJoin}
          ${yearWhere}
          GROUP BY da.person_id
+         ORDER BY assetTotalCents ${sortDir}
+         LIMIT ? OFFSET ?
        )
        SELECT a.person_id AS personId, p.canonical_name AS name, a.assetCount, a.assetTotalCents,
               ph.office, ph.party_abbr AS partyAbbr, ph.state, ph.year
@@ -975,12 +962,11 @@ export function getAssetsRanking(opts: {
          ORDER BY ph2.year DESC, ph2.id DESC
          LIMIT 1
        )
-       ORDER BY a.assetTotalCents ${sortDir}
-       LIMIT ? OFFSET ?`
+       ORDER BY a.assetTotalCents ${sortDir}`
     )
-    .all(...yearArgs, ...yearArgs, limit, offset) as Array<Record<string, unknown>>;
+    .all(...yearArgs, limit, offset, ...yearArgs) as Array<Record<string, unknown>>;
 
-  const photoUrls = batchPhotoUrls(rows.map((r) => r.personId as number));
+  const photoUrls = await batchPhotoUrls(rows.map((r) => r.personId as number));
   return {
     total,
     rows: rows.map((r) => ({
@@ -1015,11 +1001,11 @@ export type AssetsGrowthRow = {
 
 export type AssetsGrowthPage = { rows: AssetsGrowthRow[]; total: number };
 
-export function getAssetsGrowthRanking(opts: {
+export async function getAssetsGrowthRanking(opts: {
   order?: "asc" | "desc";
   limit?: number;
   offset?: number;
-}): AssetsGrowthPage {
+}): Promise<AssetsGrowthPage> {
   const limit = opts.limit ?? 50;
   const offset = opts.offset ?? 0;
   const sortDir = opts.order === "asc" ? "ASC" : "DESC";
@@ -1048,15 +1034,16 @@ export function getAssetsGrowthRanking(opts: {
       FROM bounds b
       JOIN first_total f ON f.person_id = b.person_id
       JOIN last_total l ON l.person_id = b.person_id
+      ORDER BY growthCents ${sortDir}
+      LIMIT ? OFFSET ?
     )
   `;
 
   const total = (
-    db().prepare(`${CTE} SELECT count(*) AS n FROM growth`).get() as { n: number }
+    await db().prepare(`${CTE} SELECT count(*) AS n FROM growth`).get() as { n: number }
   ).n;
 
-  const rows = db()
-    .prepare(
+  const rows = await db().prepare(
       `${CTE}
        SELECT g.person_id AS personId, p.canonical_name AS name, g.firstYear, g.lastYear,
               g.firstCents, g.lastCents, g.growthCents,
@@ -1069,12 +1056,11 @@ export function getAssetsGrowthRanking(opts: {
          ORDER BY ph2.year DESC, ph2.id DESC
          LIMIT 1
        )
-       ORDER BY g.growthCents ${sortDir}
-       LIMIT ? OFFSET ?`
+       ORDER BY g.growthCents ${sortDir}`
     )
     .all(limit, offset) as Array<Record<string, unknown>>;
 
-  const photoUrls = batchPhotoUrls(rows.map((r) => r.personId as number));
+  const photoUrls = await batchPhotoUrls(rows.map((r) => r.personId as number));
   return {
     total,
     rows: rows.map((r) => {
@@ -1098,7 +1084,7 @@ export function getAssetsGrowthRanking(opts: {
   };
 }
 
-export function getTopSuppliers(year: number | null, limit = 10): TopSupplier[] {
+export async function getTopSuppliers(year: number | null, limit = 10): Promise<TopSupplier[]> {
   const sql = `
     SELECT
       supplier_cpf_cnpj AS cnpj,
@@ -1110,11 +1096,11 @@ export function getTopSuppliers(year: number | null, limit = 10): TopSupplier[] 
     WHERE supplier_company_id IS NOT NULL
       ${year != null ? "AND year = ?" : ""}
     GROUP BY supplier_cpf_cnpj
-    ORDER BY totalCents DESC
+    ORDER BY sum(amount_cents) DESC
     LIMIT ?
   `;
   const params = year != null ? [year, limit] : [limit];
-  const rows = db().prepare(sql).all(...params) as Array<Record<string, unknown>>;
+  const rows = await db().prepare(sql).all(...params) as Array<Record<string, unknown>>;
   return rows.map((r) => ({
     cnpj: r.cnpj as string,
     name: (r.name as string) ?? "(nome não disponível)",
@@ -1170,14 +1156,13 @@ export type EntityProfile = {
   sanctions: EntitySanction[];
 };
 
-export function candidatePersonId(cpfCnpj: string): number | null {
+export async function candidatePersonId(cpfCnpj: string): Promise<number | null> {
   const digits = digitsOnly(cpfCnpj);
   if (digits.length !== 11 && digits.length !== 14) return null;
   const row =
     digits.length === 11
-      ? (db().prepare("SELECT id FROM people WHERE cpf = ?").get(digits) as { id: number } | undefined)
-      : (db()
-          .prepare(
+      ? (await db().prepare("SELECT id FROM people WHERE cpf = ?").get(digits) as { id: number } | undefined)
+      : (await db().prepare(
             `SELECT p.id FROM campaign_org co JOIN companies c ON c.id = co.company_id
              JOIN people p ON p.id = co.person_id WHERE c.cnpj = ? LIMIT 1`
           )
@@ -1185,7 +1170,7 @@ export function candidatePersonId(cpfCnpj: string): number | null {
   return row?.id ?? null;
 }
 
-export function getEntityProfile(cpfCnpj: string, opts: { year?: number } = {}): EntityProfile | null {
+export async function getEntityProfile(cpfCnpj: string, opts: { year?: number } = {}): Promise<EntityProfile | null> {
   const { year } = opts;
   const digits = digitsOnly(cpfCnpj);
   if (digits.length !== 11 && digits.length !== 14) return null;
@@ -1198,16 +1183,14 @@ export function getEntityProfile(cpfCnpj: string, opts: { year?: number } = {}):
   let partners: CompanyPartner[] = [];
 
   if (isCompany) {
-    const company = db()
-      .prepare("SELECT kind, legal_name FROM companies WHERE cnpj = ?")
+    const company = await db().prepare("SELECT kind, legal_name FROM companies WHERE cnpj = ?")
       .get(digits) as { kind: string | null; legal_name: string | null } | undefined;
     if (company) {
       companyKind = company.kind;
       displayName = company.legal_name;
     }
 
-    const registryRow = db()
-      .prepare(
+    const registryRow = await db().prepare(
         `SELECT t.legal_name AS legalName, t.trade_name AS tradeName, t.opened_at AS openedAt,
                 t.registry_status AS registryStatus, t.legal_nature AS legalNature,
                 t.primary_cnae AS primaryCnae, t.share_capital_cents AS shareCapitalCents,
@@ -1236,16 +1219,14 @@ export function getEntityProfile(cpfCnpj: string, opts: { year?: number } = {}):
     }
 
     partners = (
-      db()
-        .prepare(
+      await db().prepare(
           `SELECT id, partner_name AS partnerName, role, entry_date AS entryDate
            FROM company_partner WHERE cnpj = ? ORDER BY entry_date DESC`
         )
         .all(digits) as Array<{ id: number; partnerName: string; role: string | null; entryDate: string | null }>
     ).map((p) => ({ id: p.id, partnerName: p.partnerName, role: p.role, entryDate: p.entryDate }));
   } else {
-    const person = db()
-      .prepare("SELECT id, canonical_name FROM people WHERE cpf = ?")
+    const person = await db().prepare("SELECT id, canonical_name FROM people WHERE cpf = ?")
       .get(digits) as { id: number; canonical_name: string | null } | undefined;
     if (person) {
       personId = person.id;
@@ -1256,15 +1237,13 @@ export function getEntityProfile(cpfCnpj: string, opts: { year?: number } = {}):
   const entityYearClause = year != null ? " AND year = ?" : "";
   const entityYearArgs = year != null ? [year] : [];
 
-  const donationsAgg = db()
-    .prepare(
+  const donationsAgg = await db().prepare(
       `SELECT count(*) AS n, coalesce(sum(amount_cents), 0) AS total
        FROM campaign_donation WHERE donor_cpf_cnpj = ?${entityYearClause}`
     )
     .get(digits, ...entityYearArgs) as { n: number; total: number };
 
-  const paymentsAgg = db()
-    .prepare(
+  const paymentsAgg = await db().prepare(
       `SELECT count(*) AS n, coalesce(sum(amount_cents), 0) AS total
        FROM campaign_expense WHERE supplier_cpf_cnpj = ?${entityYearClause}`
     )
@@ -1272,18 +1251,16 @@ export function getEntityProfile(cpfCnpj: string, opts: { year?: number } = {}):
 
   // year filter not applied: activity in another year still makes a real page
   if (personId === null && companyKind === null && registry === null) {
-    const hasDonation = db().prepare("SELECT 1 FROM campaign_donation WHERE donor_cpf_cnpj = ? LIMIT 1").get(digits);
-    const hasPayment = db().prepare("SELECT 1 FROM campaign_expense WHERE supplier_cpf_cnpj = ? LIMIT 1").get(digits);
+    const hasDonation = await db().prepare("SELECT 1 FROM campaign_donation WHERE donor_cpf_cnpj = ? LIMIT 1").get(digits);
+    const hasPayment = await db().prepare("SELECT 1 FROM campaign_expense WHERE supplier_cpf_cnpj = ? LIMIT 1").get(digits);
     if (!hasDonation && !hasPayment) {
-      const hasSanction = db()
-        .prepare("SELECT 1 FROM sanction WHERE cpf_cnpj = ? LIMIT 1")
+      const hasSanction = await db().prepare("SELECT 1 FROM sanction WHERE cpf_cnpj = ? LIMIT 1")
         .get(digits);
       if (!hasSanction) return null;
     }
   }
 
-  const sanctionRows = db()
-    .prepare(
+  const sanctionRows = await db().prepare(
       `SELECT t.id, t.registry, t.category, t.fine_amount_cents AS fineAmountCents,
               t.start_date AS startDate, t.end_date AS endDate,
               t.sanctioning_agency AS sanctioningAgency, t.agency_sphere AS agencySphere,
@@ -1366,7 +1343,7 @@ const FINANCE_SORT_COL: Record<FinanceSort, string> = {
   name: "counterpartyName",
 };
 
-export function getFinancePage(params: FinanceQuery): FinancePage {
+export async function getFinancePage(params: FinanceQuery): Promise<FinancePage> {
   const page = Math.max(1, Math.floor(params.page ?? 1));
   const offset = (page - 1) * FINANCE_PAGE_SIZE;
   const q = params.q?.trim() ?? "";
@@ -1381,7 +1358,7 @@ export function getFinancePage(params: FinanceQuery): FinancePage {
   const args: unknown[] = [];
 
   // politician-owned: a company partner is also a candidate; table may be missing in older DBs
-  const politicianOwnedExists = hasTable("candidate_supplier_partner")
+  const politicianOwnedExists = await hasTable("candidate_supplier_partner")
     ? `EXISTS (SELECT 1 FROM candidate_supplier_partner csp JOIN companies comp ON comp.id = csp.company_id WHERE comp.cnpj = %CNPJ_COL%)`
     : "0";
   let politicianOwnedExpr = "0";
@@ -1463,17 +1440,16 @@ export function getFinancePage(params: FinanceQuery): FinancePage {
 
   // from/select/where are fixed literals; user values are bound parameters
   const total = (
-    db().prepare(`SELECT count(*) AS n FROM ${from} WHERE ${where}`).get(...args) as { n: number }
+    await db().prepare(`SELECT count(*) AS n FROM ${from} WHERE ${where}`).get(...args) as { n: number }
   ).n;
-  const rows = db()
-    .prepare(
+  const rows = await db().prepare(
       `SELECT ${select} FROM ${from} WHERE ${where}
-       ORDER BY (${sortCol} IS NULL), ${sortCol} ${sortDir}, t.id ${sortDir}
+       ORDER BY ${sortCol} ${sortDir} NULLS LAST, t.id ${sortDir}
        LIMIT ? OFFSET ?`
     )
     .all(...args, FINANCE_PAGE_SIZE, offset) as Array<Record<string, unknown>>;
 
-  const photoUrls = batchPhotoUrls(
+  const photoUrls = await batchPhotoUrls(
     rows.map((r) => r.counterpartyPersonId as number | null).filter((id): id is number => id != null)
   );
 
@@ -1507,20 +1483,19 @@ export type GraphSearchResult = {
   sublabel: string | null;
 };
 
-export function searchEntities(rawQuery: string, limit = 15): GraphSearchResult[] {
+export async function searchEntities(rawQuery: string, limit = 15): Promise<GraphSearchResult[]> {
   const query = rawQuery.trim();
   if (query.length < 2) return [];
   const digits = digitsOnly(query);
 
   if (digits.length === 11 || digits.length === 14) {
-    const ident = getGraphIdentity([digits]).get(digits);
+    const ident = (await getGraphIdentity([digits])).get(digits);
     if (ident && ident.canonical !== digits) {
       return [{ type: "person", cpfCnpj: ident.canonical, label: ident.name ?? ident.canonical, sublabel: "político" }];
     }
     const isCompany = digits.length === 14;
     if (isCompany) {
-      const row = db()
-        .prepare(
+      const row = await db().prepare(
           `SELECT c.cnpj, coalesce(cr.legal_name, c.legal_name) AS name, c.kind
            FROM companies c LEFT JOIN company_registry cr ON cr.company_id = c.id
            WHERE c.cnpj = ?`
@@ -1532,8 +1507,7 @@ export function searchEntities(rawQuery: string, limit = 15): GraphSearchResult[
       }
       return [{ type: "company", cpfCnpj: digits, label: formatCnpjLocal(digits), sublabel: null }];
     }
-    const row = db()
-      .prepare("SELECT cpf, canonical_name FROM people WHERE cpf = ?")
+    const row = await db().prepare("SELECT cpf, canonical_name FROM people WHERE cpf = ?")
       .get(digits) as { cpf: string; canonical_name: string | null } | undefined;
     if (row) {
       return [{ type: "person", cpfCnpj: row.cpf, label: row.canonical_name ?? digits, sublabel: null }];
@@ -1541,18 +1515,17 @@ export function searchEntities(rawQuery: string, limit = 15): GraphSearchResult[
     return [{ type: "person", cpfCnpj: digits, label: digits, sublabel: null }];
   }
 
-  const pattern = `%${normalizeName(query)}%`;
-  const people = db()
-    .prepare(
+  const words = normalizeName(query).split(/\s+/).filter(Boolean);
+  const pattern = `%${words.join("%")}%`;
+  const people = await db().prepare(
       `SELECT cpf, canonical_name FROM people
-       WHERE canonical_name LIKE ? AND cpf IS NOT NULL LIMIT ?`
+       WHERE canonical_name ILIKE ? AND cpf IS NOT NULL LIMIT ?`
     )
     .all(pattern, limit) as Array<{ cpf: string; canonical_name: string | null }>;
-  const companies = db()
-    .prepare(
+  const companies = await db().prepare(
       `SELECT c.cnpj, coalesce(cr.legal_name, c.legal_name) AS name
        FROM companies c LEFT JOIN company_registry cr ON cr.company_id = c.id
-       WHERE coalesce(cr.legal_name, c.legal_name) LIKE ? LIMIT ?`
+       WHERE coalesce(cr.legal_name, c.legal_name) ILIKE ? LIMIT ?`
     )
     .all(pattern, limit) as Array<{ cnpj: string; name: string | null }>;
 
@@ -1595,44 +1568,48 @@ export type GraphEdge = {
   count: number;
 };
 
-function lookupNodes(
+async function lookupNodes(
   rawIds: string[],
   edges: Array<{ source: string; target: string; kind: GraphEdgeKind }> = []
-): Map<string, GraphNodeInfo> {
+): Promise<Map<string, GraphNodeInfo>> {
   const clean = rawIds.filter((id): id is string => typeof id === "string" && id.length > 0);
-  const placeholders = clean.map(() => "?").join(", ");
   const nodeById = new Map<string, GraphNodeInfo>();
   if (clean.length === 0) return nodeById;
 
-  // Only people who ran for office have a `people` row, so presence there marks a politician
-  const people = db()
-    .prepare(`SELECT id, cpf, canonical_name FROM people WHERE cpf IN (${placeholders})`)
-    .all(...clean) as Array<{ id: number; cpf: string; canonical_name: string | null }>;
-  const companies = db()
-    .prepare(
-      `SELECT c.cnpj, c.kind, coalesce(cr.legal_name, c.legal_name) AS name,
-              cr.registry_status AS registryStatus
-       FROM companies c LEFT JOIN company_registry cr ON cr.company_id = c.id
-       WHERE c.cnpj IN (${placeholders})`
-    )
-    .all(...clean) as Array<{ cnpj: string; kind: string | null; name: string | null; registryStatus: string | null }>;
-  const sanctioned = new Set(
-    (
-      db()
-        .prepare(`SELECT DISTINCT cpf_cnpj FROM sanction WHERE cpf_cnpj IN (${placeholders})`)
-        .all(...clean) as Array<{ cpf_cnpj: string }>
-    ).map((r) => r.cpf_cnpj)
-  );
-  // A campaign committee CNPJ resolves to its candidate; fallback for raw CNPJs reaching here
+  const people: Array<{ id: number; cpf: string; canonical_name: string | null }> = [];
+  const companies: Array<{ cnpj: string; kind: string | null; name: string | null; registryStatus: string | null }> = [];
+  const sanctioned = new Set<string>();
   const committeeOwner = new Map<string, { name: string | null; personId: number }>();
-  for (const r of db()
-    .prepare(
-      `SELECT DISTINCT c.cnpj, p.canonical_name AS name, p.id AS personId FROM campaign_org co
-       JOIN companies c ON c.id = co.company_id JOIN people p ON p.id = co.person_id
-       WHERE c.cnpj IN (${placeholders})`
-    )
-    .all(...clean) as Array<{ cnpj: string; name: string | null; personId: number }>) {
-    if (!committeeOwner.has(r.cnpj)) committeeOwner.set(r.cnpj, { name: r.name, personId: r.personId });
+
+  for (const chunk of chunkArray(clean, 200)) {
+    const placeholders = chunk.map(() => "?").join(", ");
+    // Only people who ran for office have a `people` row, so presence there marks a politician
+    const pRows = await db().prepare(`SELECT id, cpf, canonical_name FROM people WHERE cpf IN (${placeholders})`)
+      .all(...chunk) as Array<{ id: number; cpf: string; canonical_name: string | null }>;
+    people.push(...pRows);
+
+    const cRows = await db().prepare(
+        `SELECT c.cnpj, c.kind, coalesce(cr.legal_name, c.legal_name) AS name,
+                cr.registry_status AS registryStatus
+         FROM companies c LEFT JOIN company_registry cr ON cr.company_id = c.id
+         WHERE c.cnpj IN (${placeholders})`
+      )
+      .all(...chunk) as Array<{ cnpj: string; kind: string | null; name: string | null; registryStatus: string | null }>;
+    companies.push(...cRows);
+
+    const sRows = await db().prepare(`SELECT DISTINCT cpf_cnpj FROM sanction WHERE cpf_cnpj IN (${placeholders})`)
+      .all(...chunk) as Array<{ cpf_cnpj: string }>;
+    for (const s of sRows) sanctioned.add(s.cpf_cnpj);
+
+    const coRows = await db().prepare(
+        `SELECT DISTINCT c.cnpj, p.canonical_name AS name, p.id AS personId FROM campaign_org co
+         JOIN companies c ON c.id = co.company_id JOIN people p ON p.id = co.person_id
+         WHERE c.cnpj IN (${placeholders})`
+      )
+      .all(...chunk) as Array<{ cnpj: string; name: string | null; personId: number }>;
+    for (const r of coRows) {
+      if (!committeeOwner.has(r.cnpj)) committeeOwner.set(r.cnpj, { name: r.name, personId: r.personId });
+    }
   }
 
   for (const id of clean) {
@@ -1681,7 +1658,7 @@ function lookupNodes(
   for (const n of nodeById.values()) {
     if (n.sanctioned) n.kind = "sanctioned";
   }
-  const photoUrls = batchPhotoUrls([...nodeById.values()].map((n) => n.personId).filter((id): id is number => id != null));
+  const photoUrls = await batchPhotoUrls([...nodeById.values()].map((n) => n.personId).filter((id): id is number => id != null));
   for (const n of nodeById.values()) {
     if (n.personId != null) n.photoUrl = photoUrls.get(n.personId) ?? null;
   }
@@ -1698,7 +1675,7 @@ type IncidentRow = {
   anchorIsSource: 0 | 1;
 };
 
-function incidentEdges(anchorIds: string[]): IncidentRow[] {
+async function incidentEdges(anchorIds: string[]): Promise<IncidentRow[]> {
   if (anchorIds.length === 0) return [];
   const ph = anchorIds.map(() => "?").join(", ");
   const sql = `
@@ -1732,44 +1709,45 @@ function incidentEdges(anchorIds: string[]): IncidentRow[] {
   `;
   const params: string[] = [];
   for (let i = 0; i < 4; i++) params.push(...anchorIds);
-  return db().prepare(sql).all(...params) as IncidentRow[];
+  return await db().prepare(sql).all(...params) as IncidentRow[];
 }
 
 type GraphIdentity = { canonical: string; name: string | null; aliases: string[] };
 
-function getGraphIdentity(ids: string[]): Map<string, GraphIdentity> {
+async function getGraphIdentity(ids: string[]): Promise<Map<string, GraphIdentity>> {
   const out = new Map<string, GraphIdentity>();
   const clean = [...new Set(ids.map(digitsOnly).filter((d) => d.length === 11 || d.length === 14))];
   if (clean.length === 0) return out;
-  const ph = clean.map(() => "?").join(", ");
-
   const cnpjOwner = new Map<string, string>();
-  for (const r of db()
-    .prepare(
-      `SELECT DISTINCT c.cnpj, p.cpf FROM campaign_org co
-       JOIN companies c ON c.id = co.company_id JOIN people p ON p.id = co.person_id
-       WHERE c.cnpj IN (${ph}) AND p.cpf IS NOT NULL`
-    )
-    .all(...clean) as Array<{ cnpj: string; cpf: string }>) {
-    if (!cnpjOwner.has(r.cnpj)) cnpjOwner.set(r.cnpj, r.cpf);
+  for (const chunk of chunkArray(clean, 200)) {
+    const ph = chunk.map(() => "?").join(", ");
+    for (const r of await db().prepare(
+        `SELECT DISTINCT c.cnpj, p.cpf FROM campaign_org co
+         JOIN companies c ON c.id = co.company_id JOIN people p ON p.id = co.person_id
+         WHERE c.cnpj IN (${ph}) AND p.cpf IS NOT NULL`
+      )
+      .all(...chunk) as Array<{ cnpj: string; cpf: string }>) {
+      if (!cnpjOwner.has(r.cnpj)) cnpjOwner.set(r.cnpj, r.cpf);
+    }
   }
 
   const cpfs = [...new Set([...clean.filter((d) => d.length === 11), ...cnpjOwner.values()])];
   const byCpf = new Map<string, { name: string | null; cnpjs: Set<string> }>();
   if (cpfs.length > 0) {
-    const cph = cpfs.map(() => "?").join(", ");
-    for (const r of db()
-      .prepare(
-        `SELECT p.cpf, p.canonical_name AS name, c.cnpj
-         FROM people p
-         LEFT JOIN campaign_org co ON co.person_id = p.id
-         LEFT JOIN companies c ON c.id = co.company_id
-         WHERE p.cpf IN (${cph})`
-      )
-      .all(...cpfs) as Array<{ cpf: string; name: string | null; cnpj: string | null }>) {
-      const rec = byCpf.get(r.cpf) ?? { name: r.name, cnpjs: new Set<string>() };
-      if (r.cnpj) rec.cnpjs.add(r.cnpj);
-      byCpf.set(r.cpf, rec);
+    for (const chunk of chunkArray(cpfs, 200)) {
+      const cph = chunk.map(() => "?").join(", ");
+      for (const r of await db().prepare(
+          `SELECT p.cpf, p.canonical_name AS name, c.cnpj
+           FROM people p
+           LEFT JOIN campaign_org co ON co.person_id = p.id
+           LEFT JOIN companies c ON c.id = co.company_id
+           WHERE p.cpf IN (${cph})`
+        )
+        .all(...chunk) as Array<{ cpf: string; name: string | null; cnpj: string | null }>) {
+        const rec = byCpf.get(r.cpf) ?? { name: r.name, cnpjs: new Set<string>() };
+        if (r.cnpj) rec.cnpjs.add(r.cnpj);
+        byCpf.set(r.cpf, rec);
+      }
     }
   }
 
@@ -1789,20 +1767,23 @@ function getGraphIdentity(ids: string[]): Map<string, GraphIdentity> {
 }
 
 function incidentToEdge(r: IncidentRow): GraphEdge {
-  const [source, target] = r.anchorIsSource ? [r.anchor, r.other] : [r.other, r.anchor];
-  return { source, target, kind: r.kind, amountCents: r.amountCents, count: r.n };
+  const isSource = Boolean(r.anchorIsSource ?? (r as unknown as Record<string, unknown>).anchorissource);
+  const [source, target] = isSource ? [r.anchor, r.other] : [r.other, r.anchor];
+  const amountCents = Number(r.amountCents ?? (r as unknown as Record<string, unknown>).amountcents ?? 0);
+  const count = Number(r.n ?? (r as unknown as Record<string, unknown>).count ?? 1);
+  return { source, target, kind: r.kind, amountCents, count };
 }
 
-export function getGraphPaths(
+export async function getGraphPaths(
   newIdRaw: string, existingIdsRaw: string[]
-): { nodes: GraphNodeInfo[]; edges: GraphEdge[] } {
+): Promise<{ nodes: GraphNodeInfo[]; edges: GraphEdge[] }> {
   const newDigits = digitsOnly(newIdRaw);
   if (newDigits.length !== 11 && newDigits.length !== 14) return { nodes: [], edges: [] };
   const existingDigits = [
     ...new Set(existingIdsRaw.map(digitsOnly).filter((d) => d.length === 11 || d.length === 14)),
   ];
 
-  const idents = getGraphIdentity([newDigits, ...existingDigits]);
+  const idents = await getGraphIdentity([newDigits, ...existingDigits]);
   const canon = (raw: string) => idents.get(raw)?.canonical ?? raw;
   const newId = canon(newDigits);
   const existing = [...new Set(existingDigits.map(canon).filter((d) => d !== newId))];
@@ -1814,14 +1795,37 @@ export function getGraphPaths(
   for (const [c, aliases] of canonToAliases) for (const a of aliases) aliasToCanon.set(a, c);
   const anchorAliases = [...new Set([newId, ...existing].flatMap((c) => canonToAliases.get(c) ?? [c]))];
 
-  const rawRows = incidentEdges(anchorAliases);
-  const otherIdents = getGraphIdentity([...new Set(rawRows.map((r) => r.other))]);
-  const rows: IncidentRow[] = rawRows
-    .map((r) => ({
-      ...r,
-      anchor: aliasToCanon.get(r.anchor) ?? r.anchor,
-      other: otherIdents.get(r.other)?.canonical ?? r.other,
-    }))
+  const rawRows = await incidentEdges(anchorAliases);
+  let candidateRows = rawRows;
+  if (rawRows.length > 500) {
+    const newAliases = new Set(idents.get(newDigits)?.aliases ?? [newDigits]);
+    const fromNewOthers = new Set<string>();
+    const fromExistingOthers = new Set<string>();
+    const anchorAliasSet = new Set(anchorAliases);
+    for (const r of rawRows) {
+      if (newAliases.has(r.anchor)) fromNewOthers.add(r.other);
+      else fromExistingOthers.add(r.other);
+    }
+    candidateRows = rawRows.filter(
+      (r) => anchorAliasSet.has(r.other) || (fromNewOthers.has(r.other) && fromExistingOthers.has(r.other))
+    );
+  }
+
+  const otherIdents = await getGraphIdentity([...new Set(candidateRows.map((r) => r.other))]);
+  const rows: IncidentRow[] = candidateRows
+    .map((r) => {
+      const anchorIsSource = (Boolean(r.anchorIsSource ?? (r as unknown as Record<string, unknown>).anchorissource) ? 1 : 0) as 0 | 1;
+      const amountCents = Number(r.amountCents ?? (r as unknown as Record<string, unknown>).amountcents ?? 0);
+      const n = Number(r.n ?? 1);
+      return {
+        ...r,
+        anchor: aliasToCanon.get(r.anchor) ?? r.anchor,
+        other: otherIdents.get(r.other)?.canonical ?? r.other,
+        anchorIsSource,
+        amountCents,
+        n,
+      };
+    })
     .filter((r) => r.anchor !== r.other);
 
   // Arrays, not one row: A->B donation plus B->A payment forms a 2-node cycle
@@ -1840,17 +1844,29 @@ export function getGraphPaths(
   for (const e of existing) {
     for (const r of fromNew.get(e) ?? []) edges.push(incidentToEdge(r));
   }
+  // Rank connector intermediaries by total volume to keep the graph responsive
+  const connectorTotals = new Map<string, number>();
   for (const [m, nEdges] of fromNew) {
     if (onCanvas.has(m)) continue;
     const eEdges = fromExisting.get(m);
     if (!eEdges || eEdges.length === 0) continue;
+    const total = nEdges.reduce((s, r) => s + r.amountCents, 0) + eEdges.reduce((s, r) => s + r.amountCents, 0);
+    connectorTotals.set(m, total);
+  }
+
+  const topConnectors = [...connectorTotals.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 50)
+    .map(([id]) => id);
+
+  for (const m of topConnectors) {
     connectorIds.add(m);
-    for (const r of nEdges) edges.push(incidentToEdge(r));
-    for (const r of eEdges) edges.push(incidentToEdge(r));
+    for (const r of fromNew.get(m) ?? []) edges.push(incidentToEdge(r));
+    for (const r of fromExisting.get(m) ?? []) edges.push(incidentToEdge(r));
   }
 
   const allIds = [newId, ...existing, ...connectorIds];
-  const nodeById = lookupNodes(allIds, edges);
+  const nodeById = await lookupNodes(allIds, edges);
 
   const seen = new Set<string>();
   const deduped = edges.filter((e) => {
@@ -1862,12 +1878,12 @@ export function getGraphPaths(
   return { nodes: [...nodeById.values()], edges: deduped };
 }
 
-export function resolveGraphNode(cpfCnpj: string): GraphNodeInfo | null {
+export async function resolveGraphNode(cpfCnpj: string): Promise<GraphNodeInfo | null> {
   const digits = digitsOnly(cpfCnpj);
   if (digits.length !== 11 && digits.length !== 14) return null;
-  const ident = getGraphIdentity([digits]).get(digits);
+  const ident = (await getGraphIdentity([digits])).get(digits);
   const canonical = ident?.canonical ?? digits;
-  const node = lookupNodes([canonical]).get(canonical) ?? null;
+  const node = (await lookupNodes([canonical])).get(canonical) ?? null;
   if (node && ident?.name) {
     node.label = ident.name;
     node.kind = "politician";
@@ -1875,19 +1891,48 @@ export function resolveGraphNode(cpfCnpj: string): GraphNodeInfo | null {
   return node;
 }
 
-export function getGraphNodeNetwork(
+export async function getGraphNodeNetwork(
   rawId: string, limit = 400
-): { nodes: GraphNodeInfo[]; edges: GraphEdge[]; truncated: boolean } {
+): Promise<{ nodes: GraphNodeInfo[]; edges: GraphEdge[]; truncated: boolean }> {
   const digits = digitsOnly(rawId);
   if (digits.length !== 11 && digits.length !== 14) return { nodes: [], edges: [], truncated: false };
-  const ident = getGraphIdentity([digits]).get(digits);
+  const ident = (await getGraphIdentity([digits])).get(digits);
   const canonical = ident?.canonical ?? digits;
   const aliases = ident?.aliases ?? [digits];
 
-  const rawRows = incidentEdges(aliases);
-  const otherIdents = getGraphIdentity([...new Set(rawRows.map((r) => r.other))]);
-  const rows: IncidentRow[] = rawRows
-    .map((r) => ({ ...r, anchor: canonical, other: otherIdents.get(r.other)?.canonical ?? r.other }))
+  const rawRows = await incidentEdges(aliases);
+  // Pre-filter candidate connections by total amount if rawRows is large (e.g., 100k+ donors)
+  let candidateRows = rawRows;
+  if (rawRows.length > limit * 3) {
+    const amountByOther = new Map<string, number>();
+    for (const r of rawRows) {
+      const amt = Number(r.amountCents ?? (r as unknown as Record<string, unknown>).amountcents ?? 0);
+      amountByOther.set(r.other, (amountByOther.get(r.other) ?? 0) + amt);
+    }
+    const topOthers = new Set(
+      [...amountByOther.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, limit * 2)
+        .map(([id]) => id)
+    );
+    candidateRows = rawRows.filter((r) => topOthers.has(r.other));
+  }
+
+  const otherIdents = await getGraphIdentity([...new Set(candidateRows.map((r) => r.other))]);
+  const rows: IncidentRow[] = candidateRows
+    .map((r) => {
+      const anchorIsSource = (Boolean(r.anchorIsSource ?? (r as unknown as Record<string, unknown>).anchorissource) ? 1 : 0) as 0 | 1;
+      const amountCents = Number(r.amountCents ?? (r as unknown as Record<string, unknown>).amountcents ?? 0);
+      const n = Number(r.n ?? 1);
+      return {
+        ...r,
+        anchor: canonical,
+        other: otherIdents.get(r.other)?.canonical ?? r.other,
+        anchorIsSource,
+        amountCents,
+        n,
+      };
+    })
     .filter((r) => r.anchor !== r.other);
 
   const merged = new Map<string, IncidentRow>();
@@ -1903,13 +1948,13 @@ export function getGraphNodeNetwork(
   }
 
   let edgeRows = [...merged.values()];
-  const truncated = edgeRows.length > limit;
-  if (truncated) {
+  const truncated = rawRows.length > limit || edgeRows.length > limit;
+  if (edgeRows.length > limit) {
     edgeRows = edgeRows.sort((a, b) => b.amountCents - a.amountCents).slice(0, limit);
   }
   const edges = edgeRows.map(incidentToEdge);
   const allIds = new Set([canonical, ...edges.flatMap((e) => [e.source, e.target])]);
-  const nodeById = lookupNodes([...allIds], edges);
+  const nodeById = await lookupNodes([...allIds], edges);
   if (ident?.name) {
     const n = nodeById.get(canonical);
     if (n) { n.label = ident.name; n.kind = "politician"; }
@@ -1954,39 +1999,49 @@ export type CircularDonationSummary = {
 
 const CIRCULAR_RULE = "circular_donations";
 
-export function getCircularDonationSummary(): CircularDonationSummary {
-  const bySeverity = Object.fromEntries(
-    (
-      db()
-        .prepare(
-          `SELECT s.severity, count(*) AS n FROM signal s
-           JOIN rule_run rr ON rr.id = s.rule_run_id
-           WHERE rr.rule = ? GROUP BY s.severity`
-        )
-        .all(CIRCULAR_RULE) as Array<{ severity: string; n: number }>
-    ).map((r) => [r.severity, r.n])
-  );
-  const total = Object.values(bySeverity).reduce((a, b) => a + b, 0);
-  const lastRun = db()
-    .prepare(
-      `SELECT rule_version AS ruleVersion, params, run_at AS runAt
-       FROM rule_run WHERE rule = ? ORDER BY id DESC LIMIT 1`
-    )
-    .get(CIRCULAR_RULE) as { ruleVersion: string; params: string | null; runAt: string } | undefined;
-  let maxDepth: number | null = null;
-  if (lastRun?.params) {
-    try {
-      maxDepth = (JSON.parse(lastRun.params) as { max_depth?: number }).max_depth ?? null;
-    } catch {
-      maxDepth = null;
-    }
-  }
-  return {
-    total, bySeverity,
-    ruleVersion: lastRun?.ruleVersion ?? null,
-    maxDepth,
-    runAt: lastRun?.runAt ?? null,
+export async function getCircularDonationSummary(): Promise<CircularDonationSummary> {
+  const empty: CircularDonationSummary = {
+    total: 0,
+    bySeverity: {},
+    ruleVersion: null,
+    maxDepth: null,
+    runAt: null,
   };
+  if (!(await hasTable("signal")) || !(await hasTable("rule_run"))) return empty;
+  try {
+    const bySeverity = Object.fromEntries(
+      (
+        await db().prepare(
+            `SELECT s.severity, count(*) AS n FROM signal s
+             JOIN rule_run rr ON rr.id = s.rule_run_id
+             WHERE rr.rule = ? GROUP BY s.severity`
+          )
+          .all(CIRCULAR_RULE) as Array<{ severity: string; n: number }>
+      ).map((r) => [r.severity, r.n])
+    );
+    const total = Object.values(bySeverity).reduce((a, b) => a + b, 0);
+    const lastRun = await db().prepare(
+        `SELECT rule_version AS ruleVersion, params, run_at AS runAt
+         FROM rule_run WHERE rule = ? ORDER BY id DESC LIMIT 1`
+      )
+      .get(CIRCULAR_RULE) as { ruleVersion: string; params: string | null; runAt: string } | undefined;
+    let maxDepth: number | null = null;
+    if (lastRun?.params) {
+      try {
+        maxDepth = (JSON.parse(lastRun.params) as { max_depth?: number }).max_depth ?? null;
+      } catch {
+        maxDepth = null;
+      }
+    }
+    return {
+      total, bySeverity,
+      ruleVersion: lastRun?.ruleVersion ?? null,
+      maxDepth,
+      runAt: lastRun?.runAt ?? null,
+    };
+  } catch {
+    return empty;
+  }
 }
 
 const SORT_CLAUSE: Record<CircularDonationSort, string> = {
@@ -1995,17 +2050,16 @@ const SORT_CLAUSE: Record<CircularDonationSort, string> = {
   path_length: "coalesce(s.path_length, 0) ASC, coalesce(s.amount_cents, 0) DESC, s.id",
 };
 
-export function getCircularDonationSignals(opts: {
+export async function getCircularDonationSignals(opts: {
   severity?: "high" | "medium" | "low";
   sort?: CircularDonationSort;
   limit?: number;
   offset?: number;
-}): CircularDonationSignal[] {
+}): Promise<CircularDonationSignal[]> {
   const limit = opts.limit ?? 50;
   const offset = opts.offset ?? 0;
   const orderBy = SORT_CLAUSE[opts.sort ?? "severity"] ?? SORT_CLAUSE.severity;
-  const rows = db()
-    .prepare(
+  const rows = await db().prepare(
       `SELECT s.id, s.severity, s.explanation,
               coalesce(s.amount_cents, 0) AS amountCents, coalesce(s.path_length, 0) AS pathLength,
               ar.verdict AS aiVerdict, ar.confidence AS aiConfidence,
@@ -2025,8 +2079,7 @@ export function getCircularDonationSignals(opts: {
 
   const ids = rows.map((r) => r.id);
   const placeholders = ids.map(() => "?").join(", ");
-  const actorRows = db()
-    .prepare(
+  const actorRows = await db().prepare(
       `SELECT sa.signal_id AS signalId, sa.type,
               CASE WHEN sa.type = 'person' THEN p.cpf ELSE c.cnpj END AS cpfCnpj,
               CASE WHEN sa.type = 'person' THEN p.canonical_name
@@ -2085,29 +2138,33 @@ const RULE_LABEL: Record<string, string> = {
   disproportionate_expense: "despesa desproporcional",
 };
 
-export function getAiReviewSummary(): { total: number; byVerdict: Record<string, number>; model: string | null } {
-  const byVerdict = Object.fromEntries(
-    (
-      db()
-        .prepare(`SELECT verdict, count(*) AS n FROM signal_ai_review GROUP BY verdict`)
-        .all() as Array<{ verdict: string; n: number }>
-    ).map((r) => [r.verdict, r.n])
-  );
-  const total = Object.values(byVerdict).reduce((a, b) => a + b, 0);
-  const model = (
-    db().prepare(`SELECT model FROM signal_ai_review ORDER BY reviewed_at DESC LIMIT 1`).get() as
-      | { model: string }
-      | undefined
-  )?.model ?? null;
-  return { total, byVerdict, model };
+export async function getAiReviewSummary(): Promise<{ total: number; byVerdict: Record<string, number>; model: string | null }> {
+  const empty = { total: 0, byVerdict: {}, model: null };
+  if (!(await hasTable("signal_ai_review"))) return empty;
+  try {
+    const byVerdict = Object.fromEntries(
+      (
+        await db().prepare(`SELECT verdict, count(*) AS n FROM signal_ai_review GROUP BY verdict`)
+          .all() as Array<{ verdict: string; n: number }>
+      ).map((r) => [r.verdict, r.n])
+    );
+    const total = Object.values(byVerdict).reduce((a, b) => a + b, 0);
+    const model = (
+      await db().prepare(`SELECT model FROM signal_ai_review ORDER BY reviewed_at DESC LIMIT 1`).get() as
+        | { model: string }
+        | undefined
+    )?.model ?? null;
+    return { total, byVerdict, model };
+  } catch {
+    return empty;
+  }
 }
 
 const VERDICT_ORDER = "CASE ar.verdict WHEN 'bizarro' THEN 0 WHEN 'inconclusivo' THEN 1 ELSE 2 END";
 
-export function getAiReviewCount(opts: { verdict?: AiVerdict; rule?: string }): number {
+export async function getAiReviewCount(opts: { verdict?: AiVerdict; rule?: string }): Promise<number> {
   return (
-    db()
-      .prepare(
+    await db().prepare(
         `SELECT count(*) AS n FROM signal_ai_review ar
          JOIN signal s ON s.id = ar.signal_id
          JOIN rule_run rr ON rr.id = s.rule_run_id
@@ -2117,16 +2174,15 @@ export function getAiReviewCount(opts: { verdict?: AiVerdict; rule?: string }): 
   ).n;
 }
 
-export function getAiReviews(opts: {
+export async function getAiReviews(opts: {
   verdict?: AiVerdict;
   rule?: string;
   limit?: number;
   offset?: number;
-}): AiReviewRow[] {
+}): Promise<AiReviewRow[]> {
   const limit = opts.limit ?? 30;
   const offset = opts.offset ?? 0;
-  const rows = db()
-    .prepare(
+  const rows = await db().prepare(
       `SELECT ar.signal_id AS signalId, rr.rule, s.explanation AS signalExplanation,
               coalesce(s.amount_cents, (
                 SELECT ce.amount_cents FROM signal_evidence se
@@ -2153,8 +2209,7 @@ export function getAiReviews(opts: {
   const graphIdsBySignal = new Map<number, string[]>();
   if (cycleIds.length > 0) {
     const ph = cycleIds.map(() => "?").join(", ");
-    for (const row of db()
-      .prepare(
+    for (const row of await db().prepare(
         `SELECT sa.signal_id AS signalId,
                 CASE WHEN sa.type = 'person' THEN p.cpf ELSE c.cnpj END AS cpfCnpj
          FROM signal_actor sa
@@ -2214,9 +2269,10 @@ export type PoliticianDonationNetwork = {
 
 const MAX_PER_LEVEL = 6;
 
-function politicianDonationEdges(
-  personId: number, direction: "donated_to" | "received_from"
-): PoliticianNetworkNode[] {
+async function politicianDonationEdges(
+  personId: number,
+  direction: "donated_to" | "received_from"
+): Promise<PoliticianNetworkNode[]> {
   const sql = direction === "donated_to"
     ? `SELECT co.person_id AS personId, coalesce(p2.canonical_name, '(sem nome)') AS label,
               sum(d.amount_cents) AS amountCents
@@ -2224,35 +2280,41 @@ function politicianDonationEdges(
        JOIN campaign_org co ON co.id = d.campaign_org_id
        JOIN people p2 ON p2.id = co.person_id
        WHERE d.donor_person_id = ? AND co.person_id != ?
-       GROUP BY co.person_id ORDER BY amountCents DESC LIMIT ?`
+       GROUP BY co.person_id, p2.canonical_name ORDER BY sum(d.amount_cents) DESC LIMIT ?`
     : `SELECT d.donor_person_id AS personId, coalesce(p2.canonical_name, '(sem nome)') AS label,
               sum(d.amount_cents) AS amountCents
        FROM campaign_donation d
        JOIN campaign_org co ON co.id = d.campaign_org_id
        JOIN people p2 ON p2.id = d.donor_person_id
        WHERE co.person_id = ? AND d.donor_person_id IS NOT NULL AND d.donor_person_id != ?
-       GROUP BY d.donor_person_id ORDER BY amountCents DESC LIMIT ?`;
-  const rows = db().prepare(sql).all(personId, personId, MAX_PER_LEVEL) as Array<
+       GROUP BY d.donor_person_id, p2.canonical_name ORDER BY sum(d.amount_cents) DESC LIMIT ?`;
+  const rows = await db().prepare(sql).all(personId, personId, MAX_PER_LEVEL) as Array<
     Omit<PoliticianNetworkNode, "photoUrl">
   >;
   return rows.map((r) => ({ ...r, photoUrl: null }));
 }
 
-export function getPoliticianDonationNetwork(personId: number): PoliticianDonationNetwork {
-  const build = (direction: "donated_to" | "received_from"): PoliticianNetworkBranch[] =>
-    politicianDonationEdges(personId, direction).map((node) => ({
-      node,
-      children: politicianDonationEdges(node.personId, direction).filter((c) => c.personId !== personId),
-    }));
+export async function getPoliticianDonationNetwork(personId: number): Promise<PoliticianDonationNetwork> {
+  const build = async (direction: "donated_to" | "received_from"): Promise<PoliticianNetworkBranch[]> => {
+    const edges = await politicianDonationEdges(personId, direction);
+    return Promise.all(
+      edges.map(async (node) => ({
+        node,
+        children: (await politicianDonationEdges(node.personId, direction)).filter((c) => c.personId !== personId),
+      }))
+    );
+  };
 
-  const donatedTo = build("donated_to");
-  const receivedFrom = build("received_from");
+  const [donatedTo, receivedFrom] = await Promise.all([
+    build("donated_to"),
+    build("received_from"),
+  ]);
 
   const allIds = [
     ...donatedTo.flatMap((b) => [b.node.personId, ...b.children.map((c) => c.personId)]),
     ...receivedFrom.flatMap((b) => [b.node.personId, ...b.children.map((c) => c.personId)]),
   ];
-  const photoUrls = batchPhotoUrls(allIds);
+  const photoUrls = await batchPhotoUrls(allIds);
   const patch = (n: PoliticianNetworkNode) => {
     n.photoUrl = photoUrls.get(n.personId) ?? null;
   };
@@ -2279,15 +2341,14 @@ export type SupplierPartnerRow = {
 
 export type SupplierPartnerFilter = "all" | "self" | "others";
 
-export function getSupplierPartnerSummary(): {
+export async function getSupplierPartnerSummary(): Promise<{
   total: number;
   self: number;
   others: number;
   totalCents: number;
-} {
-  if (!hasTable("candidate_supplier_partner")) return { total: 0, self: 0, others: 0, totalCents: 0 };
-  const row = db()
-    .prepare(
+}> {
+  if (!await hasTable("candidate_supplier_partner")) return { total: 0, self: 0, others: 0, totalCents: 0 };
+  const row = await db().prepare(
       `SELECT count(*) AS total,
               coalesce(sum(paid_by_self), 0) AS self,
               coalesce(sum(payments_total_cents), 0) AS totalCents
@@ -2297,12 +2358,11 @@ export function getSupplierPartnerSummary(): {
   return { total: row.total, self: row.self, others: row.total - row.self, totalCents: row.totalCents };
 }
 
-export function getSupplierPartnerCount(opts: { filter?: SupplierPartnerFilter; q?: string }): number {
-  if (!hasTable("candidate_supplier_partner")) return 0;
+export async function getSupplierPartnerCount(opts: { filter?: SupplierPartnerFilter; q?: string }): Promise<number> {
+  if (!await hasTable("candidate_supplier_partner")) return 0;
   const { where, args } = supplierPartnerWhere(opts);
   return (
-    db()
-      .prepare(
+    await db().prepare(
         `SELECT count(*) AS n
          FROM candidate_supplier_partner csp
          JOIN people p ON p.id = csp.person_id
@@ -2329,18 +2389,17 @@ function supplierPartnerWhere(opts: { filter?: SupplierPartnerFilter; q?: string
   return { where: clauses.length ? `WHERE ${clauses.join(" AND ")}` : "", args };
 }
 
-export function getSupplierPartners(opts: {
+export async function getSupplierPartners(opts: {
   filter?: SupplierPartnerFilter;
   q?: string;
   limit?: number;
   offset?: number;
-}): SupplierPartnerRow[] {
-  if (!hasTable("candidate_supplier_partner")) return [];
+}): Promise<SupplierPartnerRow[]> {
+  if (!await hasTable("candidate_supplier_partner")) return [];
   const limit = opts.limit ?? 40;
   const offset = opts.offset ?? 0;
   const { where, args } = supplierPartnerWhere(opts);
-  const rows = db()
-    .prepare(
+  const rows = await db().prepare(
       `SELECT csp.person_id AS personId, p.canonical_name AS personName,
               c.cnpj AS companyCnpj, coalesce(cr.legal_name, c.legal_name) AS companyName,
               csp.partner_role AS partnerRole, csp.partner_since AS partnerSince,
@@ -2442,22 +2501,21 @@ const DISCOURSE_FROM = `
   JOIN social_account a ON a.id = p.social_account_id
   LEFT JOIN people pe ON pe.id = a.person_id`;
 
-export function getDiscourseSummary(): {
+export async function getDiscourseSummary(): Promise<{
   reviewed: number;
   total: number;
   accounts: number;
   bySeverity: Record<string, number>;
   byCategory: Record<string, number>;
-} {
+}> {
   const empty = { reviewed: 0, total: 0, accounts: 0, bySeverity: {}, byCategory: {} };
-  if (!hasTable("social_post_review")) return empty;
-  const reviewed = (db().prepare("SELECT count(*) AS n FROM social_post_review").get() as { n: number }).n;
+  if (!await hasTable("social_post_review")) return empty;
+  const reviewed = (await db().prepare("SELECT count(*) AS n FROM social_post_review").get() as { n: number }).n;
   const total = (
-    db().prepare("SELECT count(*) AS n FROM social_post_review WHERE is_offensive = 1").get() as { n: number }
+    await db().prepare("SELECT count(*) AS n FROM social_post_review WHERE is_offensive = 1").get() as { n: number }
   ).n;
   const accounts = (
-    db()
-      .prepare(
+    await db().prepare(
         `SELECT count(DISTINCT p.social_account_id) AS n
          FROM social_post_review r JOIN social_post p ON p.id = r.social_post_id
          WHERE r.is_offensive = 1`
@@ -2465,14 +2523,12 @@ export function getDiscourseSummary(): {
       .get() as { n: number }
   ).n;
   const bySeverity: Record<string, number> = {};
-  for (const row of db()
-    .prepare("SELECT severity, count(*) AS n FROM social_post_review WHERE is_offensive = 1 GROUP BY severity")
+  for (const row of await db().prepare("SELECT severity, count(*) AS n FROM social_post_review WHERE is_offensive = 1 GROUP BY severity")
     .all() as Array<{ severity: string; n: number }>) {
     if (row.severity) bySeverity[row.severity] = row.n;
   }
   const byCategory: Record<string, number> = {};
-  for (const row of db()
-    .prepare("SELECT categories FROM social_post_review WHERE is_offensive = 1")
+  for (const row of await db().prepare("SELECT categories FROM social_post_review WHERE is_offensive = 1")
     .all() as Array<{ categories: string }>) {
     try {
       for (const c of JSON.parse(row.categories) as string[]) byCategory[c] = (byCategory[c] ?? 0) + 1;
@@ -2483,24 +2539,24 @@ export function getDiscourseSummary(): {
   return { reviewed, total, accounts, bySeverity, byCategory };
 }
 
-export function getDiscourseCount(opts: {
+export async function getDiscourseCount(opts: {
   category?: string;
   severity?: string;
   group?: boolean;
   handle?: string;
   q?: string;
   personId?: number;
-}): number {
-  if (!hasTable("social_post_review")) return 0;
+}): Promise<number> {
+  if (!await hasTable("social_post_review")) return 0;
   const { where, args } = discourseWhere(opts);
   return (
-    db().prepare(`SELECT count(*) AS n ${DISCOURSE_FROM} ${where}`).get(...args) as { n: number }
+    await db().prepare(`SELECT count(*) AS n ${DISCOURSE_FROM} ${where}`).get(...args) as { n: number }
   ).n;
 }
 
 const DISCOURSE_SEVERITY_RANK = "CASE r.severity WHEN 'high' THEN 0 WHEN 'medium' THEN 1 ELSE 2 END";
 
-export function getDiscourseSignals(opts: {
+export async function getDiscourseSignals(opts: {
   category?: string;
   severity?: string;
   group?: boolean;
@@ -2509,13 +2565,12 @@ export function getDiscourseSignals(opts: {
   personId?: number;
   limit?: number;
   offset?: number;
-}): DiscourseSignal[] {
-  if (!hasTable("social_post_review")) return [];
+}): Promise<DiscourseSignal[]> {
+  if (!await hasTable("social_post_review")) return [];
   const limit = opts.limit ?? 30;
   const offset = opts.offset ?? 0;
   const { where, args } = discourseWhere(opts);
-  const rows = db()
-    .prepare(
+  const rows = await db().prepare(
       `SELECT p.id AS postId, a.handle AS handle, a.person_id AS personId,
               pe.canonical_name AS personName,
               (SELECT ph.party_abbr FROM politician_history ph
@@ -2578,15 +2633,20 @@ const EXPENSE_CATEGORY_SPELLINGS: Record<string, string[]> = {
 
 export const EXPENSE_CATEGORIES = Object.keys(EXPENSE_CATEGORY_SPELLINGS);
 
-export function getDisproportionateExpenseCount(): number {
-  const row = db()
-    .prepare(
-      `SELECT count(*) AS n FROM signal s
-       JOIN rule_run rr ON rr.id = s.rule_run_id
-       WHERE rr.rule = 'disproportionate_expense'`
-    )
-    .get() as { n: number };
-  return row.n;
+export async function getDisproportionateExpenseCount(): Promise<number> {
+  if (!(await hasTable("signal"))) return 0;
+  try {
+    const row = (await db()
+      .prepare(
+        `SELECT count(*) AS n FROM signal s
+         JOIN rule_run rr ON rr.id = s.rule_run_id
+         WHERE rr.rule = 'disproportionate_expense'`
+      )
+      .get()) as { n: number } | null;
+    return row?.n ?? 0;
+  } catch {
+    return 0;
+  }
 }
 
 
@@ -2611,14 +2671,14 @@ export type ExpenseCategoryPage = { rows: ExpenseCategoryRow[]; total: number };
 // Full-table LIKE scan takes tens of seconds; cache per (category, year) since the DB is read-only
 const expenseCategoryRankingCache = new Map<string, Array<Record<string, unknown>>>();
 
-export function getExpenseCategoryRanking(opts: {
+export async function getExpenseCategoryRanking(opts: {
   /** undefined = all categories */
   category?: string;
   /** undefined = all years */
   year?: number;
   limit?: number;
   offset?: number;
-}): ExpenseCategoryPage {
+}): Promise<ExpenseCategoryPage> {
   const spellings = opts.category != null
     ? EXPENSE_CATEGORY_SPELLINGS[opts.category]
     : Object.values(EXPENSE_CATEGORY_SPELLINGS).flat();
@@ -2635,8 +2695,7 @@ export function getExpenseCategoryRanking(opts: {
     const donationYearClause = opts.year != null ? " AND year = ?" : "";
     const yearArgs = opts.year != null ? [opts.year] : [];
 
-    allRows = db()
-      .prepare(
+    allRows = await db().prepare(
         `WITH matched_expense AS MATERIALIZED (
            SELECT campaign_org_id, amount_cents
            FROM campaign_expense
@@ -2652,7 +2711,7 @@ export function getExpenseCategoryRanking(opts: {
                   co.office AS office, co.state AS state
            FROM matched_expense m JOIN campaign_org co ON co.id = m.campaign_org_id
            WHERE co.person_id IS NOT NULL
-           GROUP BY co.person_id
+           GROUP BY co.person_id, co.office, co.state
          ),
          revenue AS (
            SELECT co.person_id AS personId, coalesce(sum(d.amount_cents), 0) AS revenueCents
@@ -2691,7 +2750,7 @@ export function getExpenseCategoryRanking(opts: {
 
   const total = allRows.length;
   const pageRows = allRows.slice(offset, offset + limit);
-  const photoUrls = batchPhotoUrls(pageRows.map((r) => r.personId as number));
+  const photoUrls = await batchPhotoUrls(pageRows.map((r) => r.personId as number));
   return {
     total,
     rows: pageRows.map((r) => ({
@@ -2718,11 +2777,11 @@ export type ExpenseCategoryDetailRow = {
   provenance: Provenance;
 };
 
-export function getPersonCategoryExpenseDetail(
+export async function getPersonCategoryExpenseDetail(
   personId: number,
   category: string | undefined,
   year: number | undefined
-): ExpenseCategoryDetailRow[] {
+): Promise<ExpenseCategoryDetailRow[]> {
   const spellings = category != null
     ? EXPENSE_CATEGORY_SPELLINGS[category]
     : Object.values(EXPENSE_CATEGORY_SPELLINGS).flat();
@@ -2732,8 +2791,7 @@ export function getPersonCategoryExpenseDetail(
   const yearClause = year != null ? " AND t.year = ?" : "";
   const yearArgs = year != null ? [year] : [];
 
-  const rows = db()
-    .prepare(
+  const rows = await db().prepare(
       `SELECT t.id, t.description, t.amount_cents AS amountCents, t.year, ${PROVENANCE_COLUMNS}
        FROM campaign_expense t JOIN campaign_org co ON co.id = t.campaign_org_id
        ${PROVENANCE_JOIN}

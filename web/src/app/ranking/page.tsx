@@ -19,7 +19,7 @@ type Tipo = (typeof TIPOS)[number]["value"];
 
 export default async function RankingPage({ searchParams }: PageProps<"/ranking">) {
   const sp = await searchParams;
-  const years = getAssetYears();
+  const years = await getAssetYears();
 
   const tipoParam = typeof sp.tipo === "string" ? sp.tipo : "";
   const tipo: Tipo = TIPOS.some((t) => t.value === tipoParam) ? (tipoParam as Tipo) : "bens";
@@ -97,10 +97,10 @@ export default async function RankingPage({ searchParams }: PageProps<"/ranking"
   );
 }
 
-function BensTable({
+async function BensTable({
   page, year, hrefFor,
 }: { page: number; year?: number; hrefFor: (p: Record<string, string | undefined>) => string }) {
-  const { rows, total } = getAssetsRanking({
+  const { rows, total } = await getAssetsRanking({
     year, order: "desc", limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE,
   });
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -163,10 +163,10 @@ function BensTable({
   );
 }
 
-function CrescimentoTable({
+async function CrescimentoTable({
   page, hrefFor,
 }: { page: number; hrefFor: (p: Record<string, string | undefined>) => string }) {
-  const { rows, total } = getAssetsGrowthRanking({ order: "desc", limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE });
+  const { rows, total } = await getAssetsGrowthRanking({ order: "desc", limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE });
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   if (rows.length === 0) {

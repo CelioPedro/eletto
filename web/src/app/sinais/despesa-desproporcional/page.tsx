@@ -20,7 +20,7 @@ export default async function DespesaDesproporcionalPage({
   searchParams,
 }: PageProps<"/sinais/despesa-desproporcional">) {
   const sp = await searchParams;
-  const years = getExpenseYears();
+  const years = await getExpenseYears();
 
   const categoryParam = typeof sp.categoria === "string" ? sp.categoria : undefined;
   const category =
@@ -37,7 +37,7 @@ export default async function DespesaDesproporcionalPage({
   const page = Math.max(1, Number(sp.page) || 1);
 
   const { rows, total } = years.length > 0
-    ? getExpenseCategoryRanking({ category, year, limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE })
+    ? await getExpenseCategoryRanking({ category, year, limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE })
     : { rows: [], total: 0 };
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 

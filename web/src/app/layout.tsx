@@ -16,6 +16,8 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ["400", "500"],
 });
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "EloSys — busca de candidatos",
   description:
@@ -30,8 +32,8 @@ try {
 } catch (e) {}
 `;
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
-  const counts = getSidebarCounts();
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const counts = await getSidebarCounts();
 
   return (
     <html

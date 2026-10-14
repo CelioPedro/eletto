@@ -30,8 +30,8 @@ export default async function CircularDonationsPage({
   const sort = SORTS.some((s) => s.value === sortParam) ? (sortParam as CircularDonationSort) : "severity";
   const page = Math.max(1, Number(sp.page) || 1);
 
-  const summary = getCircularDonationSummary();
-  const signals = getCircularDonationSignals({
+  const summary = await getCircularDonationSummary();
+  const signals = await getCircularDonationSignals({
     severity, sort, limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE,
   });
   const shownCount = severity ? (summary.bySeverity[severity] ?? 0) : summary.total;

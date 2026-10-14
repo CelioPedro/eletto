@@ -37,9 +37,9 @@ export default async function AnaliseIaPage({ searchParams }: PageProps<"/sinais
   const rule = RULES.some((r) => r.value === ruleParam) ? ruleParam : undefined;
   const page = Math.max(1, Number(sp.page) || 1);
 
-  const summary = getAiReviewSummary();
-  const count = getAiReviewCount({ verdict, rule });
-  const reviews = getAiReviews({ verdict, rule, limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE });
+  const summary = await getAiReviewSummary();
+  const count = await getAiReviewCount({ verdict, rule });
+  const reviews = await getAiReviews({ verdict, rule, limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE });
   const totalPages = Math.max(1, Math.ceil(count / PAGE_SIZE));
 
   const hrefFor = (p: Record<string, string | undefined>) => {
