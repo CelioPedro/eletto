@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { SidebarCounts } from "@/lib/stats";
 
-type NavLink = { href: string; label: string; count?: number; alert?: boolean };
+type NavLink = { href: string; label: string; count?: number; alert?: boolean; badge?: string };
 
 export function Sidebar({ counts }: { counts: SidebarCounts }) {
   const pathname = usePathname();
@@ -18,9 +18,20 @@ export function Sidebar({ counts }: { counts: SidebarCounts }) {
   const sinais: NavLink[] = [
     { href: "/sinais/doacao-circular", label: "Doação circular", count: counts.circularDonations, alert: true },
     { href: "/sinais/despesa-desproporcional", label: "Despesa desproporcional", count: counts.disproportionateExpense },
-    { href: "/sinais/socio-fornecedor", label: "Sócio de fornecedor", count: counts.supplierPartner },
+    { 
+      href: "/sinais/socio-fornecedor", 
+      label: "Sócio de fornecedor", 
+      count: counts.supplierPartner > 0 ? counts.supplierPartner : undefined,
+      badge: counts.supplierPartner === 0 ? "BETA" : undefined 
+    },
     { href: "/sinais/analise-ia", label: "Análise de IA", count: counts.aiReview },
-    { href: "/sinais/discurso", label: "Discurso em rede social", count: counts.discourse, alert: true },
+    { 
+      href: "/sinais/discurso", 
+      label: "Discurso em rede social", 
+      count: counts.discourse > 0 ? counts.discourse : undefined,
+      badge: counts.discourse === 0 ? "BETA" : undefined,
+      alert: counts.discourse > 0 
+    },
   ];
 
   return (
@@ -89,6 +100,10 @@ function NavGroup({ title, links, pathname }: { title: string; links: NavLink[];
             {l.count != null ? (
               <span className={`navitem__count${l.alert && l.count > 0 ? " navitem__count--alert" : ""}`}>
                 {l.count.toLocaleString("pt-BR")}
+              </span>
+            ) : l.badge ? (
+              <span className="ml-auto font-mono text-[9px] font-bold tracking-wider text-[var(--accent-2)] bg-[var(--accent)]/10 px-1.5 py-0.5 rounded border border-[var(--accent)]/20">
+                {l.badge}
               </span>
             ) : null}
           </Link>

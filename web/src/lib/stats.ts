@@ -93,9 +93,12 @@ export type SidebarCounts = {
 };
 
 let cachedCounts: SidebarCounts | null = null;
+let cachedCountsAt = 0;
+const CACHE_TTL_MS = 15_000;
 
 export async function getSidebarCounts(): Promise<SidebarCounts> {
-  if (cachedCounts) return cachedCounts;
+  const now = Date.now();
+  if (cachedCounts && now - cachedCountsAt < CACHE_TTL_MS) return cachedCounts;
   try {
     const [circular, supplier, ai, disc, disp] = await Promise.all([
       getCircularDonationSummary(),
@@ -112,7 +115,9 @@ export async function getSidebarCounts(): Promise<SidebarCounts> {
       discourse: disc?.total ?? 0,
       disproportionateExpense: disp ?? 0,
     };
+    cachedCountsAt = now;
     return cachedCounts;
+
   } catch (err) {
     console.warn("getSidebarCounts fallback used (database unreachable or query failed):", err);
     return {

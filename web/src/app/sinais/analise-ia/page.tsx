@@ -61,12 +61,10 @@ export default async function AnaliseIaPage({ searchParams }: PageProps<"/sinais
         </h1>
         <p className="mt-4 max-w-2xl text-[13px] leading-relaxed" style={{ color: "var(--muted)" }}>
           Cada sinal de <strong style={{ color: "var(--fg-2)" }}>doação circular</strong> ou{" "}
-          <strong style={{ color: "var(--fg-2)" }}>despesa desproporcional</strong> foi passado pra um modelo
-          barato (DeepSeek) com os fatos, e ele respondeu se aquilo é <em>rotineiro</em> ou{" "}
-          <em>genuinamente estranho</em>. A resposta, a explicação e os fatos que o modelo citou ficam
-          salvos junto do sinal.{" "}
-          <strong style={{ color: "var(--fg-2)" }}>Continua sendo indício, não prova</strong> — agora com a
-          opinião de uma máquina anexada, que também pode estar errada.
+          <strong style={{ color: "var(--fg-2)" }}>despesa desproporcional</strong> foi submetido a um modelo
+          de inteligência artificial analítica (Google Gemini) com todos os fatos auditados da prestação de contas,
+          classificando se o padrão é <em>rotineiro</em> ou <em>genuinamente bizarro</em>.
+          A fundamentação e os fatos que o modelo citou ficam salvos junto do sinal como evidência pericial preliminar.
         </p>
 
         {summary.total === 0 ? null : (
@@ -110,7 +108,7 @@ export default async function AnaliseIaPage({ searchParams }: PageProps<"/sinais
             title="nenhuma revisão ainda"
             hint={
               <>
-                <code>eletto ai-review</code> (requer <code>DEEPSEEK_API_KEY</code> configurada)
+                <code>eletto ai-review</code> (requer <code>GEMINI_API_KEY</code> ou <code>DEEPSEEK_API_KEY</code>)
               </>
             }
           />
