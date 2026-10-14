@@ -8,7 +8,9 @@ type Theme = "light" | "dark";
 function readEffectiveTheme(): Theme {
   const explicit = document.documentElement.getAttribute("data-theme");
   if (explicit === "light" || explicit === "dark") return explicit;
-  return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+  const stored = typeof window !== "undefined" ? localStorage.getItem("theme") : null;
+  if (stored === "light" || stored === "dark") return stored;
+  return "dark";
 }
 
 // Minimal typing for the View Transitions API (not in TS's DOM lib yet).

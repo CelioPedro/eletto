@@ -19,16 +19,16 @@ const jetbrainsMono = JetBrains_Mono({
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "EloSys — busca de candidatos",
+  title: "eletto — Auditoria e Inteligência Eleitoral",
   description:
-    "Cruzamento de dados públicos de políticos brasileiros por CPF/CNPJ. Indício, não prova — todo campo aponta para a fonte oficial de onde saiu.",
+    "Plataforma de inteligência de dados eleitorais. Auditoria de relações, doações, empresas e patrimônio de candidatos e agentes públicos brasileiros (2014–2026).",
 };
 
 // Runs before hydration so a saved theme applies with no flash.
 const THEME_INIT_SCRIPT = `
 try {
   var t = localStorage.getItem("theme");
-  if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+  document.documentElement.setAttribute("data-theme", (t === "light" || t === "dark") ? t : "dark");
 } catch (e) {}
 `;
 

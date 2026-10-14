@@ -8,7 +8,7 @@ export type ColorMode = "light" | "dark";
 function resolve(): ColorMode {
   const attr = document.documentElement.getAttribute("data-theme");
   if (attr === "light" || attr === "dark") return attr;
-  return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+  return "dark";
 }
 
 export function useColorMode(): ColorMode {

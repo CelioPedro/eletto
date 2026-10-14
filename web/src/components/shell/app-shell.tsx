@@ -24,7 +24,14 @@ export function AppShell({ counts, children }: { counts: SidebarCounts; children
 function ContentBody({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   if (pathname?.startsWith("/grafo")) {
-    return <div style={{ height: "calc(100vh - var(--navbar-offset))" }}>{children}</div>;
+    return (
+      <div
+        className="flex flex-col w-full bg-[var(--bg)]"
+        style={{ height: "calc(100vh - var(--navbar-offset))" }}
+      >
+        {children}
+      </div>
+    );
   }
   return <div className="content__inner">{children}</div>;
 }
