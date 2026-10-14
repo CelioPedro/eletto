@@ -68,6 +68,67 @@ export function LegalDraftWorkbench({
   const [copied, setCopied] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
+  // Gemini AI generation state
+  const [tone, setTone] = useState<"robusto" | "cauteloso" | "cassacao">("robusto");
+  const [isLoadingAi, setIsLoadingAi] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiDraft, setAiDraft] = useState<{
+    fatosDetalhados: string;
+    enquadramentoJuridico: string;
+    pedidos: string[];
+    resumoEstrategico?: string;
+  } | null>(null);
+
+  async function handleGenerateWithAi() {
+    setIsLoadingAi(true);
+    setAiError(null);
+    try {
+      const res = await fetch("/api/ai/legal-draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          candidateName,
+          candidateCpf,
+          pieceType,
+          office: latestCandidacy?.office ?? "Cargo Eletivo",
+          party: latestCandidacy?.partyAbbr ?? "Partido",
+          state: latestCandidacy?.state ?? "BR",
+          year: latestCandidacy?.year ?? 2022,
+          totalAssetsCents,
+          assetGrowthPct,
+          totalDonationsCents,
+          totalExpensesCents,
+          topDonors,
+          topSuppliers,
+          signals: includeSignals
+            ? signals.map((s) => ({
+                rule: s.rule,
+                explanation: s.explanation,
+                severity: s.severity,
+              }))
+            : [],
+          earmarks: includeEarmarks
+            ? earmarks.map((e) => ({
+                code: e.earmarkCode,
+                amountCents: e.committedCents,
+                locality: e.locality,
+              }))
+            : [],
+          tone,
+        }),
+      });
+      const data = await res.json();
+      if (!data.success || !data.draft) {
+        throw new Error(data.error || "Falha ao gerar redação jurídica com IA");
+      }
+      setAiDraft(data.draft);
+    } catch (err: any) {
+      setAiError(err.message || "Erro na conexão com Gemini");
+    } finally {
+      setIsLoadingAi(false);
+    }
+  }
+
   const pieceTitles: Record<PieceType, { titulo: string; fundamento: string; foro: string }> = {
     representacao_30a: {
       titulo: "REPRESENTAÇÃO ELEITORAL POR CAPTAÇÃO E GASTO ILÍCITO DE RECURSOS",
@@ -117,9 +178,13 @@ export function LegalDraftWorkbench({
     );
 
     lines.push("II. DO QUADRO FÁTICO E DOS ELEMENTOS PROBATÓRIOS AUDITADOS\n");
-    lines.push(
-      `O Representado disputou o pleito eleitoral sob o crivo da Lei das Eleições. Todavia, a partir de auditoria técnica e pericial forense automatizada, foram constatadas graves inconsistências e anomalias na movimentação econômico-financeira de sua campanha e evolução patrimonial.\n\n`
-    );
+    if (aiDraft?.fatosDetalhados) {
+      lines.push(`${aiDraft.fatosDetalhados}\n\n`);
+    } else {
+      lines.push(
+        `O Representado disputou o pleito eleitoral sob o crivo da Lei das Eleições. Todavia, a partir de auditoria técnica e pericial forense automatizada, foram constatadas graves inconsistências e anomalias na movimentação econômico-financeira de sua campanha e evolução patrimonial.\n\n`
+      );
+    }
 
     if (includeAssets && totalAssetsCents > 0) {
       lines.push(
@@ -172,7 +237,9 @@ export function LegalDraftWorkbench({
     }
 
     lines.push("III. DO ENQUADRAMENTO JURÍDICO E JURISPRUDÊNCIA DO TSE\n");
-    if (pieceType === "representacao_30a") {
+    if (aiDraft?.enquadramentoJuridico) {
+      lines.push(`${aiDraft.enquadramentoJuridico}\n\n`);
+    } else if (pieceType === "representacao_30a") {
       lines.push(
         `O art. 30-A da Lei nº 9.504/1997 é taxativo ao estipular que a arrecadação ou o dispêndio ilícito de recursos em campanha eleitoral enseja a denegação ou a cassação do diploma conferido ao infrator. O TSE fixou tese categórica de que não se exige a comprovação do potencial de desequilíbrio eleitoral quando a irregularidade atinge gravidade proporcional relevante frente à arrecadação total.\n\n`
       );
@@ -197,22 +264,29 @@ export function LegalDraftWorkbench({
 
     lines.push("V. DOS PEDIDOS\n");
     lines.push("Ante todo o exposto, requer-se a Vossa Excelência:\n");
-    lines.push("a) O RECEBIMENTO e a autuação da presente petição inicial com todos os documentos instrutórios anexos;\n");
-    lines.push("b) A NOTIFICAÇÃO do Representado para que, querendo, apresente defesa no prazo legal;\n");
-    lines.push("c) A INTIMAÇÃO do ilustre membro do Ministério Público Eleitoral para intervir no feito como fiscal da ordem jurídica;\n");
-    lines.push("d) A REQUISIÇÃO E QUEBRA DE SIGILO BANCÁRIO das contas eleitorais e de passagem dos fornecedores e doadores indicados;\n");
-
-    if (pieceType === "representacao_30a") {
-      lines.push("e) A PROCEDÊNCIA TOTAL da presente representação para determinar a CASSAÇÃO DO REGISTRO OU DIPLOMA do Representado, com esteio no art. 30-A, § 2º, da Lei nº 9.504/1997;\n");
-    } else if (pieceType === "aije") {
-      lines.push("e) A PROCEDÊNCIA TOTAL da AIJE para declarar a CASSAÇÃO DO DIPLOMA e a INELEGIBILIDADE do Representado pelo período de 8 (oito) anos subsequentes à eleição;\n");
-    } else if (pieceType === "noticia_crime") {
-      lines.push("e) A REQUISIÇÃO DE INSTAURAÇÃO DE INQUÉRITO POLICIAL perante a Delegacia de Polícia Federal com vistas à denúncia penal;\n");
+    if (aiDraft?.pedidos && aiDraft.pedidos.length > 0) {
+      aiDraft.pedidos.forEach((p, idx) => {
+        lines.push(`${String.fromCharCode(97 + idx)}) ${p}\n`);
+      });
+      lines.push("\n");
     } else {
-      lines.push("e) A DESAPROVAÇÃO TOTAL DAS CONTAS com ordem de devolução dos recursos ilícitos ou de origem não identificada ao Erário Público;\n");
-    }
+      lines.push("a) O RECEBIMENTO e a autuação da presente petição inicial com todos os documentos instrutórios anexos;\n");
+      lines.push("b) A NOTIFICAÇÃO do Representado para que, querendo, apresente defesa no prazo legal;\n");
+      lines.push("c) A INTIMAÇÃO do ilustre membro do Ministério Público Eleitoral para intervir no feito como fiscal da ordem jurídica;\n");
+      lines.push("d) A REQUISIÇÃO E QUEBRA DE SIGILO BANCÁRIO das contas eleitorais e de passagem dos fornecedores e doadores indicados;\n");
 
-    lines.push("f) A produção de todas as provas em direito admitidas, especialmente prova documental superveniente, oitiva de testemunhas e juntada de extratos bancários.\n\n");
+      if (pieceType === "representacao_30a") {
+        lines.push("e) A PROCEDÊNCIA TOTAL da presente representação para determinar a CASSAÇÃO DO REGISTRO OU DIPLOMA do Representado, com esteio no art. 30-A, § 2º, da Lei nº 9.504/1997;\n");
+      } else if (pieceType === "aije") {
+        lines.push("e) A PROCEDÊNCIA TOTAL da AIJE para declarar a CASSAÇÃO DO DIPLOMA e a INELEGIBILIDADE do Representado pelo período de 8 (oito) anos subsequentes à eleição;\n");
+      } else if (pieceType === "noticia_crime") {
+        lines.push("e) A REQUISIÇÃO DE INSTAURAÇÃO DE INQUÉRITO POLICIAL perante a Delegacia de Polícia Federal com vistas à denúncia penal;\n");
+      } else {
+        lines.push("e) A DESAPROVAÇÃO TOTAL DAS CONTAS com ordem de devolução dos recursos ilícitos ou de origem não identificada ao Erário Público;\n");
+      }
+
+      lines.push("f) A produção de todas as provas em direito admitidas, especialmente prova documental superveniente, oitiva de testemunhas e juntada de extratos bancários.\n\n");
+    }
 
     lines.push("Dá-se à causa o valor de alçada legal.\n\n");
     lines.push(`Nestes termos,\nPede e espera deferimento.\n\n`);
@@ -367,6 +441,63 @@ export function LegalDraftWorkbench({
               </div>
             </div>
 
+            {/* AI Generation Control Box */}
+            <div className="rounded-xl border border-blue-500/30 bg-gradient-to-br from-blue-950/20 via-[var(--surface)] to-[var(--card-tone)] p-4 shadow-sm">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-blue-400 font-bold flex items-center gap-1.5">
+                  <span className="text-yellow-300">✦</span>
+                  Inteligência Gemini
+                </span>
+                <span className="rounded bg-blue-500/20 px-1.5 py-0.5 font-mono text-[9px] font-bold text-blue-300">
+                  PRO
+                </span>
+              </div>
+
+              <label className="block text-[11px] font-medium text-[var(--muted)] mb-1">
+                Estratégia Argumentativa:
+              </label>
+              <select
+                value={tone}
+                onChange={(e) => setTone(e.target.value as any)}
+                className="w-full rounded border border-[var(--border-1)] bg-[var(--surface)] px-2.5 py-1.5 text-xs text-[var(--fg-1)] outline-none focus:border-[var(--accent)] mb-3"
+              >
+                <option value="robusto">Robusta & Contundente (Padrão)</option>
+                <option value="cassacao">Foco em Cassação (Abuso de Poder)</option>
+                <option value="cauteloso">Cautelosa (Notícia de Fato / MPE)</option>
+              </select>
+
+              <button
+                type="button"
+                onClick={handleGenerateWithAi}
+                disabled={isLoadingAi}
+                className="w-full btn btn--primary flex items-center justify-center gap-2 py-2 text-xs font-bold transition-all shadow-md shadow-blue-500/20 cursor-pointer"
+              >
+                {isLoadingAi ? (
+                  <>
+                    <span className="inline-block animate-spin text-sm">◌</span>
+                    <span>Redigindo com Gemini...</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-yellow-300">✦</span>
+                    <span>{aiDraft ? "Regerar Fundamentação" : "Redigir com Gemini"}</span>
+                  </>
+                )}
+              </button>
+
+              {aiError ? (
+                <div className="mt-2 text-[11px] text-rose-400 leading-tight">
+                  {aiError}
+                </div>
+              ) : null}
+
+              {aiDraft?.resumoEstrategico ? (
+                <div className="mt-2.5 pt-2 border-t border-[var(--border-1)] text-[11px] text-emerald-400 font-sans leading-snug">
+                  ✓ <strong>Tese Gerada:</strong> {aiDraft.resumoEstrategico}
+                </div>
+              ) : null}
+            </div>
+
             <div className="border-t border-[var(--border-1)] pt-5">
               <span className="font-mono text-[10px] uppercase tracking-wider text-[var(--muted-2)] font-bold">
                 2. Qualificação do Autor e Advogado
@@ -493,6 +624,35 @@ export function LegalDraftWorkbench({
               </h1>
             </div>
 
+            {/* AI Active Banner */}
+            {aiDraft ? (
+              <div className="print:hidden my-6 rounded-lg border border-blue-200 bg-blue-50/90 p-4 text-xs text-blue-900 shadow-sm flex items-start justify-between gap-3 font-sans">
+                <div className="flex items-start gap-2.5">
+                  <span className="text-blue-600 font-extrabold text-base leading-none mt-0.5">✦</span>
+                  <div>
+                    <div className="font-bold text-blue-950 flex items-center gap-2">
+                      <span>Fundamentação Redigida por Inteligência Artificial (Google Gemini)</span>
+                      <span className="rounded bg-blue-200 text-blue-800 text-[9.5px] px-1.5 py-0.2 font-mono uppercase font-bold">
+                        {tone}
+                      </span>
+                    </div>
+                    {aiDraft.resumoEstrategico ? (
+                      <p className="mt-1 text-blue-800 text-[11px] leading-relaxed">
+                        <strong>Tese Pericial:</strong> {aiDraft.resumoEstrategico}
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setAiDraft(null)}
+                  className="shrink-0 text-[11px] font-semibold text-blue-700 hover:text-blue-900 underline cursor-pointer"
+                >
+                  Restaurar Padrão
+                </button>
+              </div>
+            ) : null}
+
             <p className="mb-6 text-justify">
               em face de <strong>{candidateName.toUpperCase()}</strong>, brasileiro(a), candidato(a) no pleito de {latestCandidacy?.year ?? "recente"} ao cargo de {latestCandidacy?.office ?? "cargo público"}, pelo {latestCandidacy?.partyAbbr ?? "partido"}, portador(a) do CPF nº {candidateCpf ? formatCpf(candidateCpf) : "conforme registro"} e Título Eleitoral nº {voterId ?? "cadastrado no TSE"}, consoante as razões de fato e de direito que passa a expor:
             </p>
@@ -509,9 +669,15 @@ export function LegalDraftWorkbench({
             <h2 className="font-sans font-bold text-sm text-slate-900 mt-8 mb-3 uppercase">
               II. DO QUADRO FÁTICO E DA AUDITORIA PERICIAL
             </h2>
-            <p className="mb-4 text-justify">
-              O Representado submeteu sua postulação eleitoral ao escrutínio público. Ocorre que, consoante auditoria técnica automatizada realizada sobre os dados primários de prestação de contas do TSE e da Receita Federal, foram coligidos elementos probatórios que apontam grave descompasso financeiro e indícios contundentes de ilicitude.
-            </p>
+            {aiDraft?.fatosDetalhados ? (
+              <div className="mb-4 text-justify whitespace-pre-line leading-relaxed text-slate-800">
+                {aiDraft.fatosDetalhados}
+              </div>
+            ) : (
+              <p className="mb-4 text-justify">
+                O Representado submeteu sua postulação eleitoral ao escrutínio público. Ocorre que, consoante auditoria técnica automatizada realizada sobre os dados primários de prestação de contas do TSE e da Receita Federal, foram coligidos elementos probatórios que apontam grave descompasso financeiro e indícios contundentes de ilicitude.
+              </p>
+            )}
 
             {includeAssets && totalAssetsCents > 0 ? (
               <div className="mb-4 text-justify">
@@ -582,39 +748,45 @@ export function LegalDraftWorkbench({
             <h2 className="font-sans font-bold text-sm text-slate-900 mt-8 mb-3 uppercase">
               III. DO DIREITO E DA JURISPRUDÊNCIA DO TSE
             </h2>
-            <div className="mb-4 text-justify space-y-3">
-              {pieceType === "representacao_30a" ? (
-                <>
-                  <p>
-                    O artigo 30-A da Lei nº 9.504/1997 dispõe expressamente que a constatação de arrecadação ou gasto ilícito de recursos em campanha resulta na cassação do registro ou do diploma outorgado ao candidato.
-                  </p>
-                  <blockquote className="border-l-2 border-slate-400 pl-4 italic text-slate-700 text-xs my-3">
-                    &ldquo;A cassação do diploma com base no art. 30-A da Lei nº 9.504/97 exige a demonstração da ilicitude na arrecadação ou no gasto de recursos, bem como a gravidade da conduta, aferida pela relevância jurídica da infração no contexto da campanha.&rdquo; (TSE - Recurso Ordinário nº 0601234-89, Rel. Min. Edson Fachin).
-                  </blockquote>
-                  <p>
-                    Na hipótese dos autos, as anomalias coligidas ultrapassam a mera falha formal, comprometendo a transparência e a higidez do pleito.
-                  </p>
-                </>
-              ) : pieceType === "noticia_crime" ? (
-                <>
-                  <p>
-                    A omissão deliberada de transações financeiras reais e o emprego de artifícios de triangulação consubstanciam o tipo penal do art. 350 do Código Eleitoral (falsidade ideológica eleitoral), exigindo a intervenção enérgica do Ministério Público Eleitoral para a instauração de competente Inquérito Policial.
-                  </p>
-                </>
-              ) : pieceType === "aije" ? (
-                <>
-                  <p>
-                    O art. 22 da Lei Complementar nº 64/90 pune de forma intransigente o uso nocivo e desproporcional do poder econômico, objetivando desarticular candidaturas sustentadas em captações clandestinas ou desvios sistemáticos de recursos.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p>
-                    A teor das disposições da Resolução TSE nº 23.607/2019, o vício insuperável na escrituração contábil acarreta a desaprovação com imediata determinação de recolhimento dos valores de origem não comprovada ao Erário.
-                  </p>
-                </>
-              )}
-            </div>
+            {aiDraft?.enquadramentoJuridico ? (
+              <div className="mb-4 text-justify whitespace-pre-line leading-relaxed text-slate-800">
+                {aiDraft.enquadramentoJuridico}
+              </div>
+            ) : (
+              <div className="mb-4 text-justify space-y-3">
+                {pieceType === "representacao_30a" ? (
+                  <>
+                    <p>
+                      O artigo 30-A da Lei nº 9.504/1997 dispõe expressamente que a constatação de arrecadação ou gasto ilícito de recursos em campanha resulta na cassação do registro ou do diploma outorgado ao candidato.
+                    </p>
+                    <blockquote className="border-l-2 border-slate-400 pl-4 italic text-slate-700 text-xs my-3">
+                      &ldquo;A cassação do diploma com base no art. 30-A da Lei nº 9.504/97 exige a demonstração da ilicitude na arrecadação ou no gasto de recursos, bem como a gravidade da conduta, aferida pela relevância jurídica da infração no contexto da campanha.&rdquo; (TSE - Recurso Ordinário nº 0601234-89, Rel. Min. Edson Fachin).
+                    </blockquote>
+                    <p>
+                      Na hipótese dos autos, as anomalias coligidas ultrapassam a mera falha formal, comprometendo a transparência e a higidez do pleito.
+                    </p>
+                  </>
+                ) : pieceType === "noticia_crime" ? (
+                  <>
+                    <p>
+                      A omissão deliberada de transações financeiras reais e o emprego de artifícios de triangulação consubstanciam o tipo penal do art. 350 do Código Eleitoral (falsidade ideológica eleitoral), exigindo a intervenção enérgica do Ministério Público Eleitoral para a instauração de competente Inquérito Policial.
+                    </p>
+                  </>
+                ) : pieceType === "aije" ? (
+                  <>
+                    <p>
+                      O art. 22 da Lei Complementar nº 64/90 pune de forma intransigente o uso nocivo e desproporcional do poder econômico, objetivando desarticular candidaturas sustentadas em captações clandestinas ou desvios sistemáticos de recursos.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p>
+                      A teor das disposições da Resolução TSE nº 23.607/2019, o vício insuperável na escrituração contábil acarreta a desaprovação com imediata determinação de recolhimento dos valores de origem não comprovada ao Erário.
+                    </p>
+                  </>
+                )}
+              </div>
+            )}
 
             {/* Section IV */}
             <h2 className="font-sans font-bold text-sm text-slate-900 mt-8 mb-3 uppercase">
@@ -631,22 +803,32 @@ export function LegalDraftWorkbench({
             <p className="mb-3 text-justify">
               Ex positis, requer o Representante a Vossa Excelência se digne de:
             </p>
-            <ol className="list-decimal pl-6 space-y-2 mb-6 text-justify">
-              <li><strong>RECEBER E AUTUAR</strong> a presente representação com os documentos periciais em anexo;</li>
-              <li>Determinar a <strong>NOTIFICAÇÃO</strong> do Representado para apresentar resposta no prazo legal;</li>
-              <li>Intimar o ilustre membro do <strong>MINISTÉRIO PÚBLICO ELEITORAL</strong> para atuar no feito;</li>
-              <li>Determinar a <strong>QUEBRA DO SIGILO BANCÁRIO E FISCAL</strong> das contas eleitorais e dos fornecedores sob suspeição;</li>
-              {pieceType === "representacao_30a" ? (
-                <li>Julgar <strong>TOTALMENTE PROCEDENTE</strong> o pedido para determinar a <strong>CASSAÇÃO DO REGISTRO OU DIPLOMA</strong> do Representado, ex vi do art. 30-A, § 2º, da Lei nº 9.504/1997;</li>
-              ) : pieceType === "aije" ? (
-                <li>Julgar <strong>TOTALMENTE PROCEDENTE</strong> a ação para decretar a <strong>CASSAÇÃO DO DIPLOMA</strong> e a <strong>INELEGIBILIDADE</strong> do Representado pelo prazo de 8 (oito) anos;</li>
-              ) : pieceType === "noticia_crime" ? (
-                <li>Promover a <strong>INSTAURAÇÃO DE INQUÉRITO POLICIAL</strong> perante a Polícia Federal para a apuração dos ilícitos penais tipificados no Código Eleitoral;</li>
-              ) : (
-                <li>Determinar a <strong>DESAPROVAÇÃO DAS CONTAS</strong> com recolhimento dos montantes irregulares ao Tesouro Nacional;</li>
-              )}
-              <li>Protestar pela produção de todas as provas em direito admitidas, inclusive juntada suplementar de certidões e oitiva de testemunhas.</li>
-            </ol>
+            {aiDraft?.pedidos && aiDraft.pedidos.length > 0 ? (
+              <ol className="list-decimal pl-6 space-y-2 mb-6 text-justify">
+                {aiDraft.pedidos.map((p, idx) => (
+                  <li key={idx} className="leading-relaxed">
+                    {p}
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <ol className="list-decimal pl-6 space-y-2 mb-6 text-justify">
+                <li><strong>RECEBER E AUTUAR</strong> a presente representação com os documentos periciais em anexo;</li>
+                <li>Determinar a <strong>NOTIFICAÇÃO</strong> do Representado para apresentar resposta no prazo legal;</li>
+                <li>Intimar o ilustre membro do <strong>MINISTÉRIO PÚBLICO ELEITORAL</strong> para atuar no feito;</li>
+                <li>Determinar a <strong>QUEBRA DO SIGILO BANCÁRIO E FISCAL</strong> das contas eleitorais e dos fornecedores sob suspeição;</li>
+                {pieceType === "representacao_30a" ? (
+                  <li>Julgar <strong>TOTALMENTE PROCEDENTE</strong> o pedido para determinar a <strong>CASSAÇÃO DO REGISTRO OU DIPLOMA</strong> do Representado, ex vi do art. 30-A, § 2º, da Lei nº 9.504/1997;</li>
+                ) : pieceType === "aije" ? (
+                  <li>Julgar <strong>TOTALMENTE PROCEDENTE</strong> a ação para decretar a <strong>CASSAÇÃO DO DIPLOMA</strong> e a <strong>INELEGIBILIDADE</strong> do Representado pelo prazo de 8 (oito) anos;</li>
+                ) : pieceType === "noticia_crime" ? (
+                  <li>Promover a <strong>INSTAURAÇÃO DE INQUÉRITO POLICIAL</strong> perante a Polícia Federal para a apuração dos ilícitos penais tipificados no Código Eleitoral;</li>
+                ) : (
+                  <li>Determinar a <strong>DESAPROVAÇÃO DAS CONTAS</strong> com recolhimento dos montantes irregulares ao Tesouro Nacional;</li>
+                )}
+                <li>Protestar pela produção de todas as provas em direito admitidas, inclusive juntada suplementar de certidões e oitiva de testemunhas.</li>
+              </ol>
+            )}
 
             <p className="mb-8 text-justify">
               Atribui-se à causa o valor de alçada.<br />

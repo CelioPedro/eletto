@@ -12,6 +12,7 @@ import {
 } from "@/lib/queries";
 import { formatBRL, formatCpf, formatCnpj, formatCpfCnpj } from "@/lib/format";
 import { DossieActions } from "@/components/dossie/dossie-actions";
+import { DossierAiSummary } from "@/components/dossie/dossier-ai-summary";
 
 export const dynamic = "force-dynamic";
 
@@ -245,6 +246,32 @@ export default async function DossiePage({ params }: PageProps<"/politico/[id]">
             </div>
           ) : null}
         </section>
+
+        {/* Parecer Pericial de Risco & Sumário Executivo por IA */}
+        <DossierAiSummary
+          personId={personId}
+          candidateName={displayName}
+          office={latestCandidacy?.office ?? null}
+          party={latestCandidacy?.partyAbbr ?? null}
+          state={latestCandidacy?.state ?? null}
+          totalAssetsCents={latestAssetYear?.totalCents ?? 0}
+          assetGrowthPct={assetGrowthPct}
+          totalDonationsCents={finance.donationsTotalCents}
+          totalExpensesCents={finance.expensesTotalCents}
+          signalsCount={signalsCount}
+          signals={signals.map((s) => ({
+            rule: s.rule,
+            explanation: s.explanation,
+            severity: s.severity,
+          }))}
+          topSuppliers={topSuppliers.map((s) => ({
+            counterpartyName: s.counterpartyName,
+            counterpartyDoc: s.counterpartyDoc,
+            amountCents: s.amountCents,
+          }))}
+          earmarksCount={earmarksData.earmarks.length}
+          totalEarmarksCents={earmarksData.totalCommittedCents}
+        />
 
         {/* Seção 2: Auditoria Patrimonial & Declaração de Bens */}
         <section className="mb-8 break-inside-avoid">
