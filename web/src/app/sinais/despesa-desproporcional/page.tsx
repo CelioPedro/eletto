@@ -83,7 +83,7 @@ export default async function DespesaDesproporcionalPage({
           <EmptyState
             icon="◌"
             title="nenhuma despesa de campanha coletada ainda"
-            hint={<code>elosys tse-accounts --db elosys.db</code>}
+            hint={<span>Nenhuma despesa de campanha registrada para este filtro na base oficial.</span>}
           />
         ) : rows.length === 0 ? (
           <EmptyState icon="◌" title={`ninguém gastou em ${categoryLabel} em ${yearLabel}.`} />

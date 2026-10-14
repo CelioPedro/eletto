@@ -153,12 +153,7 @@ export default async function DiscursoPage({ searchParams }: PageProps<"/sinais/
           <EmptyState
             icon="◌"
             title="nenhum post revisado ainda"
-            hint={
-              <>
-                <code>elosys social-x</code> e <code>elosys social-review</code> (precisa de{" "}
-                <code>APIFY_TOKEN</code> e <code>DEEPSEEK_API_KEY</code>)
-              </>
-            }
+            hint={<span>Nenhum monitoramento de redes sociais ativo para os critérios selecionados.</span>}
           />
         ) : signals.length === 0 ? (
           <EmptyState icon="◌" title="nenhum sinal para esse filtro." />

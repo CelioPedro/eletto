@@ -101,7 +101,7 @@ export default async function CircularDonationsPage({
           <EmptyState
             icon="◌"
             title="nenhum sinal ainda"
-            hint={<code>elosys rule-circular-donations --db elosys.db</code>}
+            hint={<span>Nenhum sinal analítico de triangulação detectado para os critérios selecionados.</span>}
           />
         ) : signals.length === 0 ? (
           <EmptyState icon="◌" title="sem sinais para esse filtro." />

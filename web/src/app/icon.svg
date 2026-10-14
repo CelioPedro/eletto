@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="indicium-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#245bf3"/>
+      <stop offset="100%" stop-color="#3d28d9"/>
+    </linearGradient>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#05073f"/>
+      <stop offset="100%" stop-color="#02031a"/>
+    </linearGradient>
+  </defs>
+  <!-- Background Container -->
+  <rect width="32" height="32" rx="4" fill="url(#bg-grad)" stroke="rgba(187, 186, 251, 0.3)" stroke-width="1"/>
+  
+  <!-- Stylized eletto 'e' & network node mark in Indicium palette -->
+  <circle cx="16" cy="16" r="4.5" fill="none" stroke="url(#indicium-grad)" stroke-width="2.5"/>
+  <circle cx="16" cy="16" r="2" fill="#bbbafb"/>
+  <path d="M16 6.5 A 9.5 9.5 0 0 1 25.5 16" fill="none" stroke="url(#indicium-grad)" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M16 25.5 A 9.5 9.5 0 0 1 6.5 16" fill="none" stroke="url(#indicium-grad)" stroke-width="2.2" stroke-linecap="round"/>
+  <circle cx="25.5" cy="16" r="1.5" fill="#aae3e5"/>
+  <circle cx="6.5" cy="16" r="1.5" fill="#bbbafb"/>
+</svg>

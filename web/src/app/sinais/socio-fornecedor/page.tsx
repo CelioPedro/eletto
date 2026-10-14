@@ -94,12 +94,7 @@ export default async function SocioFornecedorPage({ searchParams }: PageProps<"/
           <EmptyState
             icon="◌"
             title="nenhum vínculo ainda"
-            hint={
-              <>
-                <code>elosys candidate-supplier-partner --db elosys.db</code> (precisa de quadro
-                societário já coletado via <code>receita-cnpj</code>)
-              </>
-            }
+            hint={<span>Nenhum vínculo societário com fornecedor registrado na base oficial para este filtro.</span>}
           />
         ) : rows.length === 0 ? (
           <EmptyState icon="◌" title="nada para esse filtro." />
