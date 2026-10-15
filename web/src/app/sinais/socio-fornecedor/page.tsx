@@ -51,18 +51,13 @@ export default async function SocioFornecedorPage({ searchParams }: PageProps<"/
           Candidato sócio de uma empresa que recebeu dinheiro de campanha
         </h1>
         <p className="mt-4 max-w-2xl text-[13px] leading-relaxed" style={{ color: "var(--muted)" }}>
-          O candidato aparece no <strong style={{ color: "var(--fg-2)" }}>quadro societário</strong> (Receita, via
-          BrasilAPI) de uma empresa que recebeu pagamento de alguma campanha.{" "}
-          <strong style={{ color: "var(--fg-2)" }}>A correspondência NÃO é confirmada</strong> — a fonte
-          mascara o CPF do sócio, então isso casa o nome normalizado com um candidato E os 6 dígitos
-          visíveis do CPF. Pode ser coincidência (duas pessoas, mesmo nome, mesmos 6 dígitos). Casos
-          ambíguos (2+ pessoas batendo) são descartados. Indício, não prova.
+          O candidato declarou <strong style={{ color: "var(--fg-2)" }}>quotas de capital ou participação societária</strong> perante a Justiça Eleitoral (TSE) em empresa que atuou como fornecedora e recebeu recursos de campanhas eleitorais. Casos em que a <strong style={{ color: "var(--red)" }}>própria campanha do candidato</strong> contratou sua empresa são destacados em vermelho como potencial conflito de interesses.
         </p>
 
         {summary.total === 0 ? null : (
           <div className="mono mt-6 flex flex-wrap items-center gap-x-6 gap-y-2" style={{ fontSize: 11, color: "var(--muted)" }}>
             <span>
-              <span style={{ color: "var(--fg-1)" }}>{summary.total.toLocaleString("pt-BR")}</span> vínculos possíveis
+              <span style={{ color: "var(--fg-1)" }}>{summary.total.toLocaleString("pt-BR")}</span> vínculos societários identificados
             </span>
             <span>
               <span style={{ color: "var(--red)" }}>{summary.self.toLocaleString("pt-BR")}</span> pagaram a própria empresa

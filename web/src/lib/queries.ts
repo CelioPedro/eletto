@@ -2367,6 +2367,7 @@ export async function getSupplierPartnerCount(opts: { filter?: SupplierPartnerFi
          FROM candidate_supplier_partner csp
          JOIN people p ON p.id = csp.person_id
          JOIN companies c ON c.id = csp.company_id
+         LEFT JOIN company_registry cr ON cr.company_id = c.id
          ${where}`
       )
       .get(...args) as { n: number }
@@ -2383,8 +2384,8 @@ function supplierPartnerWhere(opts: { filter?: SupplierPartnerFilter; q?: string
   if (opts.filter === "others") clauses.push("csp.paid_by_self = 0");
   const q = opts.q?.trim();
   if (q) {
-    clauses.push("(p.canonical_name LIKE ? OR coalesce(cr.legal_name, c.legal_name) LIKE ?)");
-    args.push(`%${normalizeName(q)}%`, `%${q}%`);
+    clauses.push("(p.canonical_name ILIKE ? OR coalesce(cr.legal_name, c.legal_name) ILIKE ?)");
+    args.push(`%${q}%`, `%${q}%`);
   }
   return { where: clauses.length ? `WHERE ${clauses.join(" AND ")}` : "", args };
 }

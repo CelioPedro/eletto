@@ -22,7 +22,8 @@ export function Sidebar({ counts }: { counts: SidebarCounts }) {
       href: "/sinais/socio-fornecedor", 
       label: "Sócio de fornecedor", 
       count: counts.supplierPartner > 0 ? counts.supplierPartner : undefined,
-      badge: counts.supplierPartner === 0 ? "BETA" : undefined 
+      badge: counts.supplierPartner === 0 ? "BETA" : undefined,
+      alert: counts.supplierPartner > 0
     },
     { href: "/sinais/analise-ia", label: "Análise de IA", count: counts.aiReview },
     { 
