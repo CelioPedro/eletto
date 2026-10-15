@@ -6,6 +6,8 @@ import type { SidebarCounts } from "@/lib/stats";
 import { ShellProvider } from "./shell-context";
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
+import { AuthProvider } from "@/components/auth/auth-context";
+import { AuthModal } from "@/components/auth/auth-modal";
 
 export function AppShell({ counts, children }: { counts: SidebarCounts; children: ReactNode }) {
   const pathname = usePathname();
@@ -13,22 +15,28 @@ export function AppShell({ counts, children }: { counts: SidebarCounts; children
 
   if (isFullScreenDoc) {
     return (
-      <ShellProvider>
-        <div className="min-h-screen bg-[var(--bg)]">{children}</div>
-      </ShellProvider>
+      <AuthProvider>
+        <ShellProvider>
+          <div className="min-h-screen bg-[var(--bg)]">{children}</div>
+          <AuthModal />
+        </ShellProvider>
+      </AuthProvider>
     );
   }
 
   return (
-    <ShellProvider>
-      <div className="shell-layout">
-        <Sidebar counts={counts} />
-        <div className="shell-main">
-          <Topbar />
-          <ContentBody>{children}</ContentBody>
+    <AuthProvider>
+      <ShellProvider>
+        <div className="shell-layout">
+          <Sidebar counts={counts} />
+          <div className="shell-main">
+            <Topbar />
+            <ContentBody>{children}</ContentBody>
+          </div>
         </div>
-      </div>
-    </ShellProvider>
+        <AuthModal />
+      </ShellProvider>
+    </AuthProvider>
   );
 }
 

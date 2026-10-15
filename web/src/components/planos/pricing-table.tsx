@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useAuth } from "@/components/auth/auth-context";
 
 type BillingCycle = "monthly" | "annual";
 
 export function PricingTable() {
+  const { user, openAuthModal, togglePlan } = useAuth();
   const [cycle, setCycle] = useState<BillingCycle>("annual");
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
   const [checkoutModal, setCheckoutModal] = useState<{
@@ -19,8 +21,13 @@ export function PricingTable() {
   });
 
   const isAnnual = cycle === "annual";
+  const isPro = user?.plan === "pro" || user?.plan === "escritorio";
 
   const handleOpenCheckout = (planName: string, price: string) => {
+    if (!user) {
+      openAuthModal("register");
+      return;
+    }
     setCheckoutModal({ open: true, planName, price });
   };
 
@@ -152,12 +159,18 @@ export function PricingTable() {
           </div>
 
           <div className="mt-8 pt-6 border-t border-[var(--border-1)]">
-            <Link
-              href="/"
-              className="btn flex w-full items-center justify-center py-2.5 text-xs font-semibold"
-            >
-              Usar Versão Gratuita
-            </Link>
+            {user && !isPro ? (
+              <div className="flex w-full items-center justify-center py-2 text-xs font-semibold text-[var(--muted)] border border-[var(--border-1)] rounded-lg">
+                ✓ Seu Plano Atual (3 créditos)
+              </div>
+            ) : (
+              <Link
+                href="/"
+                className="btn flex w-full items-center justify-center py-2.5 text-xs font-semibold"
+              >
+                Usar Versão Gratuita
+              </Link>
+            )}
           </div>
         </div>
 
@@ -238,18 +251,24 @@ export function PricingTable() {
           </div>
 
           <div className="mt-8 pt-6 border-t border-[var(--border-1)]">
-            <button
-              type="button"
-              onClick={() =>
-                handleOpenCheckout(
-                  "Perito & Jurídico Pro",
-                  isAnnual ? "R$ 390/mês (anual)" : "R$ 490/mês"
-                )
-              }
-              className="btn btn--primary flex w-full items-center justify-center py-2.5 text-xs font-bold"
-            >
-              Assinar Plano Pro
-            </button>
+            {isPro ? (
+              <div className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 py-2.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                <span>★ Seu Plano Atual (Ativo)</span>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() =>
+                  handleOpenCheckout(
+                    "Perito & Jurídico Pro",
+                    isAnnual ? "R$ 390/mês (anual)" : "R$ 490/mês"
+                  )
+                }
+                className="btn btn--primary flex w-full items-center justify-center py-2.5 text-xs font-bold cursor-pointer"
+              >
+                {user ? "Fazer Upgrade para Pro" : "Criar Conta & Assinar Pro"}
+              </button>
+            )}
           </div>
         </div>
 
@@ -520,10 +539,13 @@ export function PricingTable() {
             </div>
 
             <form
-              onSubmit={(e) => {
+              onSubmit={async (e) => {
                 e.preventDefault();
+                if (!isPro) {
+                  await togglePlan();
+                }
                 alert(
-                  `Obrigado pelo interesse no ${checkoutModal.planName}! Entraremos em contato imediatamente com sua proposta de ativação.`
+                  `Parabéns ${user?.name || ""}! Sua assinatura do ${checkoutModal.planName} foi ativada com sucesso. Você agora tem acesso Pro com dossiês oficiais ilimitados.`
                 );
                 closeCheckout();
               }}
@@ -545,6 +567,7 @@ export function PricingTable() {
                 <input
                   required
                   type="text"
+                  defaultValue={user?.name || ""}
                   placeholder="Dra. Mariana Silva"
                   className="mt-1 w-full rounded border border-[var(--border-1)] bg-[var(--surface)] px-3 py-2 text-[var(--fg-1)] outline-none focus:border-[var(--accent)]"
                 />
@@ -557,6 +580,7 @@ export function PricingTable() {
                 <input
                   required
                   type="email"
+                  defaultValue={user?.email || ""}
                   placeholder="mariana@advocacia.com.br"
                   className="mt-1 w-full rounded border border-[var(--border-1)] bg-[var(--surface)] px-3 py-2 text-[var(--fg-1)] outline-none focus:border-[var(--accent)]"
                 />
@@ -569,6 +593,7 @@ export function PricingTable() {
                 <input
                   required
                   type="tel"
+                  defaultValue={user?.phone || ""}
                   placeholder="(11) 98765-4321"
                   className="mt-1 w-full rounded border border-[var(--border-1)] bg-[var(--surface)] px-3 py-2 text-[var(--fg-1)] outline-none focus:border-[var(--accent)]"
                 />
@@ -580,6 +605,7 @@ export function PricingTable() {
                 </label>
                 <input
                   type="text"
+                  defaultValue={user?.organization || ""}
                   placeholder="Silva & Associados Eleitoral"
                   className="mt-1 w-full rounded border border-[var(--border-1)] bg-[var(--surface)] px-3 py-2 text-[var(--fg-1)] outline-none focus:border-[var(--accent)]"
                 />
@@ -588,9 +614,9 @@ export function PricingTable() {
               <div className="pt-2">
                 <button
                   type="submit"
-                  className="btn btn--primary w-full justify-center py-2.5 font-bold"
+                  className="btn btn--primary w-full justify-center py-2.5 font-bold cursor-pointer"
                 >
-                  Confirmar e Receber Chave de Acesso
+                  Confirmar e Ativar Acesso Pro Imediato
                 </button>
               </div>
 

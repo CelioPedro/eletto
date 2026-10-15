@@ -1145,4 +1145,22 @@ tr.source-zone--hover::before {
   tfoot {
     display: table-footer-group;
   }
+
+  .print-watermark {
+    position: fixed;
+    top: 40%;
+    left: -15%;
+    width: 130%;
+    text-align: center;
+    transform: rotate(-30deg);
+    font-size: 34px;
+    font-weight: 800;
+    color: rgba(225, 29, 72, 0.16) !important;
+    text-transform: uppercase;
+    letter-spacing: 5px;
+    pointer-events: none;
+    z-index: 99999;
+    border: 3px dashed rgba(225, 29, 72, 0.22);
+    padding: 12px 0;
+  }
 }

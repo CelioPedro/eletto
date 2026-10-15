@@ -11,8 +11,9 @@ import {
   getPersonCampaignOrgs,
   getPersonSupplierPartners,
 } from "@/lib/queries";
+import crypto from "crypto";
 import { formatBRL, formatCpf, formatCnpj, formatCpfCnpj } from "@/lib/format";
-import { DossieActions } from "@/components/dossie/dossie-actions";
+import { DossierContainer } from "@/components/dossie/dossier-container";
 import { DossierAiSummary } from "@/components/dossie/dossier-ai-summary";
 
 export const dynamic = "force-dynamic";
@@ -92,53 +93,28 @@ export default async function DossiePage({ params }: PageProps<"/politico/[id]">
       ? ((latestAssetYear.totalCents - previousAssetYear.totalCents) / previousAssetYear.totalCents) * 100
       : null;
 
+  const dataToHash = JSON.stringify({
+    personId,
+    name: displayName,
+    cpf: person.cpf,
+    candidaciesCount: candidacies.length,
+    assetsCount: declaredAssets.length,
+    assetsTotalCents: declaredAssetsByYear[0]?.totalCents ?? 0,
+    financeTotalCents: finance.expensesTotalCents,
+    signalsCount,
+    supplierPartnersCount: supplierPartners.length,
+  });
+  const sha256Hash = crypto.createHash("sha256").update(dataToHash).digest("hex").toUpperCase();
+
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-slate-900 print:bg-white print:text-black">
-      {/* Top action toolbar (hidden on print) */}
-      <DossieActions personId={personId} candidateName={displayName} />
-
-      {/* Forensic Document Paper Container */}
-      <main className="mx-auto my-8 max-w-[210mm] bg-white p-8 sm:p-14 shadow-2xl rounded-sm border border-slate-200 print:my-0 print:border-none print:shadow-none print:p-0">
-        
-        {/* Official Forensic Letterhead Header */}
-        <header className="border-b-2 border-slate-900 pb-5 mb-8">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="flex size-6 items-center justify-center rounded bg-blue-600 text-white font-bold text-xs">
-                  e
-                </span>
-                <span className="font-sans text-xl font-bold tracking-tight text-slate-900">
-                  eletto
-                </span>
-                <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-wider text-slate-700 border border-slate-200">
-                  AUDITORIA ELEITORAL
-                </span>
-              </div>
-              <p className="mt-1 font-mono text-[10px] text-slate-500 uppercase tracking-widest">
-                Sistema Integrado de Perícia e Conformidade Política
-              </p>
-            </div>
-
-            <div className="text-right font-mono text-[10px] text-slate-500">
-              <div><strong className="text-slate-800">Protocolo:</strong> {protocolId}</div>
-              <div><strong className="text-slate-800">Emissão:</strong> {formattedDate} (BRT)</div>
-              <div><strong className="text-slate-800">Classificação:</strong> Documento Público Pericial</div>
-            </div>
-          </div>
-
-          <div className="mt-6 text-center">
-            <h1 className="text-xl font-extrabold uppercase tracking-tight text-slate-950 sm:text-2xl">
-              Dossiê Pericial de Conformidade Eleitoral
-            </h1>
-            <p className="mt-1 text-xs text-slate-600 max-w-xl mx-auto">
-              Relatório pericial estruturado a partir de dados públicos do Tribunal Superior Eleitoral (TSE),
-              Receita Federal do Brasil (RFB) e Controladoria-Geral da União (CGU).
-            </p>
-          </div>
-        </header>
-
-        {/* Seção 1: Identificação Cadastral & Eleitoral */}
+    <DossierContainer
+      personId={personId}
+      candidateName={displayName}
+      protocolId={protocolId}
+      sha256Hash={sha256Hash}
+      formattedDate={formattedDate}
+    >
+      {/* Seção 1: Identificação Cadastral & Eleitoral */}
         <section className="mb-8">
           <h2 className="border-b border-slate-300 pb-1.5 font-mono text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
             <span className="flex size-4 items-center justify-center rounded bg-slate-900 text-[10px] text-white">1</span>
@@ -640,34 +616,6 @@ export default async function DossiePage({ params }: PageProps<"/politico/[id]">
           </section>
         ) : null}
 
-        {/* Seção 6: Cadeia de Custódia & Autenticação Criptográfica */}
-        <section className="mt-10 border-t-2 border-slate-900 pt-5 break-inside-avoid text-xs">
-          <div className="rounded border border-slate-300 bg-slate-50 p-4 font-mono text-[10px] text-slate-600 leading-relaxed">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-2 font-bold text-slate-800 uppercase">
-              <span>Declaração de Proveniência & Integridade Pericial</span>
-              <span>SHA-256 VERIFIED</span>
-            </div>
-            <p>
-              Este documento foi gerado computacionalmente pela plataforma <strong>eletto</strong> a partir de dados
-              públicos oficiais sob a disciplina da <strong>Lei Federal nº 12.527/2011 (Lei de Acesso à Informação)</strong> e
-              das resoluções de transparência do <strong>Tribunal Superior Eleitoral (TSE)</strong>.
-            </p>
-            <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[9.5px]">
-              <div>
-                <strong>Repositórios Primários:</strong> TSE (DivulgaCandContas / Prestação de Contas), Receita Federal (QSA/CNPJ).
-              </div>
-              <div>
-                <strong>Autenticador do Sistema:</strong> eletto Core Intelligence Engine v1.0
-              </div>
-            </div>
-            <div className="mt-3 text-center border-t border-slate-200 pt-2 text-slate-500 text-[9px]">
-              Para validação da autenticidade deste dossiê pericial, acesse:{" "}
-              <span className="text-blue-700 underline">https://eletto.app/politico/{personId}</span>
-            </div>
-          </div>
-        </section>
-
-      </main>
-    </div>
+    </DossierContainer>
   );
 }
