@@ -22,6 +22,33 @@ export function PricingTable() {
 
   const isAnnual = cycle === "annual";
   const isPro = user?.plan === "pro" || user?.plan === "escritorio";
+  const [loadingCheckout, setLoadingCheckout] = useState(false);
+
+  const handleStartStripeCheckout = async (planType: "monthly" | "annual") => {
+    if (!user) {
+      openAuthModal("register");
+      return;
+    }
+
+    setLoadingCheckout(true);
+    try {
+      const res = await fetch("/api/checkout/create-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ planType }),
+      });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        window.location.href = data.url;
+      } else {
+        alert(data.error || "Erro ao iniciar o checkout do Stripe.");
+        setLoadingCheckout(false);
+      }
+    } catch (err: unknown) {
+      alert((err as Error).message || "Falha de conexão com o gateway.");
+      setLoadingCheckout(false);
+    }
+  };
 
   const handleOpenCheckout = (planName: string, price: string) => {
     if (!user) {
@@ -258,15 +285,15 @@ export function PricingTable() {
             ) : (
               <button
                 type="button"
-                onClick={() =>
-                  handleOpenCheckout(
-                    "Perito & Jurídico Pro",
-                    isAnnual ? "R$ 390/mês (anual)" : "R$ 490/mês"
-                  )
-                }
-                className="btn btn--primary flex w-full items-center justify-center py-2.5 text-xs font-bold cursor-pointer"
+                disabled={loadingCheckout}
+                onClick={() => handleStartStripeCheckout(isAnnual ? "annual" : "monthly")}
+                className="btn btn--primary flex w-full items-center justify-center py-2.5 text-xs font-bold cursor-pointer shadow-md"
               >
-                {user ? "Fazer Upgrade para Pro" : "Criar Conta & Assinar Pro"}
+                {loadingCheckout
+                  ? "Conectando ao Stripe..."
+                  : user
+                  ? "Assinar com Stripe (Cartão)"
+                  : "Criar Conta & Assinar com Stripe"}
               </button>
             )}
           </div>
