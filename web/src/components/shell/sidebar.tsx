@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { SidebarCounts } from "@/lib/stats";
+import { SidebarUserProfile } from "@/components/auth/sidebar-user-profile";
 
 type NavLink = { href: string; label: string; count?: number; alert?: boolean; badge?: string };
 
@@ -63,7 +64,7 @@ export function Sidebar({ counts }: { counts: SidebarCounts }) {
         </div>
         <NavGroup title="Sinais" links={sinais} pathname={pathname} />
 
-        <div className="mt-auto pt-4 border-t border-[var(--border-1)]">
+        <div className="mt-auto pt-4 border-t border-[var(--border-1)] flex flex-col gap-2">
           <div className="rounded-xl border border-[var(--border-2)] bg-[var(--card-tone)] p-3 shadow-sm hover:border-[var(--accent)] transition-all">
             <div className="flex items-center justify-between">
               <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[var(--accent-2)]">
@@ -84,6 +85,8 @@ export function Sidebar({ counts }: { counts: SidebarCounts }) {
               Conhecer Planos
             </Link>
           </div>
+
+          <SidebarUserProfile />
         </div>
       </nav>
     </aside>
