@@ -15,6 +15,8 @@ type Ctx = {
   setPaletteOpen: (open: boolean) => void;
   analysisMode: boolean;
   setAnalysisMode: (on: boolean) => void;
+  sidebarCollapsed: boolean;
+  setSidebarCollapsed: (v: boolean | ((prev: boolean) => boolean)) => void;
 };
 
 const DEFAULT_HEADER: PageHeaderState = { group: "eletto", current: "" };
@@ -25,9 +27,40 @@ export function ShellProvider({ children }: { children: ReactNode }) {
   const [header, setHeader] = useState<PageHeaderState>(DEFAULT_HEADER);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [analysisMode, setAnalysisMode] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsedState] = useState(false);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("eletto_sidebar_collapsed");
+      if (stored === "true") {
+        setSidebarCollapsedState(true);
+      }
+    } catch {}
+  }, []);
+
+  const setSidebarCollapsed = (v: boolean | ((prev: boolean) => boolean)) => {
+    setSidebarCollapsedState((prev) => {
+      const next = typeof v === "function" ? v(prev) : v;
+      try {
+        localStorage.setItem("eletto_sidebar_collapsed", next ? "true" : "false");
+      } catch {}
+      return next;
+    });
+  };
 
   return (
-    <ShellCtx.Provider value={{ header, setHeader, paletteOpen, setPaletteOpen, analysisMode, setAnalysisMode }}>
+    <ShellCtx.Provider
+      value={{
+        header,
+        setHeader,
+        paletteOpen,
+        setPaletteOpen,
+        analysisMode,
+        setAnalysisMode,
+        sidebarCollapsed,
+        setSidebarCollapsed,
+      }}
+    >
       {children}
     </ShellCtx.Provider>
   );

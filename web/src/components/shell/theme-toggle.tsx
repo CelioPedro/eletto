@@ -82,3 +82,91 @@ export function ThemeToggle() {
     </button>
   );
 }
+
+export function SidebarThemeToggle({ vertical = false }: { vertical?: boolean }) {
+  const [theme, setTheme] = useState<Theme | null>(null);
+
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setTheme(readEffectiveTheme()));
+    const mq = window.matchMedia("(prefers-color-scheme: light)");
+    const onSystemChange = () => {
+      if (!localStorage.getItem("theme")) setTheme(readEffectiveTheme());
+    };
+    mq.addEventListener("change", onSystemChange);
+    return () => {
+      cancelAnimationFrame(raf);
+      mq.removeEventListener("change", onSystemChange);
+    };
+  }, []);
+
+  function setMode(next: Theme) {
+    if (theme === next) return;
+    localStorage.setItem("theme", next);
+    document.documentElement.setAttribute("data-theme", next);
+    setTheme(next);
+  }
+
+  const isLight = theme === "light";
+
+  if (vertical) {
+    return (
+      <div className="flex flex-col items-center gap-1 p-1 rounded-xl bg-white/[0.08] border border-white/12">
+        <button
+          type="button"
+          onClick={() => setMode("light")}
+          className={`p-1.5 rounded-lg transition-all ${
+            isLight
+              ? "bg-white text-[#040D42] shadow-sm"
+              : "text-white/60 hover:text-white"
+          }`}
+          title="Modo Claro"
+          aria-label="Modo Claro"
+        >
+          <Sun size={14} />
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode("dark")}
+          className={`p-1.5 rounded-lg transition-all ${
+            !isLight
+              ? "bg-white/20 text-white shadow-sm"
+              : "text-white/60 hover:text-white"
+          }`}
+          title="Modo Escuro"
+          aria-label="Modo Escuro"
+        >
+          <Moon size={14} />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-1 p-1 rounded-xl bg-white/[0.06] border border-white/10 w-full">
+      <button
+        type="button"
+        onClick={() => setMode("light")}
+        className={`flex-1 flex items-center justify-center gap-1.5 py-1 text-[11px] font-medium rounded-lg transition-all ${
+          isLight
+            ? "bg-white text-[#040D42] shadow-sm font-semibold"
+            : "text-white/60 hover:text-white"
+        }`}
+      >
+        <Sun size={12} />
+        <span>Claro</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => setMode("dark")}
+        className={`flex-1 flex items-center justify-center gap-1.5 py-1 text-[11px] font-medium rounded-lg transition-all ${
+          !isLight
+            ? "bg-white/20 text-white shadow-sm font-semibold"
+            : "text-white/60 hover:text-white"
+        }`}
+      >
+        <Moon size={12} />
+        <span>Escuro</span>
+      </button>
+    </div>
+  );
+}

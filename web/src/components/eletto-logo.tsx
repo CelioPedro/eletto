@@ -5,9 +5,16 @@ type LogoProps = {
   href?: string;
   className?: string;
   showTagline?: boolean;
+  iconOnly?: boolean;
 };
 
-export function ElettoLogo({ size = "default", href = "/", className = "", showTagline = false }: LogoProps) {
+export function ElettoLogo({
+  size = "default",
+  href = "/",
+  className = "",
+  showTagline = false,
+  iconOnly = false,
+}: LogoProps) {
   const isSm = size === "sm";
   const isLg = size === "lg";
 
@@ -68,24 +75,26 @@ export function ElettoLogo({ size = "default", href = "/", className = "", showT
       </span>
 
       {/* Logotipo eletto com expoente AI */}
-      <div className="flex flex-col justify-center">
-        <div className="flex items-baseline leading-none">
-          <span className={`font-sans font-semibold tracking-[-0.03em] text-[var(--fg-1)] ${textSize}`}>
-            eletto
-          </span>
-          <span
-            className={`font-mono font-bold text-[#1D63FF] tracking-tight relative ml-0.5 ${aiSize}`}
-            style={{ fontFeatureSettings: '"tnum"' }}
-          >
-            AI
-          </span>
+      {!iconOnly ? (
+        <div className="flex flex-col justify-center">
+          <div className="flex items-baseline leading-none">
+            <span className={`font-sans font-semibold tracking-[-0.03em] text-[var(--fg-1)] ${textSize}`}>
+              eletto
+            </span>
+            <span
+              className={`font-mono font-bold text-[#1D63FF] tracking-tight relative ml-0.5 ${aiSize}`}
+              style={{ fontFeatureSettings: '"tnum"' }}
+            >
+              AI
+            </span>
+          </div>
+          {showTagline ? (
+            <span className="text-[10px] text-[var(--muted-2)] font-mono font-medium leading-tight mt-0.5">
+              inteligência eleitoral
+            </span>
+          ) : null}
         </div>
-        {showTagline ? (
-          <span className="text-[10px] text-[var(--muted-2)] font-mono font-medium leading-tight mt-0.5">
-            inteligência eleitoral
-          </span>
-        ) : null}
-      </div>
+      ) : null}
     </div>
   );
 
