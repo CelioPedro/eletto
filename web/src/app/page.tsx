@@ -6,7 +6,7 @@ import { YearSelect } from "@/components/ui/year-select";
 import { CtaSearchButton } from "@/components/cta-search-button";
 import { getHomeStats } from "@/lib/stats";
 import { getExpenseYears } from "@/lib/queries";
-import { formatBRL } from "@/lib/format";
+import { formatBRL, formatCompactBRL } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -19,11 +19,34 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   const stats = await getHomeStats(year);
 
   const heroStats = [
-    { label: "pessoas cadastradas", value: stats.people.toLocaleString("pt-BR") },
-    { label: "candidaturas oficiais", value: stats.candidacies.toLocaleString("pt-BR") },
-    { label: "doações auditadas", value: formatBRL(stats.donationsTotalCents), tone: "green" as const },
-    { label: "despesas contratadas", value: formatBRL(stats.expensesTotalCents) },
-    { label: year ? "eleição selecionada" : "período coberto", value: stats.years },
+    {
+      label: "pessoas cadastradas",
+      value: stats.people.toLocaleString("pt-BR"),
+      sub: "candidatos e doadores",
+    },
+    {
+      label: "candidaturas oficiais",
+      value: stats.candidacies.toLocaleString("pt-BR"),
+      sub: "registros TSE",
+    },
+    {
+      label: "doações auditadas",
+      value: formatCompactBRL(stats.donationsTotalCents),
+      full: formatBRL(stats.donationsTotalCents),
+      sub: formatBRL(stats.donationsTotalCents),
+      tone: "green" as const,
+    },
+    {
+      label: "despesas contratadas",
+      value: formatCompactBRL(stats.expensesTotalCents),
+      full: formatBRL(stats.expensesTotalCents),
+      sub: formatBRL(stats.expensesTotalCents),
+    },
+    {
+      label: year ? "eleição selecionada" : "período coberto",
+      value: stats.years,
+      sub: year ? "prestação oficial TSE" : "7 eleições gerais e municipais",
+    },
   ];
 
   const officialSources = [
@@ -137,9 +160,14 @@ export default async function Home({ searchParams }: PageProps<"/">) {
       <section className="animate-in flex flex-col gap-4" style={{ animationDelay: "80ms" }}>
         <div className="kpis">
           {heroStats.map((s) => (
-            <div key={s.label} className="kpi">
+            <div key={s.label} className="kpi" title={s.full || s.value}>
               <div className="kpi__label">{s.label}</div>
               <div className={`kpi__value${s.tone === "green" ? " kpi__value--green" : ""}`}>{s.value}</div>
+              {s.sub ? (
+                <div className="kpi__sub" title={s.full || s.sub}>
+                  {s.sub}
+                </div>
+              ) : null}
             </div>
           ))}
         </div>

@@ -2,6 +2,24 @@ export function formatBRL(cents: number): string {
   return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+export function formatCompactBRL(cents: number): string {
+  const reais = cents / 100;
+  const abs = Math.abs(reais);
+  if (abs >= 1e12) {
+    return `R$ ${(reais / 1e12).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} tri`;
+  }
+  if (abs >= 1e9) {
+    return `R$ ${(reais / 1e9).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} bi`;
+  }
+  if (abs >= 1e6) {
+    return `R$ ${(reais / 1e6).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} mi`;
+  }
+  if (abs >= 1e3) {
+    return `R$ ${(reais / 1e3).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} mil`;
+  }
+  return formatBRL(cents);
+}
+
 export function formatCpfCnpj(digits: string | null): string {
   if (!digits) return "não disponível";
   return digits.length === 14 ? formatCnpj(digits) : formatCpf(digits);
