@@ -51,10 +51,10 @@ export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean 
       <button
         type="button"
         onClick={() => openAuthModal("login")}
-        className="w-full flex items-center justify-between gap-2.5 rounded-xl border border-white/12 bg-white/[0.06] hover:bg-white/[0.1] hover:border-white/20 p-2.5 transition-all cursor-pointer text-left group"
+        className="w-full flex items-center justify-between gap-2.5 rounded-xl border border-[var(--border-1)] bg-[var(--card-tone)] hover:border-[var(--accent)] hover:bg-[var(--hover)] p-2.5 transition-all cursor-pointer text-left group"
       >
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-white/10 text-white text-xs group-hover:scale-105 transition-transform flex-none border border-white/15">
+          <div className="flex size-8 items-center justify-center rounded-lg bg-[var(--hover)] text-[var(--fg-1)] text-xs group-hover:scale-105 transition-transform flex-none border border-[var(--border-1)]">
             👤
           </div>
           <div className="flex flex-col min-w-0">
@@ -62,7 +62,7 @@ export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean 
             <span className="text-[10.5px] text-[var(--muted-2)] font-mono leading-tight">Fazer login ou cadastro</span>
           </div>
         </div>
-        <span className="text-xs text-[var(--muted-2)] group-hover:text-white group-hover:translate-x-0.5 transition-all">
+        <span className="text-xs text-[var(--muted-2)] group-hover:text-[var(--accent)] group-hover:translate-x-0.5 transition-all">
           →
         </span>
       </button>
@@ -154,7 +154,7 @@ export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean 
       <button
         type="button"
         onClick={() => setDropdownOpen(!dropdownOpen)}
-        className="w-full flex items-center justify-between gap-2 rounded-xl border border-white/12 bg-white/[0.06] hover:bg-white/[0.1] hover:border-white/25 p-2.5 transition-all cursor-pointer text-left"
+        className="w-full flex items-center justify-between gap-2 rounded-xl border border-[var(--border-1)] bg-[var(--card-tone)] hover:border-[var(--accent)] hover:bg-[var(--hover)] p-2.5 transition-all cursor-pointer text-left"
         aria-label="Menu do Perfil"
       >
         <div className="flex items-center gap-2.5 min-w-0">
@@ -176,7 +176,7 @@ export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean 
             className={`px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider rounded border ${
               isPro
                 ? "bg-[#1D63FF] text-white border-[#1D63FF]"
-                : "bg-white/10 text-[var(--muted)] border-white/15"
+                : "bg-[var(--hover)] text-[var(--muted)] border-[var(--border-1)]"
             }`}
           >
             {isPro ? "PRO" : "FREE"}

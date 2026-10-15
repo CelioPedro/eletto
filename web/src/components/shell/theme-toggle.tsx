@@ -110,14 +110,14 @@ export function SidebarThemeToggle({ vertical = false }: { vertical?: boolean })
 
   if (vertical) {
     return (
-      <div className="flex flex-col items-center gap-1 p-1 rounded-xl bg-white/[0.08] border border-white/12">
+      <div className="flex flex-col items-center gap-1 p-1 rounded-xl bg-[var(--hover)] border border-[var(--border-1)]">
         <button
           type="button"
           onClick={() => setMode("light")}
-          className={`p-1.5 rounded-lg transition-all ${
+          className={`p-1.5 rounded-lg transition-all cursor-pointer ${
             isLight
-              ? "bg-white text-[#040D42] shadow-sm"
-              : "text-white/60 hover:text-white"
+              ? "bg-[var(--surface)] text-[#1D63FF] shadow-sm font-semibold"
+              : "text-[var(--muted-2)] hover:text-[var(--fg-1)]"
           }`}
           title="Modo Claro"
           aria-label="Modo Claro"
@@ -127,10 +127,10 @@ export function SidebarThemeToggle({ vertical = false }: { vertical?: boolean })
         <button
           type="button"
           onClick={() => setMode("dark")}
-          className={`p-1.5 rounded-lg transition-all ${
+          className={`p-1.5 rounded-lg transition-all cursor-pointer ${
             !isLight
-              ? "bg-white/20 text-white shadow-sm"
-              : "text-white/60 hover:text-white"
+              ? "bg-[var(--surface)] text-[var(--accent-2)] shadow-sm font-semibold"
+              : "text-[var(--muted-2)] hover:text-[var(--fg-1)]"
           }`}
           title="Modo Escuro"
           aria-label="Modo Escuro"
@@ -142,14 +142,14 @@ export function SidebarThemeToggle({ vertical = false }: { vertical?: boolean })
   }
 
   return (
-    <div className="flex items-center gap-1 p-1 rounded-xl bg-white/[0.06] border border-white/10 w-full">
+    <div className="flex items-center gap-1 p-1 rounded-xl bg-[var(--hover)] border border-[var(--border-1)] w-full">
       <button
         type="button"
         onClick={() => setMode("light")}
-        className={`flex-1 flex items-center justify-center gap-1.5 py-1 text-[11px] font-medium rounded-lg transition-all ${
+        className={`flex-1 flex items-center justify-center gap-1.5 py-1 text-[11px] font-medium rounded-lg transition-all cursor-pointer ${
           isLight
-            ? "bg-white text-[#040D42] shadow-sm font-semibold"
-            : "text-white/60 hover:text-white"
+            ? "bg-[var(--surface)] text-[#1D63FF] shadow-sm font-semibold"
+            : "text-[var(--muted-2)] hover:text-[var(--fg-1)]"
         }`}
       >
         <Sun size={12} />
@@ -158,10 +158,10 @@ export function SidebarThemeToggle({ vertical = false }: { vertical?: boolean })
       <button
         type="button"
         onClick={() => setMode("dark")}
-        className={`flex-1 flex items-center justify-center gap-1.5 py-1 text-[11px] font-medium rounded-lg transition-all ${
+        className={`flex-1 flex items-center justify-center gap-1.5 py-1 text-[11px] font-medium rounded-lg transition-all cursor-pointer ${
           !isLight
-            ? "bg-white/20 text-white shadow-sm font-semibold"
-            : "text-white/60 hover:text-white"
+            ? "bg-[var(--surface)] text-[var(--accent-2)] shadow-sm font-semibold"
+            : "text-[var(--muted-2)] hover:text-[var(--fg-1)]"
         }`}
       >
         <Moon size={12} />
