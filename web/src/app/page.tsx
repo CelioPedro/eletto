@@ -90,33 +90,39 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         actions={<YearSelect basePath="/" years={expenseYears} value={year} allLabel="todos os anos" />}
       />
 
-      {/* Hero Indicium Cobalt Ultramarine com Cortina de Luz Canelada */}
-      <div className="animate-in relative overflow-hidden border border-[var(--border-1)] bg-[#030B38] text-white px-8 py-20 sm:px-16 sm:py-28">
+      {/* Hero Indicium Cobalt Ultramarine com Refração Fractal Glass */}
+      <div className="animate-in relative overflow-hidden border border-[var(--border-1)] bg-[#020722] text-white px-8 py-20 sm:px-16 sm:py-28">
         <span className="card-dot card-dot--tl" />
         <span className="card-dot card-dot--tr" />
         <span className="card-dot card-dot--bl" />
         <span className="card-dot card-dot--br" />
         
-        {/* Cortina de refração canelada vertical */}
+        {/* Cortina de refração fractal glass com fade lateral */}
         <div className="hero-fluted-bg" aria-hidden />
+
+        {/* Gradiente de proteção total de contraste para a tipografia à esquerda */}
+        <div
+          className="absolute inset-0 bg-gradient-to-r from-[#020722] via-[#020722]/85 to-transparent pointer-events-none z-[1]"
+          aria-hidden
+        />
 
         <div className="relative max-w-3xl z-10">
           <div className="mb-6 flex items-center">
-            <div className="tag-pill border-white/25 bg-white/5 text-white">
+            <div className="tag-pill border-white/25 bg-[#030B38]/90 backdrop-blur-md text-white shadow-sm">
               <span className="tag-pill__square bg-[#1D63FF]" />
-              <span className="tracking-widest uppercase font-mono text-[11px]">
+              <span className="tracking-widest uppercase font-mono text-[11px] text-[#E2E8F8]">
                 INTELIGÊNCIA & AUDITORIA ELEITORAL
               </span>
               <span className="opacity-40">·</span>
-              <span className="text-[var(--accent-2)] font-mono text-[11px]">DADOS OFICIAIS</span>
+              <span className="text-[#5CE1E6] font-mono text-[11px] font-semibold">DADOS OFICIAIS</span>
             </div>
           </div>
 
-          <h1 className="text-[clamp(36px,5vw,60px)] font-normal text-white leading-[1.04] tracking-[-0.03em] text-balance">
+          <h1 className="text-[clamp(36px,5.2vw,62px)] font-normal text-white leading-[1.04] tracking-[-0.03em] text-balance">
             Audite relações, doações e patrimônio de qualquer político brasileiro.
           </h1>
 
-          <p className="mt-6 max-w-xl text-[15px] sm:text-[16px] leading-relaxed text-[#B4C2E4] font-normal">
+          <p className="mt-6 max-w-xl text-[16px] sm:text-[17px] leading-[1.6] text-[#E2E8F8] font-normal">
             Busca unificada por nome, CPF ou CNPJ. Conexões em rede, doações circulares, fornecedores
             e evolução patrimonial de 12 anos cruzados a partir de fontes oficiais.
           </p>
