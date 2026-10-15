@@ -149,21 +149,30 @@ export function FinanceTable({ title, scope, id, dir, counterpartyLabel, tone, y
 
   return (
     <section className="py-6">
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div className="label">{title}</div>
-        <button
-          type="button"
-          onClick={() => setFiltersOpen(true)}
-          className="btn"
-          style={{ position: "relative" }}
-        >
-          ⚙ filtros
-          {activeFilterCount > 0 ? (
-            <span className="badge badge--flag" style={{ padding: "0 5px", fontSize: 10 }}>
-              {activeFilterCount}
-            </span>
-          ) : null}
-        </button>
+      <div className="table-toolbar">
+        <div className="flex items-center gap-3">
+          <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-[var(--fg-1)]">
+            {title}
+          </span>
+          <span className="mono text-[11px] text-[var(--muted-2)]">
+            {total.toLocaleString("pt-BR")} {total === 1 ? "registro" : "registros"}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setFiltersOpen(true)}
+            className="btn py-1.5 px-3 text-[12px]"
+            style={{ position: "relative" }}
+          >
+            ⚙ filtros
+            {activeFilterCount > 0 ? (
+              <span className="badge badge--flag" style={{ padding: "0 5px", fontSize: 10 }}>
+                {activeFilterCount}
+              </span>
+            ) : null}
+          </button>
+        </div>
       </div>
 
       {filtersOpen ? (
@@ -277,11 +286,7 @@ export function FinanceTable({ title, scope, id, dir, counterpartyLabel, tone, y
           hint={activeFilterCount > 0 ? "tente ajustar ou limpar os filtros" : undefined}
         />
       ) : (
-        <>
-          <div className="mono mb-3" style={{ fontSize: 10.5, color: "var(--muted-2)" }}>
-            {total.toLocaleString("pt-BR")} {total === 1 ? "registro" : "registros"}
-          </div>
-          <div className="table-wrap">
+        <div className="table-wrap">
             <div className="overflow-x-auto">
               <table className="table min-w-[680px]">
                 <thead>
@@ -367,7 +372,6 @@ export function FinanceTable({ title, scope, id, dir, counterpartyLabel, tone, y
               </div>
             ) : null}
           </div>
-        </>
       )}
     </section>
   );

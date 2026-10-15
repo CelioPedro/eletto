@@ -23,7 +23,7 @@ export function SidebarUserProfile() {
   if (loading) {
     return (
       <div className="mt-3 pt-3 border-t border-[var(--border-1)]">
-        <div className="h-12 w-full animate-pulse rounded-xl bg-[var(--surface-2)] opacity-60" />
+        <div className="h-12 w-full animate-pulse bg-[var(--surface-2)] opacity-60" />
       </div>
     );
   }
@@ -34,10 +34,10 @@ export function SidebarUserProfile() {
         <button
           type="button"
           onClick={() => openAuthModal("login")}
-          className="w-full flex items-center justify-between gap-2.5 rounded-xl border border-[var(--border-2)] bg-[var(--card-tone)] p-2.5 hover:border-[var(--accent)] hover:bg-[var(--hover)] transition-all cursor-pointer shadow-xs text-left group"
+          className="w-full flex items-center justify-between gap-2.5 border border-[var(--border-1)] bg-[var(--card-tone)] p-2.5 hover:border-[var(--accent)] hover:bg-[var(--hover)] transition-all cursor-pointer text-left group"
         >
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="flex size-8 items-center justify-center rounded-lg bg-[var(--surface-2)] text-[var(--muted)] text-sm group-hover:text-[var(--fg-1)] transition-colors flex-none">
+            <div className="flex size-8 items-center justify-center bg-[var(--surface-2)] text-[var(--muted)] text-sm group-hover:text-[var(--fg-1)] transition-colors flex-none">
               👤
             </div>
             <div className="flex flex-col min-w-0">
@@ -61,11 +61,11 @@ export function SidebarUserProfile() {
       <button
         type="button"
         onClick={() => setDropdownOpen(!dropdownOpen)}
-        className="w-full flex items-center justify-between gap-2 rounded-xl border border-[var(--border-2)] bg-[var(--card-tone)] p-2.5 hover:border-[var(--accent)] hover:bg-[var(--hover)] transition-all cursor-pointer shadow-xs text-left"
+        className="w-full flex items-center justify-between gap-2 border border-[var(--border-1)] bg-[var(--card-tone)] p-2.5 hover:border-[var(--accent)] hover:bg-[var(--hover)] transition-all cursor-pointer text-left"
         aria-label="Menu do Perfil"
       >
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-blue-600/10 text-blue-600 dark:text-blue-400 font-mono text-xs font-bold flex-none border border-blue-500/20">
+          <div className="flex size-8 items-center justify-center bg-blue-600/10 text-blue-600 dark:text-blue-400 font-mono text-xs font-bold flex-none border border-blue-500/20">
             {user.name.charAt(0).toUpperCase()}
           </div>
           <div className="flex flex-col min-w-0">
@@ -79,10 +79,10 @@ export function SidebarUserProfile() {
         </div>
 
         <span
-          className={`flex-none rounded px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider ${
+          className={`flex-none px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider border ${
             isPro
-              ? "bg-blue-600 text-white shadow-xs"
-              : "bg-[var(--surface-2)] text-[var(--muted)]"
+              ? "bg-[#1D63FF] text-white border-[#1D63FF]"
+              : "bg-transparent text-[var(--muted)] border-[var(--border-1)]"
           }`}
         >
           {isPro ? "PRO ★" : "FREE"}
@@ -91,7 +91,7 @@ export function SidebarUserProfile() {
 
       {/* Upward Popover Menu */}
       {dropdownOpen ? (
-        <div className="absolute bottom-full left-0 mb-2 w-full rounded-xl border border-[var(--border-2)] bg-[var(--card-tone)] p-3.5 shadow-2xl z-50 text-xs animate-in fade-in zoom-in-95 backdrop-blur-md">
+        <div className="absolute bottom-full left-0 mb-2 w-full border border-[var(--border-2)] bg-[var(--card-tone)] p-3.5 z-50 text-xs animate-in fade-in zoom-in-95 backdrop-blur-md">
           <div className="border-b border-[var(--border-1)] pb-2.5 mb-2.5">
             <div className="font-semibold text-[var(--fg-1)] truncate text-xs">{user.name}</div>
             <div className="font-mono text-[10.5px] text-[var(--muted-2)] truncate mt-0.5">{user.email}</div>
@@ -123,7 +123,7 @@ export function SidebarUserProfile() {
                 await togglePlan();
                 setDropdownOpen(false);
               }}
-              className="w-full text-left rounded-lg px-2 py-1.5 text-[11px] font-medium text-[var(--accent-2)] hover:bg-[var(--hover)] transition-colors cursor-pointer flex items-center justify-between"
+              className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-[var(--accent-2)] hover:bg-[var(--hover)] transition-colors cursor-pointer flex items-center justify-between"
             >
               <span>Alternar Modo (Free ↔ Pro)</span>
               <span className="text-[10px] opacity-70">⚡ Testar</span>
@@ -135,7 +135,7 @@ export function SidebarUserProfile() {
               <Link
                 href="/planos"
                 onClick={() => setDropdownOpen(false)}
-                className="btn btn--primary w-full justify-center text-[11px] py-1.5 font-bold shadow-xs"
+                className="btn btn--primary w-full justify-center text-[11px] py-1.5 font-bold"
                 style={{ textDecoration: "none" }}
               >
                 Fazer Upgrade para Pro
@@ -150,7 +150,7 @@ export function SidebarUserProfile() {
                 await logout();
                 setDropdownOpen(false);
               }}
-              className="w-full text-left rounded-lg px-2 py-1.5 text-[11px] font-medium text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
+              className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
             >
               Sair da conta
             </button>

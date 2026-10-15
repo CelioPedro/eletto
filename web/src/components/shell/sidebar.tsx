@@ -66,21 +66,21 @@ export function Sidebar({ counts }: { counts: SidebarCounts }) {
         <NavGroup title="Sinais" links={sinais} pathname={pathname} />
 
         <div className="mt-auto pt-4 border-t border-[var(--border-1)] flex flex-col gap-2">
-          <div className="rounded-xl border border-[var(--border-2)] bg-[var(--card-tone)] p-3 shadow-sm hover:border-[var(--accent)] transition-all">
+          <div className="border border-[var(--border-1)] bg-[var(--card-tone)] p-3.5 hover:border-[var(--accent)] transition-all">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[var(--accent-2)]">
+              <span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-[var(--accent-2)]">
                 Eletto Pro
               </span>
-              <span className="rounded bg-[var(--accent)]/15 px-1.5 py-0.5 font-mono text-[9px] font-bold text-[var(--accent-2)]">
+              <span className="bg-[var(--accent)]/15 px-1.5 py-0.5 font-mono text-[9px] font-bold text-[var(--accent-2)] border border-[var(--accent)]/30">
                 PLANOS
               </span>
             </div>
-            <p className="mt-1 text-[11px] leading-snug text-[var(--muted)]">
+            <p className="mt-1.5 text-[11px] leading-snug text-[var(--muted)]">
               Dossiês periciais oficiais com hash SHA-256 e grafo profundo.
             </p>
             <Link
               href="/planos"
-              className="mt-2.5 btn btn--primary flex w-full items-center justify-center py-1.5 text-[11px] font-semibold"
+              className="mt-3 btn btn--primary flex w-full items-center justify-center py-2 text-xs font-medium"
               style={{ textDecoration: "none" }}
             >
               Conhecer Planos
@@ -107,7 +107,7 @@ function NavGroup({ title, links, pathname }: { title: string; links: NavLink[];
                 {l.count.toLocaleString("pt-BR")}
               </span>
             ) : l.badge ? (
-              <span className="ml-auto font-mono text-[9px] font-bold tracking-wider text-[var(--accent-2)] bg-[var(--accent)]/10 px-1.5 py-0.5 rounded border border-[var(--accent)]/20">
+              <span className="ml-auto font-mono text-[9px] font-semibold tracking-wider text-[var(--accent-2)] bg-[var(--accent)]/10 px-1.5 py-0.5 border border-[var(--accent)]/30">
                 {l.badge}
               </span>
             ) : null}

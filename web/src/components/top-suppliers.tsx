@@ -36,11 +36,15 @@ export function TopSuppliers({ years, initialYear }: { years: number[]; initialY
   const max = suppliers.length > 0 ? suppliers[0].totalCents : 1;
 
   return (
-    <section className="card">
+    <section className="card relative">
+      <span className="card-dot card-dot--tl" />
+      <span className="card-dot card-dot--tr" />
+      <span className="card-dot card-dot--bl" />
+      <span className="card-dot card-dot--br" />
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <div className="label">prestação de contas eleitorais · despesas pagas a fornecedores</div>
-          <h2 className="mt-2 text-[20px] font-medium tracking-tight">
+          <h2 className="mt-2 text-[22px] font-medium tracking-tight text-[var(--fg-1)]">
             Empresas que mais faturaram com campanhas
           </h2>
         </div>

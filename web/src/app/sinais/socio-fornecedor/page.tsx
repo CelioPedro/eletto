@@ -70,92 +70,9 @@ export default async function SocioFornecedorPage({ searchParams }: PageProps<"/
             </span>
           </div>
         )}
-
-        {/* Barra de Filtros e Ferramentas */}
-        <div className="mt-6 flex flex-col gap-3">
-          {/* Linha 1: Filtros de Visualização */}
-          <div className="flex flex-wrap items-center gap-2">
-            {FILTERS.map((f) => {
-              const isActive = filter === f.value;
-              const isSelf = f.value === "self";
-              return (
-                <Link
-                  key={f.value}
-                  href={hrefFor({ filtro: f.value, q })}
-                  className={`btn text-[12px] py-1.5 ${
-                    isActive
-                      ? "btn--primary"
-                      : isSelf
-                      ? "border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-500/10"
-                      : ""
-                  }`}
-                >
-                  <span>{f.label}</span>
-                  {isSelf && summary.self ? (
-                    <span
-                      className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-mono font-semibold ${
-                        isActive ? "bg-white/20 text-white" : "bg-red-500/15 text-red-600 dark:text-red-400"
-                      }`}
-                    >
-                      {summary.self}
-                    </span>
-                  ) : null}
-                  {f.value === "all" && summary.total ? (
-                    <span
-                      className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-mono opacity-70 ${
-                        isActive ? "bg-white/20 text-white" : "bg-black/5 dark:bg-white/10"
-                      }`}
-                    >
-                      {summary.total}
-                    </span>
-                  ) : null}
-                </Link>
-              );
-            })}
-          </div>
-
-          {/* Linha 2: Busca à esquerda e Ações de Exportação à direita */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
-            <form className="flex items-center gap-2" action="/sinais/socio-fornecedor">
-              <div className="input" style={{ width: 280 }}>
-                <input name="q" defaultValue={q} placeholder="buscar candidato ou empresa…" />
-              </div>
-              {filter !== "all" ? <input type="hidden" name="filtro" value={filter} /> : null}
-            </form>
-
-            <div className="flex flex-wrap items-center gap-2">
-              <a
-                href="/api/export/supplier-partners?filtro=self"
-                download
-                className="btn text-[12px] py-1.5 border-red-500/35 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 font-medium inline-flex items-center gap-1.5 shadow-2xs"
-                title="Baixar planilha pericial CSV com os 298 casos em que a campanha pagou a própria empresa"
-              >
-                <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
-                </svg>
-                <span>Exportar 298 Autopagamentos (CSV)</span>
-              </a>
-              <a
-                href={`/api/export/supplier-partners?filtro=${filter}${q ? `&q=${encodeURIComponent(q)}` : ""}`}
-                download
-                className="btn text-[12px] py-1.5 inline-flex items-center gap-1.5"
-                title="Baixar planilha CSV desta consulta atual"
-              >
-                <svg className="size-3.5 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
-                </svg>
-                <span>Exportar Consulta (CSV)</span>
-              </a>
-            </div>
-          </div>
-        </div>
       </section>
 
-      <section>
+      <section className="flex flex-col">
         {summary.total === 0 ? (
           <EmptyState
             icon="◌"
@@ -165,7 +82,91 @@ export default async function SocioFornecedorPage({ searchParams }: PageProps<"/
         ) : rows.length === 0 ? (
           <EmptyState icon="◌" title="nada para esse filtro." />
         ) : (
-          <div className="table-wrap">
+          <div>
+            {/* Barra de Ferramentas / Filtros Unificada no Topo da Tabela */}
+            <div className="table-toolbar">
+              {/* Filtros em pílulas retangulares */}
+              <div className="flex flex-wrap items-center gap-1.5">
+                {FILTERS.map((f) => {
+                  const isActive = filter === f.value;
+                  const isSelf = f.value === "self";
+                  return (
+                    <Link
+                      key={f.value}
+                      href={hrefFor({ filtro: f.value, q })}
+                      className={`btn text-[12px] py-1.5 px-3 ${
+                        isActive
+                          ? "btn--primary"
+                          : isSelf
+                          ? "border-red-500/40 text-red-600 dark:text-red-400 hover:bg-red-500/10"
+                          : ""
+                      }`}
+                    >
+                      <span>{f.label}</span>
+                      {isSelf && summary.self ? (
+                        <span
+                          className={`ml-1.5 px-1 py-0.5 font-mono text-[10px] font-semibold ${
+                            isActive ? "bg-white/20 text-white" : "bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30"
+                          }`}
+                        >
+                          {summary.self}
+                        </span>
+                      ) : null}
+                      {f.value === "all" && summary.total ? (
+                        <span
+                          className={`ml-1.5 px-1 py-0.5 font-mono text-[10px] opacity-70 ${
+                            isActive ? "bg-white/20 text-white" : "border border-[var(--border-1)]"
+                          }`}
+                        >
+                          {summary.total}
+                        </span>
+                      ) : null}
+                    </Link>
+                  );
+                })}
+              </div>
+
+              {/* Busca e Ações de Exportação */}
+              <div className="flex flex-wrap items-center gap-2">
+                <form className="flex items-center gap-2" action="/sinais/socio-fornecedor">
+                  <div className="input" style={{ width: 240 }}>
+                    <input name="q" defaultValue={q} placeholder="buscar candidato ou empresa…" />
+                  </div>
+                  {filter !== "all" ? <input type="hidden" name="filtro" value={filter} /> : null}
+                </form>
+
+                <div className="flex items-center gap-1.5">
+                  <a
+                    href="/api/export/supplier-partners?filtro=self"
+                    download
+                    className="btn text-[12px] py-1.5 px-2.5 border-red-500/35 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 font-medium inline-flex items-center gap-1.5"
+                    title="Baixar planilha pericial CSV com os casos em que a campanha pagou a própria empresa"
+                  >
+                    <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="7 10 12 15 17 10" />
+                      <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    <span>CSV Autopagamentos</span>
+                  </a>
+                  <a
+                    href={`/api/export/supplier-partners?filtro=${filter}${q ? `&q=${encodeURIComponent(q)}` : ""}`}
+                    download
+                    className="btn text-[12px] py-1.5 px-2.5 inline-flex items-center gap-1.5"
+                    title="Baixar planilha CSV desta consulta atual"
+                  >
+                    <svg className="size-3.5 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="7 10 12 15 17 10" />
+                      <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    <span>CSV Consulta</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div className="table-wrap">
             <div className="overflow-x-auto">
             <table className="table min-w-[760px]">
               <thead>
@@ -224,6 +225,7 @@ export default async function SocioFornecedorPage({ searchParams }: PageProps<"/
                 />
               </div>
             ) : null}
+            </div>
           </div>
         )}
       </section>
