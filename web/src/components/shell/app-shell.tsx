@@ -8,6 +8,7 @@ import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
 import { AuthProvider } from "@/components/auth/auth-context";
 import { AuthModal } from "@/components/auth/auth-modal";
+import { Footer } from "./footer";
 
 export function AppShell({ counts, children }: { counts: SidebarCounts; children: ReactNode }) {
   const pathname = usePathname();
@@ -52,5 +53,10 @@ function ContentBody({ children }: { children: ReactNode }) {
       </div>
     );
   }
-  return <div className="content__inner">{children}</div>;
+  return (
+    <div className="flex flex-col min-h-[calc(100vh-var(--navbar-offset))]">
+      <div className="content__inner flex-1">{children}</div>
+      <Footer />
+    </div>
+  );
 }

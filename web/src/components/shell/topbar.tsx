@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useShell } from "./shell-context";
 import { CommandPalette, useCommandPaletteShortcut } from "./command-palette";
 import { ThemeToggle } from "./theme-toggle";
+import { ElettoLogo } from "@/components/eletto-logo";
 
 export function Topbar() {
   const { header, setPaletteOpen } = useShell();
@@ -17,16 +18,7 @@ export function Topbar() {
         style={{ backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}
       />
       <div className="navbar">
-        <Link href="/" className="flex items-center gap-2 lg:hidden mr-2" style={{ textDecoration: "none" }}>
-          <span className="navbar__mark">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="3" fill="currentColor" />
-              <path d="M12 3a9 9 0 0 1 9 9" />
-              <path d="M12 21a9 9 0 0 1-9-9" />
-            </svg>
-          </span>
-          <span className="font-semibold text-[14px] text-[var(--fg-1)]">eletto</span>
-        </Link>
+        <ElettoLogo size="sm" className="lg:hidden mr-3" />
         <span className="crumb hidden lg:inline">{header.group}</span>
         {header.current ? (
           <>
