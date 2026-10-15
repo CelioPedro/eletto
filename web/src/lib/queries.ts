@@ -2871,3 +2871,159 @@ function safeJsonArray(s: string | null): string[] {
     return [];
   }
 }
+
+export type SharedDonorRow = {
+  donorCpfCnpj: string;
+  donorName: string;
+  amount1Cents: number;
+  amount2Cents: number;
+  totalCents: number;
+  count1: number;
+  count2: number;
+};
+
+export type SharedSupplierRow = {
+  supplierCpfCnpj: string;
+  supplierName: string;
+  amount1Cents: number;
+  amount2Cents: number;
+  totalCents: number;
+  count1: number;
+  count2: number;
+};
+
+export type CandidateComparisonProfile = {
+  header: PersonHeader;
+  photoUrl: string | null;
+  finance: FinanceSummary;
+  declaredAssetsTotalCents: number;
+  declaredAssetsLatestYear: number | null;
+  signalsCount: number;
+  signals: Signal[];
+};
+
+export type ComparisonResult = {
+  candidate1: CandidateComparisonProfile;
+  candidate2: CandidateComparisonProfile;
+  sharedDonors: SharedDonorRow[];
+  sharedSuppliers: SharedSupplierRow[];
+  totalSharedDonors: number;
+  totalSharedSuppliers: number;
+  sharedDonorsTotalCents: number;
+  sharedSuppliersTotalCents: number;
+};
+
+export async function getSharedDonors(personId1: number, personId2: number, limit = 50): Promise<SharedDonorRow[]> {
+  const sql = `
+    SELECT
+      d1.donor_cpf_cnpj,
+      COALESCE(MAX(d1.donor_name), MAX(d2.donor_name)) AS donor_name,
+      SUM(d1.amount_cents) AS amount1_cents,
+      SUM(d2.amount_cents) AS amount2_cents,
+      COUNT(DISTINCT d1.id) AS count1,
+      COUNT(DISTINCT d2.id) AS count2
+    FROM campaign_donation d1
+    JOIN campaign_org co1 ON co1.id = d1.campaign_org_id AND co1.person_id = ?
+    JOIN campaign_donation d2 ON d1.donor_cpf_cnpj = d2.donor_cpf_cnpj
+    JOIN campaign_org co2 ON co2.id = d2.campaign_org_id AND co2.person_id = ?
+    WHERE d1.donor_cpf_cnpj IS NOT NULL AND d1.donor_cpf_cnpj != ''
+    GROUP BY d1.donor_cpf_cnpj
+    ORDER BY (SUM(d1.amount_cents) + SUM(d2.amount_cents)) DESC
+    LIMIT ?
+  `;
+  const rows = (await db().prepare(sql).all(personId1, personId2, limit)) as Array<Record<string, unknown>>;
+  return rows.map((r) => {
+    const a1 = Number(r.amount1_cents) || 0;
+    const a2 = Number(r.amount2_cents) || 0;
+    return {
+      donorCpfCnpj: (r.donor_cpf_cnpj as string) ?? "",
+      donorName: (r.donor_name as string) ?? "Doador não identificado",
+      amount1Cents: a1,
+      amount2Cents: a2,
+      totalCents: a1 + a2,
+      count1: Number(r.count1) || 0,
+      count2: Number(r.count2) || 0,
+    };
+  });
+}
+
+export async function getSharedSuppliers(personId1: number, personId2: number, limit = 50): Promise<SharedSupplierRow[]> {
+  const sql = `
+    SELECT
+      e1.supplier_cpf_cnpj,
+      COALESCE(MAX(e1.supplier_name), MAX(e2.supplier_name)) AS supplier_name,
+      SUM(e1.amount_cents) AS amount1_cents,
+      SUM(e2.amount_cents) AS amount2_cents,
+      COUNT(DISTINCT e1.id) AS count1,
+      COUNT(DISTINCT e2.id) AS count2
+    FROM campaign_expense e1
+    JOIN campaign_org co1 ON co1.id = e1.campaign_org_id AND co1.person_id = ?
+    JOIN campaign_expense e2 ON e1.supplier_cpf_cnpj = e2.supplier_cpf_cnpj
+    JOIN campaign_org co2 ON co2.id = e2.campaign_org_id AND co2.person_id = ?
+    WHERE e1.supplier_cpf_cnpj IS NOT NULL AND e1.supplier_cpf_cnpj != ''
+    GROUP BY e1.supplier_cpf_cnpj
+    ORDER BY (SUM(e1.amount_cents) + SUM(e2.amount_cents)) DESC
+    LIMIT ?
+  `;
+  const rows = (await db().prepare(sql).all(personId1, personId2, limit)) as Array<Record<string, unknown>>;
+  return rows.map((r) => {
+    const a1 = Number(r.amount1_cents) || 0;
+    const a2 = Number(r.amount2_cents) || 0;
+    return {
+      supplierCpfCnpj: (r.supplier_cpf_cnpj as string) ?? "",
+      supplierName: (r.supplier_name as string) ?? "Fornecedor não identificado",
+      amount1Cents: a1,
+      amount2Cents: a2,
+      totalCents: a1 + a2,
+      count1: Number(r.count1) || 0,
+      count2: Number(r.count2) || 0,
+    };
+  });
+}
+
+export async function getCandidateComparisonProfile(personId: number): Promise<CandidateComparisonProfile | null> {
+  const [header, photoUrl, finance, assetsData, signalsData] = await Promise.all([
+    getPersonHeader(personId),
+    getPersonPhotoUrl(personId),
+    getPersonFinance(personId),
+    getPersonAssets(personId),
+    getPersonSignals(personId, 10),
+  ]);
+
+  if (!header) return null;
+
+  const latestAssets = assetsData.declaredAssetsByYear[assetsData.declaredAssetsByYear.length - 1];
+
+  return {
+    header,
+    photoUrl,
+    finance,
+    declaredAssetsTotalCents: latestAssets?.totalCents ?? 0,
+    declaredAssetsLatestYear: latestAssets?.year ?? null,
+    signalsCount: signalsData.signalsCount,
+    signals: signalsData.signals,
+  };
+}
+
+export async function getComparisonData(personId1: number, personId2: number): Promise<ComparisonResult | null> {
+  const [c1, c2, sharedDonors, sharedSuppliers] = await Promise.all([
+    getCandidateComparisonProfile(personId1),
+    getCandidateComparisonProfile(personId2),
+    getSharedDonors(personId1, personId2, 50),
+    getSharedSuppliers(personId1, personId2, 50),
+  ]);
+
+  if (!c1 || !c2) return null;
+
+  return {
+    candidate1: c1,
+    candidate2: c2,
+    sharedDonors,
+    sharedSuppliers,
+    totalSharedDonors: sharedDonors.length,
+    totalSharedSuppliers: sharedSuppliers.length,
+    sharedDonorsTotalCents: sharedDonors.reduce((acc, d) => acc + d.totalCents, 0),
+    sharedSuppliersTotalCents: sharedSuppliers.reduce((acc, s) => acc + s.totalCents, 0),
+  };
+}
+
