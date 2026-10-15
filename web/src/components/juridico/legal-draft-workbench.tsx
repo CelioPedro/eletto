@@ -3,7 +3,7 @@
 import { useState, useId } from "react";
 import Link from "next/link";
 import { formatBRL, formatCpf, formatCnpj, formatCpfCnpj } from "@/lib/format";
-import type { Candidacy, Signal, ParliamentaryEarmark } from "@/lib/queries";
+import type { Candidacy, Signal, ParliamentaryEarmark, SupplierPartnerRow } from "@/lib/queries";
 
 type PieceType =
   | "representacao_30a"
@@ -27,6 +27,7 @@ export type LegalDraftWorkbenchProps = {
   signals: Signal[];
   earmarks: ParliamentaryEarmark[];
   totalEarmarksCents: number;
+  supplierPartners?: SupplierPartnerRow[];
   protocolId: string;
   generatedDate: string;
 };
@@ -47,6 +48,7 @@ export function LegalDraftWorkbench({
   signals,
   earmarks,
   totalEarmarksCents,
+  supplierPartners = [],
   protocolId,
   generatedDate,
 }: LegalDraftWorkbenchProps) {
@@ -114,6 +116,15 @@ export function LegalDraftWorkbench({
                 locality: e.locality,
               }))
             : [],
+          supplierPartners: supplierPartners.map((p) => ({
+            companyName: p.companyName,
+            companyCnpj: p.companyCnpj,
+            totalPaidCents: p.paymentsTotalCents,
+            paymentsCount: p.paymentsCount,
+            paidBySelf: p.paidBySelf,
+            partnerRole: p.partnerRole,
+            partnerSince: p.partnerSince,
+          })),
           tone,
         }),
       });

@@ -9,6 +9,7 @@ import {
   getPersonSignals,
   getPersonEarmarks,
   getPersonCampaignOrgs,
+  getPersonSupplierPartners,
 } from "@/lib/queries";
 import { formatBRL, formatCpf, formatCnpj, formatCpfCnpj } from "@/lib/format";
 import { DossieActions } from "@/components/dossie/dossie-actions";
@@ -38,6 +39,7 @@ export default async function DossiePage({ params }: PageProps<"/politico/[id]">
     signalsData,
     earmarksData,
     campaignOrgs,
+    supplierPartners,
   ] = await Promise.all([
     getPersonCandidacies(personId),
     getPersonAssets(personId),
@@ -61,6 +63,7 @@ export default async function DossiePage({ params }: PageProps<"/politico/[id]">
     getPersonSignals(personId).catch(() => ({ signals: [], signalsCount: 0 })),
     getPersonEarmarks(personId).catch(() => ({ earmarks: [], totalCommittedCents: 0, totalPaidCents: 0 })),
     getPersonCampaignOrgs(personId).catch(() => []),
+    getPersonSupplierPartners(personId).catch(() => []),
   ]);
 
   const { declaredAssets, declaredAssetsByYear } = assetsData;
@@ -271,6 +274,14 @@ export default async function DossiePage({ params }: PageProps<"/politico/[id]">
           }))}
           earmarksCount={earmarksData.earmarks.length}
           totalEarmarksCents={earmarksData.totalCommittedCents}
+          supplierPartners={supplierPartners.map((p) => ({
+            companyName: p.companyName,
+            companyCnpj: p.companyCnpj,
+            totalPaidCents: p.paymentsTotalCents,
+            paymentsCount: p.paymentsCount,
+            paidBySelf: p.paidBySelf,
+            partnerRole: p.partnerRole,
+          }))}
         />
 
         {/* Seção 2: Auditoria Patrimonial & Declaração de Bens */}
@@ -541,11 +552,85 @@ export default async function DossiePage({ params }: PageProps<"/politico/[id]">
           </div>
         </section>
 
-        {/* Seção 5: Emendas Parlamentares (se houver) */}
+        {/* Seção 5: Conflito de Interesses & Vínculos Societários em Fornecedores */}
+        <section className="mb-8 break-inside-avoid">
+          <h2 className="border-b border-slate-300 pb-1.5 font-mono text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+            <span className="flex size-4 items-center justify-center rounded bg-slate-900 text-[10px] text-white">5</span>
+            Conflito de Interesses: Vínculos Societários em Fornecedores de Campanha
+          </h2>
+
+          <div className="mt-4">
+            {supplierPartners.length > 0 ? (
+              <div>
+                {supplierPartners.some((p) => p.paidBySelf) ? (
+                  <div className="mb-3 rounded-md border border-rose-300 bg-rose-50 p-3 text-xs text-rose-900 leading-relaxed">
+                    <strong>Alerta Pericial Crítico:</strong> O agente político declarou quotas ou participação societária
+                    em pessoa jurídica fornecedora que recebeu recursos da <strong>própria campanha eleitoral</strong>,
+                    configurando forte evidência documental de autofinanciamento e confusão patrimonial perante a Justiça Eleitoral.
+                  </div>
+                ) : null}
+
+                <table className="w-full border-collapse border border-slate-200 text-left text-xs">
+                  <thead>
+                    <tr className="bg-slate-50 font-mono text-[9.5px] uppercase text-slate-700">
+                      <th className="border border-slate-200 px-2.5 py-1.5">Empresa Fornecedora</th>
+                      <th className="border border-slate-200 px-2.5 py-1.5">Papel / Vínculo Declarado</th>
+                      <th className="border border-slate-200 px-2.5 py-1.5 text-right">Total Recebido</th>
+                      <th className="border border-slate-200 px-2.5 py-1.5 text-right">Origem do Pagamento</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {supplierPartners.map((p, idx) => (
+                      <tr key={idx} className="border-b border-slate-100">
+                        <td className="border border-slate-200 px-2.5 py-1.5">
+                          <div className="font-semibold text-slate-900 truncate max-w-[220px]">
+                            {p.companyName ?? "Nome não informado"}
+                          </div>
+                          <div className="font-mono text-[10px] text-slate-500">
+                            {formatCnpj(p.companyCnpj)}
+                          </div>
+                        </td>
+                        <td className="border border-slate-200 px-2.5 py-1.5 text-[11px] text-slate-700">
+                          {p.partnerRole ?? "Sócio Declarado"}
+                          {p.partnerSince ? (
+                            <span className="block text-[10px] text-slate-500">{p.partnerSince}</span>
+                          ) : null}
+                        </td>
+                        <td className="border border-slate-200 px-2.5 py-1.5 text-right font-mono font-bold text-slate-900 whitespace-nowrap">
+                          {formatBRL(p.paymentsTotalCents)}
+                          <div className="text-[9px] font-normal text-slate-500">
+                            {p.paymentsCount.toLocaleString("pt-BR")} despesas
+                          </div>
+                        </td>
+                        <td className="border border-slate-200 px-2.5 py-1.5 text-right font-mono">
+                          {p.paidBySelf ? (
+                            <span className="inline-block rounded bg-rose-100 text-rose-800 px-1.5 py-0.5 text-[9.5px] font-bold uppercase border border-rose-200">
+                              A Própria Campanha
+                            </span>
+                          ) : (
+                            <span className="text-slate-600 text-[10.5px]">
+                              {p.payerCandidacies} campanha(s)
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-center text-xs text-slate-500 font-mono">
+                Nenhum vínculo societário cruzado com fornecedores de campanha identificado no TSE.
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Seção 6: Emendas Parlamentares (se houver) */}
         {earmarksData.earmarks.length > 0 ? (
           <section className="mb-8 break-inside-avoid">
             <h2 className="border-b border-slate-300 pb-1.5 font-mono text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
-              <span className="flex size-4 items-center justify-center rounded bg-slate-900 text-[10px] text-white">5</span>
+              <span className="flex size-4 items-center justify-center rounded bg-slate-900 text-[10px] text-white">6</span>
               Emendas Parlamentares Executadas
             </h2>
             <div className="mt-3 flex items-center justify-between font-mono text-xs bg-slate-50 p-2.5 rounded border border-slate-200">

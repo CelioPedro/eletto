@@ -22,6 +22,7 @@ export async function POST(req: NextRequest) {
       topSuppliers,
       signals,
       earmarks,
+      supplierPartners = [],
       tone = "robusto",
     } = body;
 
@@ -50,7 +51,8 @@ Responda SEMPRE E UNICAMENTE com um objeto JSON com esta estrutura:
 Diretrizes:
 - Use terminologia forense brasileira impecável ('douto Juízo', 'subsunção', 'acervo probatório', 'lisura do pleito', etc.).
 - Cite os dados numéricos exatos fornecidos (valores em R$, percentuais de patrimônio, fornecedores e sinais).
-- Não invente fatos externos; use a auditoria fornecida como verdade documental.`;
+- Não invente fatos externos; use a auditoria fornecida como verdade documental.
+- Se houver registros em 'conflitoInteressesSocietario' (especialmente com 'paidBySelf: true', no qual a própria campanha contratou e pagou empresa da qual o candidato declarou cotas de capital), narre com ênfase a confusão patrimonial, desvio de finalidade eleitoral e autofinanciamento espúrio nos fatos; fundamente a subsunção ao Art. 30-A da Lei nº 9.504/1997 e aos Arts. 350/354 do Código Eleitoral no direito; e inclua expressamente no rol de pedidos o requerimento cautelar de quebra de sigilo bancário e fiscal da pessoa jurídica fornecedora.`;
 
     const factsPayload = {
       tipoPeca: pieceTitle,
@@ -72,6 +74,7 @@ Diretrizes:
         principaisDoadores: topDonors || [],
         principaisFornecedores: topSuppliers || [],
       },
+      conflitoInteressesSocietario: supplierPartners || [],
       sinaisDeAlertaIdentificados: signals || [],
       emendasOrcamentarias: earmarks || [],
       tom: tone,

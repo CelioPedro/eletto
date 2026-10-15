@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
       topSuppliers,
       earmarksCount,
       totalEarmarksCents,
+      supplierPartners = [],
     } = body;
 
     const systemPrompt = `Você é um perito criminal e analista sênior de inteligência financeira e eleitoral brasileira (padrão COAF / Polícia Federal / TSE).
@@ -44,7 +45,8 @@ Responda SEMPRE E UNICAMENTE com um objeto JSON com esta estrutura:
 
 Diretrizes:
 - Seja técnico, objetivo e embasado estritamente nos dados recebidos.
-- Diferencie movimentação partidária regular de despesas atípicas de alto risco.`;
+- Diferencie movimentação partidária regular de despesas atípicas de alto risco.
+- Se houver registros em 'conflitoInteressesSocietario' (especialmente com 'paidBySelf: true'), trate como anomalia grave/crítica de autofinanciamento e confusão patrimonial com recursos eleitorais, elevando o forensicScore (geralmente >= 75) e destacando obrigatoriamente nos keyFindings e recommendedSteps (ex: quebra de sigilo bancário da pessoa jurídica e verificação de prestação efetiva dos serviços).`;
 
     const profileData = {
       agentePolitico: {
@@ -62,6 +64,7 @@ Diretrizes:
         despesasReais: totalExpensesCents ? totalExpensesCents / 100 : 0,
         maioresFornecedores: topSuppliers || [],
       },
+      conflitoInteressesSocietario: supplierPartners || [],
       sinaisDeAlerta: {
         quantidade: signalsCount || 0,
         detalhes: signals || [],

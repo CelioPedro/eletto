@@ -7,6 +7,7 @@ import {
   getFinancePage,
   getPersonSignals,
   getPersonEarmarks,
+  getPersonSupplierPartners,
 } from "@/lib/queries";
 import { LegalDraftWorkbench } from "@/components/juridico/legal-draft-workbench";
 
@@ -32,6 +33,7 @@ export default async function PecaJuridicaPage({ params }: PageProps<"/politico/
     topSuppliersPage,
     signalsData,
     earmarksData,
+    supplierPartners,
   ] = await Promise.all([
     getPersonCandidacies(personId),
     getPersonAssets(personId),
@@ -54,6 +56,7 @@ export default async function PecaJuridicaPage({ params }: PageProps<"/politico/
     }).catch(() => ({ rows: [], total: 0, pageSize: 25 })),
     getPersonSignals(personId).catch(() => ({ signals: [], signalsCount: 0 })),
     getPersonEarmarks(personId).catch(() => ({ earmarks: [], totalCommittedCents: 0, totalPaidCents: 0 })),
+    getPersonSupplierPartners(personId).catch(() => []),
   ]);
 
   const { declaredAssets, declaredAssetsByYear } = assetsData;
@@ -100,6 +103,7 @@ export default async function PecaJuridicaPage({ params }: PageProps<"/politico/
       signals={signals}
       earmarks={earmarksData.earmarks}
       totalEarmarksCents={earmarksData.totalCommittedCents}
+      supplierPartners={supplierPartners}
       protocolId={protocolId}
       generatedDate={formattedDate}
     />

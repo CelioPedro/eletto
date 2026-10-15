@@ -1558,7 +1558,7 @@ export type GraphNodeInfo = {
   photoUrl: string | null;
 };
 
-export type GraphEdgeKind = "donation" | "payment";
+export type GraphEdgeKind = "donation" | "payment" | "ownership";
 
 export type GraphEdge = {
   source: string; // cpfCnpj (the donor, or the politician who paid)
@@ -1678,6 +1678,26 @@ type IncidentRow = {
 async function incidentEdges(anchorIds: string[]): Promise<IncidentRow[]> {
   if (anchorIds.length === 0) return [];
   const ph = anchorIds.map(() => "?").join(", ");
+  const hasCsp = await hasTable("candidate_supplier_partner");
+  const cspUnion = hasCsp
+    ? `
+    UNION ALL
+    SELECT p.cpf AS anchor, c.cnpj AS other, 'ownership' AS kind,
+           csp.payments_total_cents AS amountCents, csp.payments_count AS n, 1 AS anchorIsSource
+    FROM candidate_supplier_partner csp
+    JOIN people p ON p.id = csp.person_id
+    JOIN companies c ON c.id = csp.company_id
+    WHERE p.cpf IN (${ph}) AND c.cnpj IS NOT NULL
+    UNION ALL
+    SELECT c.cnpj AS anchor, p.cpf AS other, 'ownership' AS kind,
+           csp.payments_total_cents AS amountCents, csp.payments_count AS n, 0 AS anchorIsSource
+    FROM candidate_supplier_partner csp
+    JOIN people p ON p.id = csp.person_id
+    JOIN companies c ON c.id = csp.company_id
+    WHERE c.cnpj IN (${ph}) AND p.cpf IS NOT NULL
+    `
+    : "";
+
   const sql = `
     SELECT d.donor_cpf_cnpj AS anchor, p.cpf AS other, 'donation' AS kind,
            sum(d.amount_cents) AS amountCents, count(*) AS n, 1 AS anchorIsSource
@@ -1706,9 +1726,11 @@ async function incidentEdges(anchorIds: string[]): Promise<IncidentRow[]> {
     JOIN people p ON p.id = co.person_id
     WHERE e.supplier_cpf_cnpj IN (${ph}) AND p.cpf IS NOT NULL AND p.cpf != e.supplier_cpf_cnpj
     GROUP BY e.supplier_cpf_cnpj, p.cpf
+    ${cspUnion}
   `;
+  const repeatCount = hasCsp ? 6 : 4;
   const params: string[] = [];
-  for (let i = 0; i < 4; i++) params.push(...anchorIds);
+  for (let i = 0; i < repeatCount; i++) params.push(...anchorIds);
   return await db().prepare(sql).all(...params) as IncidentRow[];
 }
 
@@ -2415,6 +2437,36 @@ export async function getSupplierPartners(opts: {
        LIMIT ? OFFSET ?`
     )
     .all(...args, limit, offset) as Array<Record<string, unknown>>;
+  return rows.map((r) => ({
+    personId: r.personId as number,
+    personName: (r.personName as string) ?? null,
+    companyCnpj: r.companyCnpj as string,
+    companyName: (r.companyName as string) ?? null,
+    partnerRole: (r.partnerRole as string) ?? null,
+    partnerSince: (r.partnerSince as string) ?? null,
+    paymentsTotalCents: (r.paymentsTotalCents as number) ?? 0,
+    paymentsCount: (r.paymentsCount as number) ?? 0,
+    payerCandidacies: (r.payerCandidacies as number) ?? 0,
+    paidBySelf: !!r.paidBySelf,
+  }));
+}
+
+export async function getPersonSupplierPartners(personId: number): Promise<SupplierPartnerRow[]> {
+  if (!await hasTable("candidate_supplier_partner")) return [];
+  const rows = await db().prepare(
+      `SELECT csp.person_id AS personId, p.canonical_name AS personName,
+              c.cnpj AS companyCnpj, coalesce(cr.legal_name, c.legal_name) AS companyName,
+              csp.partner_role AS partnerRole, csp.partner_since AS partnerSince,
+              csp.payments_total_cents AS paymentsTotalCents, csp.payments_count AS paymentsCount,
+              csp.payer_candidacies AS payerCandidacies, csp.paid_by_self AS paidBySelf
+       FROM candidate_supplier_partner csp
+       JOIN people p ON p.id = csp.person_id
+       JOIN companies c ON c.id = csp.company_id
+       LEFT JOIN company_registry cr ON cr.company_id = c.id
+       WHERE csp.person_id = ?
+       ORDER BY csp.paid_by_self DESC, csp.payments_total_cents DESC`
+    )
+    .all(personId) as Array<Record<string, unknown>>;
   return rows.map((r) => ({
     personId: r.personId as number,
     personName: (r.personName as string) ?? null,

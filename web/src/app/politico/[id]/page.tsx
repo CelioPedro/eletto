@@ -6,6 +6,7 @@ import {
   getPersonSocialMedia, getPersonAssets, getPersonSignals, getCycleEdgeAmounts,
   getPoliticianDonationNetwork, getDiscourseSignals, getDiscourseCount, getExpenseYears,
   getPersonPhotoUrl, getPersonPhotoProvenance, getPersonEarmarks,
+  getPersonSupplierPartners,
 } from "@/lib/queries";
 import { SourceZone } from "@/components/source-zone";
 import { PoliticianNetwork } from "@/components/politician-network";
@@ -189,6 +190,10 @@ export default async function PoliticoPage({ params, searchParams }: PageProps<"
           <NetworkSection personId={person.id} displayName={displayName} />
         </Suspense>
   
+        <Suspense fallback={<SignalsSkeleton />}>
+          <SupplierPartnersSection personId={person.id} />
+        </Suspense>
+
         <Suspense fallback={<SignalsSkeleton />}>
           <SignalsSection personId={person.id} personCpf={person.cpf} />
         </Suspense>
@@ -477,6 +482,119 @@ async function FinanceSection({
         </div>
       ) : null}
     </div>
+  );
+}
+
+async function SupplierPartnersSection({ personId }: { personId: number }) {
+  const partners = await getPersonSupplierPartners(personId);
+  if (partners.length === 0) return null;
+
+  const hasSelfPayment = partners.some((p) => p.paidBySelf);
+  const totalCents = partners.reduce((acc, p) => acc + p.paymentsTotalCents, 0);
+  const totalPayments = partners.reduce((acc, p) => acc + p.paymentsCount, 0);
+
+  return (
+    <Section
+      id="socio-fornecedor"
+      tocLabel="sócio de fornecedor"
+      title="conflito de interesses · sócio de fornecedor"
+    >
+      <div
+        className={`rounded-xl border p-4 mb-4 ${
+          hasSelfPayment
+            ? "border-red-500/40 bg-red-500/5 dark:bg-red-950/20"
+            : "border-amber-500/40 bg-amber-500/5 dark:bg-amber-950/20"
+        }`}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+          <span
+            className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold tracking-wider uppercase ${
+              hasSelfPayment
+                ? "bg-red-600 text-white"
+                : "bg-amber-500 text-black"
+            }`}
+          >
+            {hasSelfPayment
+              ? "Alerta Crítico: Pagamento à Própria Empresa"
+              : "Vínculo Societário em Fornecedor"}
+          </span>
+          <span className="font-mono text-[11px] text-[var(--muted-2)]">
+            {formatBRL(totalCents)} em {totalPayments.toLocaleString("pt-BR")} despesas
+          </span>
+        </div>
+        <p className="text-[12.5px] leading-relaxed text-[var(--fg-2)]">
+          {hasSelfPayment ? (
+            <>
+              O candidato declarou cotas ou participação societária oficial no TSE em empresa fornecedora que{" "}
+              <strong className="text-red-600 dark:text-red-400 font-semibold">
+                recebeu recursos da sua própria campanha eleitoral
+              </strong>
+              , configurando forte indício de confusão patrimonial e autofinanciamento.
+            </>
+          ) : (
+            <>
+              O candidato declarou cotas ou participação societária oficial no TSE em empresa fornecedora que{" "}
+              recebeu pagamentos de outras campanhas eleitorais.
+            </>
+          )}
+        </p>
+      </div>
+
+      <div className="table-wrap">
+        <div className="overflow-x-auto">
+          <table className="table min-w-[640px]">
+            <thead>
+              <tr>
+                <th>empresa fornecedora</th>
+                <th>papel declarado · desde</th>
+                <th className="text-right">recebido de campanhas</th>
+                <th className="text-right">quem contratou</th>
+              </tr>
+            </thead>
+            <tbody>
+              {partners.map((p) => (
+                <tr key={p.companyCnpj}>
+                  <td className="max-w-[240px]">
+                    <Link
+                      href={`/cnpj/${p.companyCnpj}`}
+                      className="font-medium hover:underline text-[var(--fg-1)]"
+                    >
+                      {p.companyName ?? formatCnpj(p.companyCnpj)}
+                    </Link>
+                    <div className="font-mono text-[10px] text-[var(--muted-2)]">
+                      {formatCnpj(p.companyCnpj)}
+                    </div>
+                  </td>
+                  <td className="text-[12px] text-[var(--muted)]">
+                    {p.partnerRole ?? "Sócio Declarado"}
+                    {p.partnerSince ? (
+                      <span className="text-[var(--muted-2)]"> · {p.partnerSince}</span>
+                    ) : null}
+                  </td>
+                  <td className="num text-right font-mono" style={{ color: "var(--accent-2)" }}>
+                    {formatBRL(p.paymentsTotalCents)}
+                    <div className="text-[9.5px] text-[var(--muted-2)]">
+                      {p.paymentsCount.toLocaleString("pt-BR")} despesas
+                    </div>
+                  </td>
+                  <td className="num text-right">
+                    {p.paidBySelf ? (
+                      <span className="font-semibold text-red-600 dark:text-red-400">
+                        a própria campanha
+                      </span>
+                    ) : (
+                      <span className="text-[var(--muted)]">
+                        {p.payerCandidacies} campanha(s)
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </Section>
   );
 }
 

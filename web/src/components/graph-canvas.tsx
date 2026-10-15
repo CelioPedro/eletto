@@ -130,17 +130,24 @@ function GraphCanvasInner() {
     return edgeList.map((e) => {
       const isCircular = circular.has(`${e.source}|${e.target}`);
       const kind = e.data!.kind;
-      const color = isCircular ? "var(--red)" : kind === "donation" ? "var(--green)" : "var(--accent-2)";
+      const color = isCircular
+        ? "var(--red)"
+        : kind === "ownership"
+          ? "#e11d48"
+          : kind === "donation"
+            ? "var(--green)"
+            : "var(--accent-2)";
       return {
         ...e,
         data: { ...e.data!, circular: isCircular },
         style: {
           stroke: color,
-          strokeWidth: Math.min(2.6, 0.6 + Math.log10(Math.max(1, e.data!.amountCents) / 100) * 0.4),
-          opacity: isCircular ? 0.95 : 0.55,
+          strokeWidth: Math.min(2.8, 0.8 + Math.log10(Math.max(1, e.data!.amountCents) / 100) * 0.4),
+          strokeDasharray: kind === "ownership" ? "5,3" : undefined,
+          opacity: isCircular ? 0.95 : kind === "ownership" ? 0.9 : 0.55,
         },
         animated: isCircular,
-        zIndex: isCircular ? 10 : 0,
+        zIndex: isCircular ? 10 : kind === "ownership" ? 5 : 0,
         markerEnd: { type: MarkerType.ArrowClosed, color, width: 16, height: 16 },
       };
     });
@@ -741,6 +748,11 @@ function GraphCanvasInner() {
                     >
                       <div className="truncate min-w-0">
                         <span className="font-bold mr-1">{e.source === selectedNode.id ? "→" : "←"}</span>
+                        {e.data?.kind === "ownership" ? (
+                          <span className="mr-1.5 rounded bg-rose-500/20 px-1 py-0.2 text-[9px] font-bold text-rose-300 uppercase">
+                            Sócio
+                          </span>
+                        ) : null}
                         <span className="text-[var(--fg-1)] font-medium">
                           {labelFor(e.source === selectedNode.id ? e.target : e.source)}
                         </span>

@@ -81,6 +81,30 @@ export default async function SocioFornecedorPage({ searchParams }: PageProps<"/
             <input name="q" defaultValue={q} placeholder="buscar candidato ou empresa…" />
           </div>
           {filter !== "all" ? <input type="hidden" name="filtro" value={filter} /> : null}
+
+          <div className="ml-auto flex items-center gap-2">
+            <a
+              href="/api/export/supplier-partners?filtro=self"
+              download
+              className="inline-flex items-center gap-1.5 rounded-md border border-red-500/40 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 px-3 py-1.5 text-[11px] font-semibold transition-all shadow-xs"
+              title="Baixar planilha pericial CSV com os 298 casos em que a campanha pagou a própria empresa"
+            >
+              <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              <span>Exportar 298 Autopagamentos (CSV)</span>
+            </a>
+            <a
+              href={`/api/export/supplier-partners?filtro=${filter}${q ? `&q=${encodeURIComponent(q)}` : ""}`}
+              download
+              className="btn text-[11px] py-1.5"
+              title="Baixar planilha CSV desta consulta atual"
+            >
+              Exportar Consulta (CSV)
+            </a>
+          </div>
         </form>
       </section>
 

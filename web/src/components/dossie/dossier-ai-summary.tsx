@@ -19,6 +19,14 @@ export type DossierAiSummaryProps = {
   topSuppliers: Array<{ counterpartyName: string | null; counterpartyDoc: string | null; amountCents: number }>;
   earmarksCount: number;
   totalEarmarksCents: number;
+  supplierPartners?: Array<{
+    companyName: string | null;
+    companyCnpj: string;
+    totalPaidCents: number;
+    paymentsCount: number;
+    paidBySelf: boolean;
+    partnerRole: string | null;
+  }>;
 };
 
 type AiAnalysis = {
