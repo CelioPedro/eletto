@@ -267,41 +267,35 @@ a.card:hover, button.card:hover {
   border-color: var(--border-2);
 }
 
-/* Indicium Architectural Hover Inversion */
+/* Indicium Architectural Hover Inversion (Screenshot 1) */
 .card--interactive {
   cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .card--interactive:hover {
-  background: #FFFFFF;
-  color: #040D42;
-  border-color: #FFFFFF;
+  background: #FFFFFF !important;
+  color: #040D42 !important;
+  border-color: #FFFFFF !important;
 }
-.card--interactive:hover .text-muted,
-.card--interactive:hover [class*="text-[var(--muted)"],
-.card--interactive:hover [class*="text-[var(--muted-2)"] {
+.card--interactive:hover .card-title,
+.card--interactive:hover h3 {
+  color: #040D42 !important;
+}
+.card--interactive:hover .card-desc,
+.card--interactive:hover p {
   color: #3B4C7E !important;
+}
+.card--interactive:hover .card-icon,
+.card--interactive:hover svg {
+  color: #1D63FF !important;
+  stroke: #1D63FF !important;
 }
 .card--interactive:hover .card-dot {
   background-color: #1D63FF;
 }
-.card--interactive:hover .pill-tech {
+.card--interactive:hover .tag-pill {
   border-color: #D5DFEE;
   color: #040D42;
-  background: rgba(3, 11, 56, 0.04);
-}
-.card--interactive:hover .btn--outline {
-  border-color: #040D42;
-  color: #040D42;
-}
-:root[data-theme="light"] .card--interactive:hover {
-  border-color: var(--accent);
-  background: var(--hover);
-  color: var(--fg-1);
-}
-:root[data-theme="light"] .card--interactive:hover .text-muted,
-:root[data-theme="light"] .card--interactive:hover [class*="text-[var(--muted)"],
-:root[data-theme="light"] .card--interactive:hover [class*="text-[var(--muted-2)"] {
-  color: var(--muted) !important;
 }
 
 /* Indicium corner dots signature */
@@ -319,30 +313,147 @@ a.card:hover, button.card:hover {
 .card-dot--bl { bottom: -1px; left: -1px; transform: translate(-50%, 50%); }
 .card-dot--br { bottom: -1px; right: -1px; transform: translate(50%, 50%); }
 
-/* Indicium pill tech */
-.pill-tech {
+/* Indicium pill tech & tag-pill (Screenshots 2, 4, 5) */
+.tag-pill, .pill-tech {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   border: 1px solid var(--border-2);
-  background: transparent;
+  background: color-mix(in srgb, var(--surface) 50%, transparent);
   color: var(--fg-1);
-  font-family: var(--font-sans);
-  font-size: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
   font-weight: 500;
-  padding: 6px 14px;
-  border-radius: 0px;
+  padding: 4px 10px;
+  border-radius: 2px;
   letter-spacing: -0.01em;
+  line-height: 1.2;
 }
-.pill-dot {
-  width: 6px;
-  height: 6px;
+.tag-pill__square, .pill-dot {
+  width: 5px;
+  height: 5px;
   border-radius: 0px;
   background-color: var(--accent);
+  display: inline-block;
+  flex: none;
 }
 .pill-dot--purple { background-color: var(--accent-vibrant); }
 .pill-dot--cyan { background-color: var(--accent-2); }
 .pill-dot--green { background-color: var(--green); }
+
+/* Indicium Architectural Grid Crosshairs & Laser Lines (Screenshot 2) */
+.grid-cross {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background-color: var(--fg-1);
+  pointer-events: none;
+  z-index: 10;
+  transform: translate(-50%, -50%);
+}
+:root[data-theme="light"] .grid-cross {
+  background-color: #040D42;
+}
+.grid-cell {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border-1);
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+.grid-cell:hover {
+  background: var(--hover);
+  border-color: var(--accent);
+}
+
+/* Indicium Editorial Row List (Screenshot 4) */
+.tech-row {
+  border-bottom: 1px solid var(--border-1);
+  padding: 22px 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  transition: background-color 0.15s ease;
+}
+@media (min-width: 640px) {
+  .tech-row {
+    grid-template-columns: 240px 1fr;
+    gap: 32px;
+    align-items: baseline;
+  }
+}
+
+/* Indicium Blue Action Button (Screenshot 1 & 5) */
+.btn--saiba-mais {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #1D63FF;
+  color: #FFFFFF !important;
+  border: 1px solid #1D63FF;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 8px 18px;
+  line-height: 1.2;
+  cursor: pointer;
+  box-shadow: none;
+  transition: all 0.15s ease;
+}
+.btn--saiba-mais:hover {
+  background: #1550D6;
+  border-color: #1550D6;
+  color: #FFFFFF !important;
+  transform: translateY(-1px);
+}
+
+/* Indicium Soft Tint Button (Screenshot 3) */
+.btn--tint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgba(29, 99, 255, 0.12);
+  color: #1D63FF !important;
+  border: 1px solid rgba(29, 99, 255, 0.22);
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 7px 14px;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.btn--tint:hover {
+  background: rgba(29, 99, 255, 0.22);
+}
+
+/* Card Active Inversion (Screenshot 1) */
+.card--active-white {
+  background: #FFFFFF !important;
+  color: #040D42 !important;
+  border-color: #FFFFFF !important;
+}
+.card--active-white .card-title,
+.card--active-white h3 {
+  color: #040D42 !important;
+}
+.card--active-white .card-desc,
+.card--active-white p {
+  color: #3B4C7E !important;
+}
+.card--active-white .card-icon,
+.card--active-white svg {
+  color: #1D63FF !important;
+}
 
 /* entrance */
 @keyframes fade-in-up {

@@ -43,22 +43,27 @@ export function TopSuppliers({ years, initialYear }: { years: number[]; initialY
       <span className="card-dot card-dot--br" />
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="label">prestação de contas eleitorais · despesas pagas a fornecedores</div>
+          <div className="tag-pill mb-2">
+            <span className="tag-pill__square" />
+            <span>Despesas com Fornecedores</span>
+            <span className="opacity-40">·</span>
+            <span className="text-[var(--accent-2)]">RANKING OFICIAL</span>
+          </div>
           <h2 className="mt-2 text-[22px] font-medium tracking-tight text-[var(--fg-1)]">
-            Empresas que mais faturaram com campanhas
+            Empresas que mais faturaram com campanhas eleitorais
           </h2>
         </div>
         <div className="flex items-center gap-2">
-          <label htmlFor="year-select" className="label">
-            eleição
+          <label htmlFor="year-select" className="tag-pill text-[10px] py-1">
+            Ano
           </label>
           <select
             id="year-select"
             value={year}
             onChange={(e) => setYear(e.target.value)}
-            className="mono rounded-[var(--r-md)] border border-[var(--border-1)] bg-[var(--card-tone)] px-3 py-2 text-[12px] text-[var(--fg-1)] outline-none focus:border-[var(--border-2)]"
+            className="mono rounded-[2px] border border-[var(--border-1)] bg-[var(--card-tone)] px-3 py-1.5 text-[12px] text-[var(--fg-1)] outline-none focus:border-[var(--border-2)]"
           >
-            <option value="all">todas</option>
+            <option value="all">todas as eleições</option>
             {years.map((y) => (
               <option key={y} value={y}>
                 {y}
