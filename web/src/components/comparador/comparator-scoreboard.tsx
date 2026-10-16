@@ -57,86 +57,97 @@ export function ComparatorScoreboard({ c1, c2 }: ComparatorScoreboardProps) {
   ];
 
   return (
-    <div className="rounded-xl border border-[var(--border-2)] bg-[var(--surface)] p-6 shadow-sm">
-      <div className="flex items-center justify-between mb-6 pb-4 border-b border-[var(--border-1)]">
+    <div className="relative border border-[var(--border-1)] bg-[var(--surface)]">
+      <span className="card-dot card-dot--tl" />
+      <span className="card-dot card-dot--tr" />
+      <span className="card-dot card-dot--bl" />
+      <span className="card-dot card-dot--br" />
+
+      {/* Header do Placar */}
+      <div className="p-5 sm:p-6 border-b border-[var(--border-1)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h3 className="font-bold text-base text-[var(--fg-1)] flex items-center gap-2">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--accent)]">
-              <path d="M18 20V10M12 20V4M6 20v-6" />
-            </svg>
-            Placar Geral Frente a Frente
+          <div className="tag-pill mb-2">
+            <span className="tag-pill__square bg-[#1D63FF]" />
+            <span className="font-mono text-[10.5px] uppercase tracking-wider">
+              Placar Frente a Frente · Dados Oficiais
+            </span>
+          </div>
+          <h3 className="text-base sm:text-lg font-medium text-[var(--fg-1)] tracking-tight">
+            Métricas Patrimoniais & Arrecadação Declarada (TSE)
           </h3>
-          <p className="text-xs text-[var(--muted)] mt-0.5">
-            Métricas financeiras e patrimoniais oficiais consolidadas via TSE
-          </p>
         </div>
-        <div className="flex items-center gap-4 text-xs font-mono">
-          <span className="flex items-center gap-1.5 text-blue-400">
-            <span className="w-2 h-2 rounded-full bg-blue-500" />
+
+        {/* Legenda dos Candidatos */}
+        <div className="flex items-center gap-3 text-xs font-mono border border-[var(--border-1)] bg-[var(--card-tone)] px-3 py-1.5 self-start sm:self-auto">
+          <span className="flex items-center gap-1.5 font-semibold text-[#1D63FF]">
+            <span className="w-2 h-2 bg-[#1D63FF]" />
             {c1Name}
           </span>
           <span className="text-[var(--muted-2)]">vs</span>
-          <span className="flex items-center gap-1.5 text-purple-400">
-            <span className="w-2 h-2 rounded-full bg-purple-500" />
+          <span className="flex items-center gap-1.5 font-semibold text-[var(--fg-1)]">
+            <span className="w-2 h-2 bg-[var(--muted)]" />
             {c2Name}
           </span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Grid Contínuo de Métricas (Sem caixas aninhadas) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[var(--border-1)]">
         {metrics.map((m, idx) => {
           const total = m.val1 + m.val2;
           const pct1 = total > 0 ? Math.round((m.val1 / total) * 100) : 50;
           const pct2 = 100 - pct1;
-          const c1IsHigher = m.val1 > m.val2;
-          const c2IsHigher = m.val2 > m.val1;
 
           return (
             <div
               key={idx}
-              className="p-4 rounded-xl border border-[var(--border-1)] bg-[var(--card-tone)] flex flex-col justify-between hover:border-[var(--border-2)] transition-colors"
+              className="p-5 sm:p-6 flex flex-col justify-between hover:bg-[var(--hover)]/30 transition-colors"
             >
               <div>
-                <div className="font-semibold text-xs text-[var(--fg-1)] tracking-tight">
+                <div className="font-mono text-[11px] font-semibold uppercase tracking-wider text-[var(--fg-1)]">
                   {m.title}
                 </div>
-                <div className="text-[11px] text-[var(--muted-2)] mt-0.5 line-clamp-1">
+                <div className="text-[11.5px] text-[var(--muted)] mt-1 line-clamp-1 leading-snug">
                   {m.desc}
                 </div>
               </div>
 
-              <div className="my-4">
+              <div className="my-5">
+                {/* Valores Comparativos */}
                 <div className="flex items-baseline justify-between gap-2">
-                  <div className={`font-mono text-sm font-bold ${c1IsHigher ? (m.isRisk ? "text-amber-400" : "text-blue-400") : "text-[var(--fg-1)]"}`}>
+                  <div className="font-mono text-[15px] font-bold text-[#1D63FF]">
                     {m.format(m.val1)}
                   </div>
-                  <div className={`font-mono text-sm font-bold text-right ${c2IsHigher ? (m.isRisk ? "text-amber-400" : "text-purple-400") : "text-[var(--fg-1)]"}`}>
+                  <div className="font-mono text-[15px] font-bold text-right text-[var(--fg-1)]">
                     {m.format(m.val2)}
                   </div>
                 </div>
 
-                {/* Barra de Proporção Visual */}
-                <div className="mt-2.5 h-1.5 w-full bg-[var(--surface)] rounded-full overflow-hidden flex">
+                {/* Barra de Proporção Técnica (3px, sem cantos redondos, sem roxo) */}
+                <div className="mt-2.5 h-[3px] w-full bg-[var(--hover)] flex overflow-hidden">
                   <div
                     style={{ width: `${pct1}%` }}
-                    className={`h-full transition-all duration-500 ${m.isRisk ? "bg-amber-500" : "bg-blue-500"}`}
+                    className="h-full bg-[#1D63FF] transition-all duration-300"
                     title={`${c1Name}: ${pct1}%`}
                   />
                   <div
                     style={{ width: `${pct2}%` }}
-                    className={`h-full transition-all duration-500 ${m.isRisk ? "bg-rose-500" : "bg-purple-500"}`}
+                    className="h-full bg-[var(--muted-2)] transition-all duration-300"
                     title={`${c2Name}: ${pct2}%`}
                   />
                 </div>
-                <div className="flex justify-between items-center text-[10px] font-mono text-[var(--muted-2)] mt-1">
+
+                {/* Porcentagens Tabulares */}
+                <div className="flex justify-between items-center text-[10.5px] font-mono text-[var(--muted-2)] mt-1.5">
                   <span>{pct1}%</span>
                   <span>{pct2}%</span>
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-[var(--border-1)] flex items-center justify-between text-[11px]">
-                <span className="text-[var(--muted)]">Diferença</span>
-                <span className="font-mono font-medium text-[var(--fg-2)]">
+              {/* Linha de Diferença Técnica */}
+              <div className="pt-3 border-t border-[var(--border-1)] flex items-center justify-between text-[11.5px]">
+                <span className="font-mono text-[10.5px] uppercase text-[var(--muted)]">Diferença</span>
+                <span className="font-mono font-medium text-[var(--fg-1)]">
                   {m.type === "currency"
                     ? formatBRL(Math.abs(m.val1 - m.val2))
                     : `${Math.abs(m.val1 - m.val2)} ocorrência(s)`}

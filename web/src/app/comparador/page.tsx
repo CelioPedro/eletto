@@ -56,15 +56,20 @@ export default async function ComparadorPage({
         }
       />
 
-      <section>
+      <section className="flex flex-col gap-2">
+        <div className="flex items-center gap-2">
+          <span className="tag-pill tag-pill--neutral text-[10px] uppercase font-mono tracking-wider">
+            <span className="tag-pill__square bg-[#1D63FF]" />
+            OPPOSITION RESEARCH · AUDITORIA ELEITORAL
+          </span>
+        </div>
         <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
           <div>
             <h1 className="text-[24px] font-bold tracking-tight text-[var(--fg-1)]">
-              Comparador Frente a Frente (Opposition Research)
+              Comparador Frente a Frente
             </h1>
             <p className="mt-1 text-xs text-[var(--muted)] max-w-2xl leading-relaxed">
-              Cruzamento de dados entre adversários: descubra se os supostos rivais compartilham os mesmos
-              financiadores, contratam as mesmas gráficas ou exibem discrepâncias patrimoniais.
+              Cruzamento pericial e detecção de sobreposição patrimonial, doadores mútuos e fornecedores compartilhados entre campanhas adversárias.
             </p>
           </div>
         </div>

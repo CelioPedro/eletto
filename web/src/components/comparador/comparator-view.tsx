@@ -106,142 +106,166 @@ export function ComparatorView({ initialData, c1Id, c2Id }: ComparatorViewProps)
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Top Selector Bar */}
-      <div className="rounded-xl border border-[var(--border-2)] bg-[var(--surface)] p-5 shadow-sm">
-        <div className="flex flex-col lg:flex-row items-center gap-4">
-          <CandidateSearchSlot
-            label="Candidato A"
-            slotNumber={1}
-            currentPersonId={c1?.header.person.id ?? c1Id}
-            currentName={c1?.header.person.canonicalName}
-            currentOffice={c1?.header.latestCandidacy?.office}
-            currentParty={c1?.header.latestCandidacy?.partyAbbr}
-            currentState={c1?.header.latestCandidacy?.state}
-            currentPhotoUrl={c1?.photoUrl}
-            onSelect={handleSelectC1}
-            onClear={handleClearC1}
-          />
-
-          {/* Botão de Inverter */}
-          <div className="flex items-center justify-center flex-none">
-            <button
-              type="button"
-              onClick={handleSwap}
-              disabled={!c1Id || !c2Id}
-              title="Inverter posições dos candidatos"
-              className="p-2.5 rounded-full border border-[var(--border-2)] bg-[var(--card-tone)] text-[var(--muted-2)] hover:text-[var(--accent-2)] hover:border-[var(--accent)] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-sm"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M7 16V4M7 4L3 8M7 4l4 4M17 8v12M17 20l4-4M17 20l-4-4" />
-              </svg>
-            </button>
-          </div>
-
-          <CandidateSearchSlot
-            label="Candidato B"
-            slotNumber={2}
-            currentPersonId={c2?.header.person.id ?? c2Id}
-            currentName={c2?.header.person.canonicalName}
-            currentOffice={c2?.header.latestCandidacy?.office}
-            currentParty={c2?.header.latestCandidacy?.partyAbbr}
-            currentState={c2?.header.latestCandidacy?.state}
-            currentPhotoUrl={c2?.photoUrl}
-            onSelect={handleSelectC2}
-            onClear={handleClearC2}
-          />
-        </div>
-      </div>
-
       {/* Caso ambos estejam selecionados e tenhamos dados */}
       {initialData && c1 && c2 ? (
         <div className="flex flex-col gap-6">
-          {/* Header VS Card */}
-          <div className="rounded-xl border border-[var(--border-2)] bg-gradient-to-r from-blue-950/20 via-[var(--surface)] to-purple-950/20 p-6 shadow-sm">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-              {/* Cand 1 Card */}
-              <div className="flex items-center gap-4 flex-1 min-w-0">
-                <div className="w-16 h-16 rounded-full overflow-hidden flex-none border-2 border-blue-500/50 shadow-lg bg-[var(--surface)] flex items-center justify-center">
-                  {c1.photoUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={c1.photoUrl} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-xl font-bold text-blue-400">
-                      {c1.header.person.canonicalName?.charAt(0) || "?"}
-                    </span>
-                  )}
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded bg-blue-500/15 border border-blue-500/30 text-blue-400 font-mono text-xs font-bold">
-                      {c1.header.latestCandidacy?.partyAbbr || "S/ Partido"}
-                    </span>
-                    {c1.header.latestCandidacy?.state && (
-                      <span className="text-xs text-[var(--muted-2)] font-mono">
-                        {c1.header.latestCandidacy.state}
+          {/* Bancada Unificada de Confronto Frontal (Zero caixas duplicadas) */}
+          <div className="relative border border-[var(--border-1)] bg-[var(--surface)]">
+            <span className="card-dot card-dot--tl" />
+            <span className="card-dot card-dot--tr" />
+            <span className="card-dot card-dot--bl" />
+            <span className="card-dot card-dot--br" />
+
+            {/* Sub-header do Confronto */}
+            <div className="px-5 sm:px-6 py-3 border-b border-[var(--border-1)] flex flex-wrap items-center justify-between gap-3 bg-[var(--card-tone)]/40">
+              <div className="tag-pill">
+                <span className="tag-pill__square bg-[#1D63FF]" />
+                <span className="font-mono text-[10.5px] uppercase tracking-wider">
+                  Bancada de Opposition Research · Confronto Direto
+                </span>
+              </div>
+              <Link
+                href="/grafo"
+                className="btn btn--outline text-xs px-3 py-1 flex items-center gap-1.5"
+                style={{ textDecoration: "none" }}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="6" cy="6" r="3" />
+                  <circle cx="18" cy="18" r="3" />
+                  <line x1="8.5" y1="8.5" x2="15.5" y2="15.5" />
+                </svg>
+                <span>Ver no Grafo de Rede →</span>
+              </Link>
+            </div>
+
+            {/* Layout dos Dois Candidatos Frente a Frente */}
+            <div className="grid grid-cols-1 md:grid-cols-12 divide-y md:divide-y-0 md:divide-x divide-[var(--border-1)] items-stretch">
+              {/* Cand 1 */}
+              <div className="md:col-span-5 p-5 sm:p-6 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-3.5">
+                    <div className="tag-pill">
+                      <span className="tag-pill__square bg-[#1D63FF]" />
+                      <span className="font-mono text-[10.5px] font-semibold text-[#1D63FF] uppercase tracking-wider">
+                        Candidato 01
                       </span>
-                    )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleClearC1}
+                      className="text-[11px] font-mono text-[var(--muted-2)] hover:text-[#1D63FF] transition-colors cursor-pointer"
+                    >
+                      [ alterar ]
+                    </button>
                   </div>
-                  <h2 className="text-lg font-bold text-[var(--fg-1)] truncate mt-1">
-                    <Link href={`/pessoa/${c1.header.person.id}`} className="hover:text-blue-400 transition-colors">
-                      {c1.header.person.canonicalName}
-                    </Link>
-                  </h2>
-                  <div className="text-xs text-[var(--muted)] flex items-center gap-2 mt-0.5">
-                    <span>{c1.header.latestCandidacy?.office || "Candidato"}</span>
-                    <span>· {c1.header.candidacyCount} candidaturas</span>
+
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-13 h-13 rounded-[0px] overflow-hidden flex-none border border-[var(--border-1)] bg-[var(--card-tone)] flex items-center justify-center">
+                      {c1.photoUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={c1.photoUrl} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-xl font-bold font-mono text-[var(--fg-1)]">
+                          {c1.header.person.canonicalName?.charAt(0) || "?"}
+                        </span>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-mono text-[11px] font-bold px-2 py-0.5 bg-[var(--card-tone)] border border-[var(--border-1)] text-[var(--fg-1)]">
+                          {c1.header.latestCandidacy?.partyAbbr || "S/ Partido"}
+                        </span>
+                        {c1.header.latestCandidacy?.state && (
+                          <span className="text-[11px] font-mono text-[var(--muted-2)]">
+                            {c1.header.latestCandidacy.state}
+                          </span>
+                        )}
+                      </div>
+                      <h2 className="text-base sm:text-lg font-bold text-[var(--fg-1)] truncate mt-1">
+                        <Link href={`/politico/${c1.header.person.id}`} className="hover:text-[#1D63FF] transition-colors">
+                          {c1.header.person.canonicalName}
+                        </Link>
+                      </h2>
+                      <div className="text-xs text-[var(--muted)] flex items-center gap-1.5 mt-0.5">
+                        <span className="truncate">{c1.header.latestCandidacy?.office || "Candidato"}</span>
+                        <span>·</span>
+                        <span className="flex-none font-mono text-[11px]">{c1.header.candidacyCount} eleição(ões)</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* VS Badge & Quick Action */}
-              <div className="flex flex-col items-center justify-center gap-2 flex-none px-4">
-                <div className="w-12 h-12 rounded-full border border-[var(--border-2)] bg-[var(--card-tone)] flex items-center justify-center font-black font-mono text-base text-[var(--accent-2)] shadow-md">
+              {/* Nexo Central VS & Inverter */}
+              <div className="md:col-span-2 p-4 flex flex-col items-center justify-center gap-2 bg-[var(--hover)]/10">
+                <div className="font-mono text-xs font-black px-2.5 py-1 bg-[var(--surface)] border border-[var(--border-1)] text-[var(--fg-1)] tracking-widest shadow-xs">
                   VS
                 </div>
-                <Link
-                  href={`/grafo`}
-                  className="btn btn--outline text-xs px-3 py-1 flex items-center gap-1.5"
+                <button
+                  type="button"
+                  onClick={handleSwap}
+                  title="Inverter posições dos candidatos"
+                  className="mt-1 flex items-center gap-1 text-[11px] font-mono text-[var(--muted-2)] hover:text-[#1D63FF] transition-colors cursor-pointer"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="6" cy="6" r="3" />
-                    <circle cx="18" cy="18" r="3" />
-                    <line x1="8.5" y1="8.5" x2="15.5" y2="15.5" />
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M7 16V4M7 4L3 8M7 4l4 4M17 8v12M17 20l4-4M17 20l-4-4" />
                   </svg>
-                  Grafo de Rede
-                </Link>
+                  <span>inverter</span>
+                </button>
               </div>
 
-              {/* Cand 2 Card */}
-              <div className="flex items-center gap-4 flex-1 min-w-0 flex-row-reverse md:flex-row text-right md:text-left">
-                <div className="w-16 h-16 rounded-full overflow-hidden flex-none border-2 border-purple-500/50 shadow-lg bg-[var(--surface)] flex items-center justify-center">
-                  {c2.photoUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={c2.photoUrl} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-xl font-bold text-purple-400">
-                      {c2.header.person.canonicalName?.charAt(0) || "?"}
-                    </span>
-                  )}
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 justify-end md:justify-start">
-                    <span className="px-2 py-0.5 rounded bg-purple-500/15 border border-purple-500/30 text-purple-400 font-mono text-xs font-bold">
-                      {c2.header.latestCandidacy?.partyAbbr || "S/ Partido"}
-                    </span>
-                    {c2.header.latestCandidacy?.state && (
-                      <span className="text-xs text-[var(--muted-2)] font-mono">
-                        {c2.header.latestCandidacy.state}
+              {/* Cand 2 */}
+              <div className="md:col-span-5 p-5 sm:p-6 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-3.5">
+                    <div className="tag-pill">
+                      <span className="tag-pill__square bg-[var(--muted)]" />
+                      <span className="font-mono text-[10.5px] font-semibold text-[var(--fg-1)] uppercase tracking-wider">
+                        Candidato 02
                       </span>
-                    )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleClearC2}
+                      className="text-[11px] font-mono text-[var(--muted-2)] hover:text-[#1D63FF] transition-colors cursor-pointer"
+                    >
+                      [ alterar ]
+                    </button>
                   </div>
-                  <h2 className="text-lg font-bold text-[var(--fg-1)] truncate mt-1">
-                    <Link href={`/pessoa/${c2.header.person.id}`} className="hover:text-purple-400 transition-colors">
-                      {c2.header.person.canonicalName}
-                    </Link>
-                  </h2>
-                  <div className="text-xs text-[var(--muted)] flex items-center gap-2 mt-0.5 justify-end md:justify-start">
-                    <span>{c2.header.latestCandidacy?.office || "Candidato"}</span>
-                    <span>· {c2.header.candidacyCount} candidaturas</span>
+
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-13 h-13 rounded-[0px] overflow-hidden flex-none border border-[var(--border-1)] bg-[var(--card-tone)] flex items-center justify-center">
+                      {c2.photoUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={c2.photoUrl} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-xl font-bold font-mono text-[var(--fg-1)]">
+                          {c2.header.person.canonicalName?.charAt(0) || "?"}
+                        </span>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-mono text-[11px] font-bold px-2 py-0.5 bg-[var(--card-tone)] border border-[var(--border-1)] text-[var(--fg-1)]">
+                          {c2.header.latestCandidacy?.partyAbbr || "S/ Partido"}
+                        </span>
+                        {c2.header.latestCandidacy?.state && (
+                          <span className="text-[11px] font-mono text-[var(--muted-2)]">
+                            {c2.header.latestCandidacy.state}
+                          </span>
+                        )}
+                      </div>
+                      <h2 className="text-base sm:text-lg font-bold text-[var(--fg-1)] truncate mt-1">
+                        <Link href={`/politico/${c2.header.person.id}`} className="hover:text-[#1D63FF] transition-colors">
+                          {c2.header.person.canonicalName}
+                        </Link>
+                      </h2>
+                      <div className="text-xs text-[var(--muted)] flex items-center gap-1.5 mt-0.5">
+                        <span className="truncate">{c2.header.latestCandidacy?.office || "Candidato"}</span>
+                        <span>·</span>
+                        <span className="flex-none font-mono text-[11px]">{c2.header.candidacyCount} eleição(ões)</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -271,55 +295,115 @@ export function ComparatorView({ initialData, c1Id, c2Id }: ComparatorViewProps)
           <SignalsComparison c1={c1} c2={c2} />
         </div>
       ) : (
-        /* Empty State / Duelos Clássicos */
-        <div className="flex flex-col gap-6 py-6">
-          <div className="p-8 rounded-xl border border-[var(--border-2)] bg-[var(--surface)] text-center max-w-2xl mx-auto shadow-sm">
-            <div className="w-14 h-14 rounded-2xl bg-[var(--card-tone)] border border-[var(--border-2)] flex items-center justify-center mx-auto mb-4 text-[var(--accent-2)]">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5" />
-              </svg>
+        /* Modo Inicial: Seleção dos 2 Candidatos ou Duelos Sugeridos */
+        <div className="flex flex-col gap-6">
+          {/* Bancada de Seleção Inicial */}
+          <div className="relative border border-[var(--border-1)] bg-[var(--surface)] p-5 sm:p-6">
+            <span className="card-dot card-dot--tl" />
+            <span className="card-dot card-dot--tr" />
+            <span className="card-dot card-dot--bl" />
+            <span className="card-dot card-dot--br" />
+
+            <div className="mb-5">
+              <div className="tag-pill mb-2">
+                <span className="tag-pill__square bg-[#1D63FF]" />
+                <span className="font-mono text-[10.5px] uppercase tracking-wider">
+                  Bancada de Seleção · Opposition Research
+                </span>
+              </div>
+              <h3 className="text-base font-medium text-[var(--fg-1)]">
+                Selecione os dois candidatos para cruzar vínculos, doadores comuns e evolução patrimonial
+              </h3>
             </div>
-            <h3 className="font-bold text-lg text-[var(--fg-1)]">
-              Módulo de Inteligência &quot;Frente a Frente&quot;
-            </h3>
-            <p className="text-xs text-[var(--muted)] mt-2 leading-relaxed">
-              Cruze instantaneamente prestações de contas, doadores em comum, fornecedores compartilhados e patrimônio entre dois adversários políticos.
-            </p>
-            <div className="mt-4 text-xs font-mono text-[var(--accent-2)]">
-              Selecione os dois candidatos acima ou escolha um dos duelos sugeridos abaixo:
+
+            <div className="flex flex-col lg:flex-row items-center gap-4">
+              <CandidateSearchSlot
+                label="Candidato 01"
+                slotNumber={1}
+                currentPersonId={c1?.header.person.id ?? c1Id}
+                currentName={c1?.header.person.canonicalName}
+                currentOffice={c1?.header.latestCandidacy?.office}
+                currentParty={c1?.header.latestCandidacy?.partyAbbr}
+                currentState={c1?.header.latestCandidacy?.state}
+                currentPhotoUrl={c1?.photoUrl}
+                onSelect={handleSelectC1}
+                onClear={handleClearC1}
+              />
+
+              {/* Botão de Inverter */}
+              <div className="flex items-center justify-center flex-none">
+                <button
+                  type="button"
+                  onClick={handleSwap}
+                  disabled={!c1Id || !c2Id}
+                  title="Inverter posições dos candidatos"
+                  className="p-2.5 rounded-[0px] border border-[var(--border-1)] bg-[var(--card-tone)] text-[var(--muted-2)] hover:text-[#1D63FF] hover:border-[#1D63FF] disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer shadow-xs"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M7 16V4M7 4L3 8M7 4l4 4M17 8v12M17 20l4-4M17 20l-4-4" />
+                  </svg>
+                </button>
+              </div>
+
+              <CandidateSearchSlot
+                label="Candidato 02"
+                slotNumber={2}
+                currentPersonId={c2?.header.person.id ?? c2Id}
+                currentName={c2?.header.person.canonicalName}
+                currentOffice={c2?.header.latestCandidacy?.office}
+                currentParty={c2?.header.latestCandidacy?.partyAbbr}
+                currentState={c2?.header.latestCandidacy?.state}
+                currentPhotoUrl={c2?.photoUrl}
+                onSelect={handleSelectC2}
+                onClear={handleClearC2}
+              />
             </div>
           </div>
 
-          <div>
-            <h4 className="font-bold text-sm text-[var(--fg-1)] mb-3 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[var(--accent)]" />
-              Duelos & Rivais Eleitorais Sugeridos
-            </h4>
+          {/* Duelos Sugeridos em Swiss Grid */}
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div className="tag-pill">
+                <span className="tag-pill__square bg-[#1D63FF]" />
+                <span>Duelos & Confrontos Eleitorais Sugeridos</span>
+              </div>
+              <span className="font-mono text-[11px] text-[var(--muted-2)]">
+                HISTÓRICO OFICIAL · TSE
+              </span>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {PRESET_DUELS.map((d, idx) => (
                 <div
                   key={idx}
                   onClick={() => handleApplyPreset(d.c1, d.c2)}
-                  className="p-5 rounded-xl border border-[var(--border-2)] bg-[var(--surface)] hover:bg-[var(--card-tone)] hover:border-[var(--accent)] transition-all cursor-pointer shadow-sm group"
+                  className="card--interactive relative p-5 sm:p-6 border border-[var(--border-1)] bg-[var(--surface)] transition-all cursor-pointer group"
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-bold text-sm text-[var(--fg-1)] group-hover:text-[var(--accent-2)] transition-colors">
+                  <span className="card-dot card-dot--tl" />
+                  <span className="card-dot card-dot--tr" />
+                  <span className="card-dot card-dot--bl" />
+                  <span className="card-dot card-dot--br" />
+
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <h4 className="card-title font-medium text-base text-[var(--fg-1)] group-hover:text-[#040D42] transition-colors">
                       {d.title}
-                    </span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-[var(--surface)] text-[var(--muted-2)] border border-[var(--border-1)]">
+                    </h4>
+                    <span className="font-mono text-[10px] font-semibold uppercase px-2 py-0.5 border border-[var(--border-1)] bg-[var(--card-tone)] text-[var(--muted-2)] group-hover:bg-[#EDF2FA] group-hover:text-[#040D42] flex-none">
                       1-clique
                     </span>
                   </div>
-                  <p className="text-xs text-[var(--muted)] mb-4">
+
+                  <p className="card-desc text-xs text-[var(--muted)] mb-4 leading-relaxed group-hover:text-[#3B4C7E] transition-colors">
                     {d.desc}
                   </p>
-                  <div className="flex items-center justify-between pt-3 border-t border-[var(--border-1)] text-xs">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-blue-400 font-medium">{d.c1Name} ({d.c1Party})</span>
+
+                  <div className="pt-3 border-t border-[var(--border-1)] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                    <div className="flex items-center gap-2 font-mono text-[11.5px]">
+                      <span className="font-semibold text-[#1D63FF]">{d.c1Name} ({d.c1Party})</span>
                       <span className="text-[var(--muted-2)] font-mono">vs</span>
-                      <span className="font-mono text-purple-400 font-medium">{d.c2Name} ({d.c2Party})</span>
+                      <span className="font-semibold text-[var(--fg-1)] group-hover:text-[#040D42]">{d.c2Name} ({d.c2Party})</span>
                     </div>
-                    <span className="text-[11px] font-mono text-emerald-400">
+                    <span className="font-mono text-[11px] text-[var(--muted)] group-hover:text-[#3B4C7E]">
                       {d.highlight}
                     </span>
                   </div>
