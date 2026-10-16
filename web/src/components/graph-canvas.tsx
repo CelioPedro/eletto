@@ -26,6 +26,7 @@ import { NODE_COLOR, NODE_KIND_LABEL, type GraphEdgeData, type GraphNodeData } f
 import { Skeleton } from "./skeleton";
 import { useColorMode } from "@/lib/use-color-mode";
 import { ProUpgradeModal } from "./ui/pro-upgrade-modal";
+import { GraphCommandCenter } from "./graph/graph-command-center";
 
 const WIDTH = 1100;
 const HEIGHT = 700;
@@ -455,7 +456,7 @@ function GraphCanvasInner() {
               onFocus={() => results.length > 0 && setOpen(true)}
               onBlur={() => setTimeout(() => setOpen(false), 200)}
               placeholder="Buscar candidato, CPF ou CNPJ…"
-              className="w-full rounded-md border border-[var(--border-2)] bg-[var(--card-tone)] pl-9 pr-8 py-2 font-sans text-[13px] text-[var(--fg-1)] placeholder:text-[var(--muted-2)] outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all"
+              className="w-full rounded-[0px] border border-[var(--border-2)] bg-[var(--card-tone)] pl-9 pr-8 py-2 font-sans text-[13px] text-[var(--fg-1)] placeholder:text-[var(--muted-2)] outline-none focus:border-[#1D63FF] focus:ring-1 focus:ring-[#1D63FF]/30 transition-all"
             />
             {q ? (
               <button
@@ -469,7 +470,7 @@ function GraphCanvasInner() {
           </div>
 
           {open && (searching || results.length > 0) ? (
-            <div className="absolute left-0 top-full z-50 mt-1.5 max-h-[380px] w-full overflow-y-auto rounded-lg border border-[var(--border-2)] bg-[var(--card-tone)] shadow-2xl backdrop-blur-md divide-y divide-[var(--border-1)]">
+            <div className="absolute left-0 top-full z-50 mt-1 max-h-[380px] w-full overflow-y-auto rounded-[0px] border border-[var(--border-2)] bg-[var(--surface)] shadow-2xl backdrop-blur-md divide-y divide-[var(--border-1)]">
               {searching && results.length === 0
                 ? Array.from({ length: 3 }).map((_, i) => (
                     <div key={i} className="flex items-center gap-3 px-3 py-2.5">
@@ -483,17 +484,11 @@ function GraphCanvasInner() {
                       onMouseDown={() => addNode(r)}
                       className="flex w-full items-center gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-[var(--hover)] group cursor-pointer"
                     >
-                      <span
-                        className={`flex-none rounded px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-wider ${
-                          r.type === "person"
-                            ? "bg-blue-500/15 text-blue-400 border border-blue-500/30"
-                            : "bg-purple-500/15 text-purple-400 border border-purple-500/30"
-                        }`}
-                      >
+                      <span className="flex-none rounded-[0px] px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-wider bg-[var(--card-tone)] border border-[var(--border-1)] text-[var(--fg-1)]">
                         {r.type === "person" ? "pessoa" : "empresa"}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <div className="truncate text-[13px] font-medium text-[var(--fg-1)] group-hover:text-blue-400 transition-colors">
+                        <div className="truncate text-[13px] font-medium text-[var(--fg-1)] group-hover:text-[#1D63FF] transition-colors">
                           {r.label}
                         </div>
                         {r.sublabel && (
@@ -509,9 +504,9 @@ function GraphCanvasInner() {
         </div>
 
         <label
-          className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md border text-[12px] cursor-pointer select-none transition-all ${
+          className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-[0px] border text-[12px] cursor-pointer select-none transition-all ${
             expandFull
-              ? "border-[var(--accent)] bg-[var(--accent-tint)] text-[var(--fg-1)] font-medium shadow-xs"
+              ? "border-[#1D63FF] bg-[#1D63FF]/10 text-[var(--fg-1)] font-medium shadow-xs"
               : "border-[var(--border-1)] bg-[var(--card-tone)] text-[var(--muted)] hover:border-[var(--border-2)]"
           }`}
           title="Ao adicionar, traz TODOS os vínculos diretos desse nó, não só os que conectam com o que já está na tela."
@@ -520,13 +515,13 @@ function GraphCanvasInner() {
             type="checkbox"
             checked={expandFull}
             onChange={(e) => setExpandFull(e.target.checked)}
-            className="accent-[var(--accent)] size-3.5 rounded"
+            className="accent-[#1D63FF] size-3.5 rounded-[0px]"
           />
-          <span>Trazer rede inteira</span>
+          <span className="font-mono text-[11.5px]">Trazer rede inteira</span>
         </label>
 
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-[var(--border-1)] bg-[var(--card-tone)] text-[12px] text-[var(--muted)]">
-          <span className="text-[var(--muted-2)] font-medium">Movimentação:</span>
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-[0px] border border-[var(--border-1)] bg-[var(--card-tone)] text-[12px] text-[var(--muted)]">
+          <span className="text-[var(--muted-2)] font-mono text-[11px]">Movimentação:</span>
           <span className="font-mono text-[11px] text-[var(--muted-2)]">R$</span>
           <input
             type="number"
@@ -534,7 +529,7 @@ function GraphCanvasInner() {
             value={minReais}
             onChange={(e) => setMinReais(e.target.value)}
             placeholder="mínimo"
-            className="w-20 bg-transparent border-b border-[var(--border-2)] px-1 py-0.5 font-mono text-[11px] text-[var(--fg-1)] placeholder:text-[var(--muted-2)] outline-none focus:border-[var(--accent)] text-center"
+            className="w-20 bg-transparent border-b border-[var(--border-2)] px-1 py-0.5 font-mono text-[11px] text-[var(--fg-1)] placeholder:text-[var(--muted-2)] outline-none focus:border-[#1D63FF] text-center"
           />
           <span className="text-[var(--muted-2)]">–</span>
           <input
@@ -543,26 +538,26 @@ function GraphCanvasInner() {
             value={maxReais}
             onChange={(e) => setMaxReais(e.target.value)}
             placeholder="máximo"
-            className="w-20 bg-transparent border-b border-[var(--border-2)] px-1 py-0.5 font-mono text-[11px] text-[var(--fg-1)] placeholder:text-[var(--muted-2)] outline-none focus:border-[var(--accent)] text-center"
+            className="w-20 bg-transparent border-b border-[var(--border-2)] px-1 py-0.5 font-mono text-[11px] text-[var(--fg-1)] placeholder:text-[var(--muted-2)] outline-none focus:border-[#1D63FF] text-center"
           />
           {amountFilterActive ? (
             <button
               onClick={() => { setMinReais(""); setMaxReais(""); }}
-              className="ml-1 text-[11px] font-medium text-[var(--link-primary)] hover:underline cursor-pointer"
+              className="ml-1 text-[11px] font-mono font-medium text-[#1D63FF] hover:underline cursor-pointer"
             >
               limpar
             </button>
           ) : null}
         </div>
 
-        <div className="px-3 py-1.5 rounded-md border border-[var(--border-1)] bg-[var(--card-tone)] font-mono text-[11px] text-[var(--muted)]">
+        <div className="px-3 py-1.5 rounded-[0px] border border-[var(--border-1)] bg-[var(--card-tone)] font-mono text-[11px] text-[var(--muted)]">
           {visibleNodes.length} {visibleNodes.length === 1 ? "nó" : "nós"} · {visibleEdges.length} conexões
           {amountFilterActive ? ` (de ${nodes.length} · ${edges.length})` : ""}
         </div>
 
         {circularCount > 0 ? (
-          <div className="px-3 py-1.5 rounded-md border border-rose-500/40 bg-rose-500/15 text-rose-300 font-mono text-[11px] flex items-center gap-2">
-            <span className="size-2 rounded-full bg-rose-500 animate-pulse" />
+          <div className="px-3 py-1.5 rounded-[0px] border border-rose-500/40 bg-rose-500/15 text-rose-300 font-mono text-[11px] flex items-center gap-2">
+            <span className="size-2 rounded-[0px] bg-rose-500 animate-pulse" />
             <span>{circularCount} em triangulação circular</span>
           </div>
         ) : null}
@@ -570,7 +565,7 @@ function GraphCanvasInner() {
         {truncatedNotice ? (
           <button
             onClick={() => setTruncatedNotice(null)}
-            className="px-3 py-1.5 rounded-md border border-amber-500/40 bg-amber-500/15 text-amber-300 font-mono text-[11px] flex items-center gap-1.5 cursor-pointer"
+            className="px-3 py-1.5 rounded-[0px] border border-amber-500/40 bg-amber-500/15 text-amber-300 font-mono text-[11px] flex items-center gap-1.5 cursor-pointer"
             title="Clique para dispensar"
           >
             ⚠ {truncatedNotice}
@@ -588,11 +583,11 @@ function GraphCanvasInner() {
                   "Exporte a rede de vínculos investigada em alta definição (SVG/PDF vetorial) ou como matriz de adjacência (CSV, JSON, Gephi) com carimbo criptográfico para instrução probatória.",
               })
             }
-            className="px-3 py-1.5 rounded-md border border-[var(--border-1)] hover:border-blue-500/40 hover:bg-blue-500/10 text-[var(--fg-1)] font-medium text-[11.5px] transition-colors cursor-pointer flex items-center gap-1.5"
+            className="px-3 py-1.5 rounded-[0px] border border-[var(--border-1)] hover:border-[#1D63FF] hover:bg-[#1D63FF]/10 text-[var(--fg-1)] font-mono text-[11.5px] transition-colors cursor-pointer flex items-center gap-1.5"
             title="Exportar dados e visualização do grafo"
           >
             <span>Exportar Grafo</span>
-            <span className="rounded bg-[var(--accent)]/15 px-1.5 py-0.2 font-mono text-[9px] font-bold text-[var(--accent-2)]">
+            <span className="px-1.5 py-0.2 font-mono text-[9px] font-bold bg-[#1D63FF]/15 text-[#1D63FF] border border-[#1D63FF]/30">
               PRO
             </span>
           </button>
@@ -600,7 +595,7 @@ function GraphCanvasInner() {
           {nodes.length > 0 ? (
             <button
               onClick={clearAll}
-              className="px-3 py-1.5 rounded-md border border-[var(--border-1)] hover:border-rose-500/40 hover:bg-rose-500/10 text-[var(--muted)] hover:text-rose-400 font-medium text-[11.5px] transition-colors cursor-pointer"
+              className="px-3 py-1.5 rounded-[0px] border border-[var(--border-1)] hover:border-rose-500/40 hover:bg-rose-500/10 text-[var(--muted)] hover:text-rose-400 font-mono text-[11.5px] transition-colors cursor-pointer"
             >
               Limpar visualização
             </button>
@@ -611,58 +606,8 @@ function GraphCanvasInner() {
       {/* Main Graph Area */}
       <div className="relative flex-1 bg-[var(--bg)] overflow-hidden">
         {nodes.length === 0 ? (
-          <div className="absolute inset-0 flex items-center justify-center p-6 bg-[radial-gradient(ellipse_at_top,_var(--hover)_0%,_var(--bg)_70%)]">
-            <div className="w-full max-w-xl rounded-xl border border-[var(--border-1)] bg-[var(--surface)]/90 backdrop-blur-xl p-8 shadow-2xl text-center">
-              <div className="mx-auto size-12 rounded-xl bg-blue-500/15 border border-blue-500/30 text-blue-400 flex items-center justify-center mb-4 shadow-lg shadow-blue-500/10">
-                <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="6" cy="6" r="3" />
-                  <circle cx="18" cy="18" r="3" />
-                  <circle cx="18" cy="6" r="3" />
-                  <path d="M8.5 7.5l7 9" />
-                  <path d="M8.5 6h7" />
-                </svg>
-              </div>
-              <h2 className="text-xl font-semibold text-[var(--fg-1)] tracking-tight">
-                Investigação de Vínculos em Grafo
-              </h2>
-              <p className="mt-2 text-[13px] leading-relaxed text-[var(--muted)] max-w-md mx-auto">
-                Mapeie triangulações financeiras, fornecedores compartilhados, doações de campanha e conexões societárias entre agentes públicos e empresas.
-              </p>
-
-              <div className="mt-6 pt-5 border-t border-[var(--border-1)]">
-                <div className="text-[11px] font-mono uppercase tracking-wider text-[var(--muted-2)] font-semibold mb-3">
-                  Exemplos para iniciar a análise:
-                </div>
-                <div className="flex flex-wrap items-center justify-center gap-2">
-                  {["Lula", "Jair Bolsonaro", "Tarcísio", "Ricardo Nunes", "Guilherme Boulos", "Tabata Amaral"].map((name) => (
-                    <button
-                      key={name}
-                      type="button"
-                      onClick={() => onQueryChange(name)}
-                      className="px-3 py-1.5 rounded-full border border-[var(--border-2)] bg-[var(--card-tone)] hover:bg-[var(--hover)] hover:border-[var(--accent)] text-[12px] font-medium text-[var(--fg-1)] transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
-                    >
-                      <span className="size-1.5 rounded-full bg-[var(--accent)]" />
-                      {name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-6 grid grid-cols-3 gap-3 text-left">
-                <div className="rounded-lg border border-[var(--border-1)] bg-[var(--card-tone)]/50 p-3">
-                  <div className="text-[11px] font-semibold text-[var(--fg-1)]">Caminho Curto</div>
-                  <div className="text-[10px] text-[var(--muted-2)] mt-0.5 leading-tight">Encontra elos de até 2 passos entre entidades</div>
-                </div>
-                <div className="rounded-lg border border-[var(--border-1)] bg-[var(--card-tone)]/50 p-3">
-                  <div className="text-[11px] font-semibold text-[var(--fg-1)]">Doação Circular</div>
-                  <div className="text-[10px] text-[var(--muted-2)] mt-0.5 leading-tight">Detecta repasses em ciclo fechado</div>
-                </div>
-                <div className="rounded-lg border border-[var(--border-1)] bg-[var(--card-tone)]/50 p-3">
-                  <div className="text-[11px] font-semibold text-[var(--fg-1)]">Rede Completa</div>
-                  <div className="text-[10px] text-[var(--muted-2)] mt-0.5 leading-tight">Expande todos os vínculos diretos</div>
-                </div>
-              </div>
-            </div>
+          <div className="absolute inset-0 overflow-y-auto bg-[radial-gradient(ellipse_at_top,_var(--hover)_0%,_var(--bg)_70%)]">
+            <GraphCommandCenter onAddNode={addNode} onQueryChange={onQueryChange} />
           </div>
         ) : (
           <ReactFlow<FlowNode, FlowEdge>
@@ -681,25 +626,30 @@ function GraphCanvasInner() {
             style={{ backgroundColor: "var(--bg)", width: "100%", height: "100%" }}
           >
             <Background color={colorMode === "dark" ? "rgba(255,255,255,.08)" : "rgba(0,0,0,.08)"} gap={24} size={1.2} />
-            <Controls showInteractive={false} className="!border !border-[var(--border-1)] !rounded-lg !bg-[var(--surface)]" />
+            <Controls showInteractive={false} className="!border !border-[var(--border-1)] !rounded-[0px] !bg-[var(--surface)]" />
             <MiniMap
               pannable
               zoomable
               maskColor={colorMode === "dark" ? "rgba(7, 9, 19, 0.85)" : "rgba(248, 250, 252, 0.85)"}
               nodeColor={(n) => NODE_COLOR[(n as FlowNode).data.kind].stroke}
-              className="!border !border-[var(--border-1)] !rounded-lg !bg-[var(--surface)]"
+              className="!border !border-[var(--border-1)] !rounded-[0px] !bg-[var(--surface)]"
             />
           </ReactFlow>
         )}
 
         {/* Selected Node Inspector Panel */}
         {selectedNode ? (
-          <div className="absolute top-4 right-4 w-80 rounded-xl border border-[var(--border-2)] bg-[var(--surface)]/95 backdrop-blur-xl p-5 shadow-2xl z-20">
+          <div className="absolute top-4 right-4 w-84 rounded-[0px] border border-[var(--border-1)] bg-[var(--surface)] p-5 shadow-2xl z-20">
+            <span className="card-dot card-dot--tl" />
+            <span className="card-dot card-dot--tr" />
+            <span className="card-dot card-dot--bl" />
+            <span className="card-dot card-dot--br" />
+
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span
-                    className="size-2.5 rounded-full shrink-0"
+                    className="size-2.5 rounded-[0px] shrink-0"
                     style={{ backgroundColor: NODE_COLOR[selectedNode.data.kind].stroke }}
                   />
                   <span className="font-mono text-[9px] font-semibold uppercase tracking-wider text-[var(--muted-2)]">
@@ -715,14 +665,14 @@ function GraphCanvasInner() {
               </div>
               <button
                 onClick={() => setSelected(null)}
-                className="size-6 rounded-md hover:bg-[var(--hover)] flex items-center justify-center text-[var(--muted-2)] hover:text-[var(--fg-1)] transition-colors cursor-pointer"
+                className="size-6 rounded-[0px] hover:bg-[var(--hover)] flex items-center justify-center text-[var(--muted-2)] hover:text-[var(--fg-1)] transition-colors cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
             {selectedNode.data.sanctioned ? (
-              <div className="mt-3 rounded-md border border-rose-500/30 bg-rose-500/10 px-2.5 py-1.5 font-mono text-[10.5px] text-rose-400 flex items-center gap-1.5">
+              <div className="mt-3 rounded-[0px] border border-rose-500/30 bg-rose-500/10 px-2.5 py-1.5 font-mono text-[10.5px] text-rose-400 flex items-center gap-1.5">
                 <span>⚠</span> Sanção federal ativa (CEIS/CNEP)
               </div>
             ) : null}
@@ -742,14 +692,14 @@ function GraphCanvasInner() {
                   {selectedEdges.map((e) => (
                     <div
                       key={e.id}
-                      className={`flex items-center justify-between gap-2 rounded px-2 py-1 font-mono text-[10.5px] ${
-                        e.data?.circular ? "bg-rose-500/10 text-rose-300" : "bg-[var(--card-tone)] text-[var(--muted)]"
+                      className={`flex items-center justify-between gap-2 rounded-[0px] px-2 py-1 font-mono text-[10.5px] border border-[var(--border-1)] ${
+                        e.data?.circular ? "bg-rose-500/10 text-rose-300 border-rose-500/30" : "bg-[var(--card-tone)] text-[var(--muted)]"
                       }`}
                     >
                       <div className="truncate min-w-0">
                         <span className="font-bold mr-1">{e.source === selectedNode.id ? "→" : "←"}</span>
                         {e.data?.kind === "ownership" ? (
-                          <span className="mr-1.5 rounded bg-rose-500/20 px-1 py-0.2 text-[9px] font-bold text-rose-300 uppercase">
+                          <span className="mr-1.5 rounded-[0px] bg-rose-500/20 px-1 py-0.2 text-[9px] font-bold text-rose-300 uppercase">
                             Sócio
                           </span>
                         ) : null}
@@ -777,10 +727,10 @@ function GraphCanvasInner() {
                       "Execute uma varredura recursiva de até 5 saltos para revelar intermediários, sócios cruzados, fornecedores satélites e triangulações bancárias ocultas.",
                   })
                 }
-                className="w-full flex items-center justify-center gap-2 rounded-md border border-indigo-500/40 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 hover:text-indigo-300 py-2 text-[11px] font-semibold uppercase tracking-wide transition-colors cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 rounded-[0px] border border-[#1D63FF]/40 bg-[#1D63FF]/10 hover:bg-[#1D63FF]/20 text-[#1D63FF] py-2 text-[11px] font-mono font-semibold uppercase tracking-wide transition-colors cursor-pointer"
               >
                 <span>⚡ Rastrear Vínculos Ocultos</span>
-                <span className="rounded bg-indigo-500/20 px-1.5 py-0.2 font-mono text-[9px] font-bold text-indigo-300">
+                <span className="px-1.5 py-0.2 font-mono text-[9px] font-bold bg-[#1D63FF]/20 text-[#1D63FF]">
                   PRO
                 </span>
               </button>
@@ -790,13 +740,13 @@ function GraphCanvasInner() {
                   onClick={() =>
                     router.push(selectedNode.id.length === 14 ? `/cnpj/${selectedNode.id}` : `/cpf/${selectedNode.id}`)
                   }
-                  className="flex-1 rounded-md bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white py-2 text-[11px] font-semibold tracking-wide uppercase transition-colors text-center cursor-pointer shadow-md shadow-blue-500/20"
+                  className="flex-1 rounded-[0px] bg-[#1D63FF] hover:bg-[#1550D6] text-white py-2 text-[11px] font-mono font-semibold tracking-wide uppercase transition-colors text-center cursor-pointer shadow-xs"
                 >
                   Ver Ficha Completa
                 </button>
                 <button
                   onClick={() => removeNode(selectedNode.id)}
-                  className="rounded-md border border-[var(--border-1)] hover:border-rose-500/40 hover:bg-rose-500/10 px-3 py-2 text-[11px] font-medium text-[var(--muted)] hover:text-rose-400 uppercase transition-colors cursor-pointer"
+                  className="rounded-[0px] border border-[var(--border-1)] hover:border-rose-500/40 hover:bg-rose-500/10 px-3 py-2 text-[11px] font-mono font-medium text-[var(--muted)] hover:text-rose-400 uppercase transition-colors cursor-pointer"
                 >
                   Remover
                 </button>
@@ -813,7 +763,7 @@ function GraphCanvasInner() {
           {(Object.keys(NODE_COLOR) as Array<keyof typeof NODE_COLOR>).map((k) => (
             <span key={k} className="flex items-center gap-1.5">
               <span
-                className="size-2.5 rounded-full border"
+                className="size-2 rounded-[0px] border"
                 style={{ backgroundColor: NODE_COLOR[k].fill, borderColor: NODE_COLOR[k].stroke }}
               />
               <span>{NODE_KIND_LABEL[k]}</span>
@@ -823,13 +773,13 @@ function GraphCanvasInner() {
         <div className="flex flex-wrap items-center gap-4 border-l border-[var(--border-1)] pl-4">
           <span className="text-[9.5px] uppercase tracking-wider text-[var(--muted-2)] font-semibold">Fluxos:</span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block h-[2.5px] w-4 rounded-full bg-emerald-500" /> Doação
+            <span className="inline-block h-[2px] w-4 bg-[#10B981]" /> Doação
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block h-[2.5px] w-4 rounded-full bg-sky-500" /> Pagamento
+            <span className="inline-block h-[2px] w-4 bg-[#1D63FF]" /> Pagamento
           </span>
           <span className="flex items-center gap-1.5 text-rose-400 font-semibold">
-            <span className="inline-block h-[2.5px] w-4 rounded-full bg-rose-500" /> Triangulação Circular
+            <span className="inline-block h-[2px] w-4 bg-rose-500" /> Triangulação Circular
           </span>
         </div>
       </div>

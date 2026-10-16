@@ -46,7 +46,7 @@ export function EntityNode({ data, selected }: NodeProps & { data: GraphNodeData
       </div>
 
       <div
-        className="max-w-[140px] truncate rounded-md px-2 py-0.5 text-center font-sans font-medium text-[11px] shadow-sm border border-[var(--border-1)]"
+        className="max-w-[140px] truncate rounded-[0px] px-2 py-0.5 text-center font-sans font-medium text-[11px] shadow-sm border border-[var(--border-1)]"
         style={{
           color: data.circular ? "var(--red)" : "var(--fg-1)",
           background: "var(--card-tone)",
