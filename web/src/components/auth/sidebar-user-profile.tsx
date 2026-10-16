@@ -77,7 +77,7 @@ export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean 
         <button
           type="button"
           onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="size-10 rounded-xl flex items-center justify-center bg-[#1D63FF] text-white font-mono text-sm font-bold shadow-md hover:brightness-110 border border-white/20 transition-all cursor-pointer"
+          className="size-10 rounded-xl flex items-center justify-center bg-[var(--fg-1)] text-[var(--bg)] font-mono text-sm font-bold shadow-md hover:brightness-110 border border-white/20 transition-all cursor-pointer"
           title={`${user.name} (${isPro ? "Pro" : "Free"})`}
           aria-label="Menu do Perfil"
         >
@@ -97,7 +97,7 @@ export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean 
             <div className="space-y-1.5 mb-3">
               <div className="flex items-center justify-between text-[11px]">
                 <span className="text-[var(--muted)]">Status do Plano:</span>
-                <span className={`font-semibold font-mono ${isPro ? "text-[#1D63FF]" : "text-[var(--fg-2)]"}`}>
+                <span className={`font-semibold font-mono ${isPro ? "text-[var(--fg-1)]" : "text-[var(--fg-2)]"}`}>
                   {isPro ? "Assinante Pro" : "Conta Gratuita"}
                 </span>
               </div>
@@ -158,7 +158,7 @@ export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean 
         aria-label="Menu do Perfil"
       >
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-[#1D63FF] text-white font-mono text-xs font-bold flex-none shadow-sm">
+          <div className="flex size-8 items-center justify-center rounded-[0px] bg-[var(--fg-1)] text-[var(--bg)] font-mono text-xs font-bold flex-none shadow-sm">
             {user.name.charAt(0).toUpperCase()}
           </div>
           <div className="flex flex-col min-w-0">
@@ -173,9 +173,9 @@ export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean 
 
         <div className="flex items-center gap-1.5 flex-none">
           <span
-            className={`px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider rounded border ${
+            className={`px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider rounded-[0px] border ${
               isPro
-                ? "bg-[#1D63FF] text-white border-[#1D63FF]"
+                ? "bg-[var(--fg-1)] text-[var(--bg)] border-[var(--fg-1)]"
                 : "bg-[var(--hover)] text-[var(--muted)] border-[var(--border-1)]"
             }`}
           >

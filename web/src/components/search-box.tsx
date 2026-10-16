@@ -170,12 +170,12 @@ export function SearchBox({ className = "" }: { className?: string }) {
         onSubmit={handleSubmit}
         className={`group flex w-full items-stretch border transition-all rounded-[0px] overflow-hidden ${
           open
-            ? "border-[#1D63FF] bg-[#040D42]/95 shadow-2xl ring-2 ring-[#1D63FF]/30"
-            : "border-white/28 bg-[#040D42]/80 hover:border-white/50 backdrop-blur-md"
+            ? "border-white/60 bg-[#121316]/95 shadow-2xl ring-1 ring-white/30"
+            : "border-white/20 bg-[#121316]/80 hover:border-white/40 backdrop-blur-md"
         }`}
       >
         <div className="flex flex-1 items-center gap-3 px-4 sm:px-5 py-3.5 sm:py-4">
-          <Search className="size-4 sm:size-4.5 text-[#5CE1E6] shrink-0 transition-transform group-hover:scale-105" />
+          <Search className="size-4 sm:size-4.5 text-zinc-300 shrink-0 transition-transform group-hover:scale-105" />
           <input
             ref={inputRef}
             type="text"
@@ -187,7 +187,7 @@ export function SearchBox({ className = "" }: { className?: string }) {
             onFocus={() => setOpen(true)}
             onKeyDown={handleKeyDown}
             placeholder="buscar por nome, CPF ou CNPJ…"
-            className="w-full bg-transparent border-0 outline-none text-white text-sm sm:text-[15px] font-normal placeholder:text-white/70"
+            className="w-full bg-transparent border-0 outline-none text-white text-sm sm:text-[15px] font-normal placeholder:text-white/60"
             autoComplete="off"
             spellCheck={false}
           />
@@ -197,7 +197,7 @@ export function SearchBox({ className = "" }: { className?: string }) {
               if (open) setOpen(false);
               else inputRef.current?.focus();
             }}
-            className="font-mono text-[10.5px] uppercase tracking-wider text-white/70 border border-white/20 bg-white/5 px-2 py-0.5 select-none rounded-[2px] cursor-pointer hover:bg-white/10 shrink-0"
+            className="font-mono text-[10.5px] uppercase tracking-wider text-white/70 border border-white/20 bg-white/5 px-2 py-0.5 select-none rounded-[0px] cursor-pointer hover:bg-white/10 shrink-0"
             title={open ? "Fechar (Esc)" : "Atalho (Ctrl K)"}
           >
             {open ? "ESC" : "CTRL K"}
@@ -206,7 +206,7 @@ export function SearchBox({ className = "" }: { className?: string }) {
 
         <button
           type="submit"
-          className="flex items-center justify-center px-6 sm:px-8 bg-[#1D63FF] hover:bg-[#1550D6] text-white font-medium text-sm transition-colors border-0 cursor-pointer flex-none tracking-tight font-sans select-none"
+          className="flex items-center justify-center px-6 sm:px-8 bg-white hover:bg-zinc-200 text-[#090A0C] font-semibold text-sm transition-colors border-0 cursor-pointer flex-none tracking-tight font-sans select-none"
         >
           Pesquisar
         </button>
@@ -214,11 +214,11 @@ export function SearchBox({ className = "" }: { className?: string }) {
 
       {/* Seamless Integrated Dropdown Results (Positioned directly attached to the bottom) */}
       {open ? (
-        <div className="absolute top-full left-0 right-0 z-50 mt-1.5 rounded-[0px] border border-white/20 bg-[#020722]/98 backdrop-blur-2xl shadow-2xl overflow-hidden max-h-[380px] overflow-y-auto no-scrollbar animate-in fade-in slide-in-from-top-1 duration-150">
+        <div className="absolute top-full left-0 right-0 z-50 mt-1.5 rounded-[0px] border border-white/15 bg-[#121316]/98 backdrop-blur-2xl shadow-2xl overflow-hidden max-h-[380px] overflow-y-auto no-scrollbar animate-in fade-in slide-in-from-top-1 duration-150">
           {!hasQuery ? (
             // Default Shortcuts View
             <div className="p-2">
-              <div className="px-3 py-1.5 text-[10.5px] font-mono font-semibold uppercase tracking-wider text-[#7E92C4]">
+              <div className="px-3 py-1.5 text-[10.5px] font-mono font-semibold uppercase tracking-wider text-zinc-400">
                 Módulos & Ações Rápidas
               </div>
               <div className="flex flex-col gap-0.5">
@@ -232,12 +232,12 @@ export function SearchBox({ className = "" }: { className?: string }) {
                       onMouseEnter={() => setSelectedIndex(idx)}
                       className={`w-full flex items-center justify-between px-3 py-2 text-left rounded-[0px] transition-colors cursor-pointer text-xs sm:text-[13px] ${
                         isSelected
-                          ? "bg-[#1D63FF]/25 text-white font-medium border border-[#1D63FF]/40"
-                          : "text-[#E2E8F8] hover:bg-white/10"
+                          ? "bg-white/12 text-white font-medium border border-white/20"
+                          : "text-zinc-300 hover:bg-white/6"
                       }`}
                     >
                       <span className="truncate">{s.label}</span>
-                      <span className="font-mono text-[10px] uppercase text-[#5CE1E6] bg-white/5 px-1.5 py-0.5 rounded border border-white/10 shrink-0 ml-2">
+                      <span className="font-mono text-[10px] uppercase text-zinc-300 bg-white/6 px-1.5 py-0.5 border border-white/12 shrink-0 ml-2">
                         {s.category}
                       </span>
                     </button>
@@ -247,22 +247,22 @@ export function SearchBox({ className = "" }: { className?: string }) {
             </div>
           ) : loading ? (
             // Loading State
-            <div className="flex items-center justify-center gap-2.5 py-8 text-xs text-[#B4C2E4] font-mono">
-              <div className="size-4 border-2 border-[#1D63FF] border-t-transparent rounded-full animate-spin" />
+            <div className="flex items-center justify-center gap-2.5 py-8 text-xs text-zinc-400 font-mono">
+              <div className="size-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
               <span>Buscando no banco oficial TSE e Receita Federal…</span>
             </div>
           ) : results.length === 0 ? (
             // Empty State
             <div className="py-8 px-4 text-center">
               <p className="text-sm text-white font-medium">Nenhum registro encontrado para &ldquo;{trimmed}&rdquo;</p>
-              <p className="mt-1 text-xs text-[#7E92C4]">
+              <p className="mt-1 text-xs text-zinc-400">
                 Tente buscar pelo nome completo, apenas os 11 dígitos do CPF ou os 14 dígitos do CNPJ.
               </p>
             </div>
           ) : (
             // Search Results List
             <div className="p-2 flex flex-col gap-1">
-              <div className="px-3 py-1.5 text-[10.5px] font-mono font-semibold uppercase tracking-wider text-[#7E92C4] flex items-center justify-between">
+              <div className="px-3 py-1.5 text-[10.5px] font-mono font-semibold uppercase tracking-wider text-zinc-400 flex items-center justify-between">
                 <span>Resultados Encontrados ({results.length})</span>
                 <span className="text-[10px] opacity-70">Use ↑↓ e Enter para navegar</span>
               </div>
@@ -281,8 +281,8 @@ export function SearchBox({ className = "" }: { className?: string }) {
                     onMouseEnter={() => setSelectedIndex(idx)}
                     className={`w-full flex items-center gap-3 px-3 py-2 text-left rounded-[0px] transition-all cursor-pointer ${
                       isSelected
-                        ? "bg-[#1D63FF]/30 border border-[#1D63FF]/50 text-white"
-                        : "text-[#E2E8F8] hover:bg-white/10 border border-transparent"
+                        ? "bg-white/12 border border-white/25 text-white"
+                        : "text-zinc-200 hover:bg-white/6 border border-transparent"
                     }`}
                   >
                     <SearchAvatar photoUrl={photoUrl} name={r.canonicalName} />
@@ -293,13 +293,13 @@ export function SearchBox({ className = "" }: { className?: string }) {
                           {r.canonicalName}
                         </span>
                         {r.cpf ? (
-                          <span className="font-mono text-[10.5px] text-[#5CE1E6] shrink-0">
+                          <span className="font-mono text-[10.5px] text-zinc-400 shrink-0">
                             {formatCpfCnpj(r.cpf)}
                           </span>
                         ) : null}
                       </div>
 
-                      <div className="flex items-center gap-2 mt-0.5 text-[11px] text-[#B4C2E4] font-mono">
+                      <div className="flex items-center gap-2 mt-0.5 text-[11px] text-zinc-400 font-mono">
                         {isCandidate ? (
                           <span>
                             {r.latestOffice ?? "Candidato"} · {r.latestYear}
@@ -310,7 +310,7 @@ export function SearchBox({ className = "" }: { className?: string }) {
                       </div>
                     </div>
 
-                    <span className="text-xs text-[#5CE1E6] shrink-0 font-mono">
+                    <span className="text-xs text-white shrink-0 font-mono opacity-80">
                       ir →
                     </span>
                   </button>

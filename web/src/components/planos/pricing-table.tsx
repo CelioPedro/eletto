@@ -469,7 +469,7 @@ export function PricingTable() {
       <div className="mt-20 rounded-2xl border border-[var(--border-2)] bg-[var(--surface)] p-8">
         <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
           <div className="flex items-center gap-4">
-            <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-blue-600/10 text-blue-500">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-[0px] bg-[var(--fg-1)] text-[var(--bg)]">
               <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                 <path d="m9 12 2 2 4-4" />

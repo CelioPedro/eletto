@@ -116,7 +116,7 @@ export function SidebarThemeToggle({ vertical = false }: { vertical?: boolean })
           onClick={() => setMode("light")}
           className={`p-1.5 rounded-lg transition-all cursor-pointer ${
             isLight
-              ? "bg-[var(--surface)] text-[#1D63FF] shadow-sm font-semibold"
+              ? "bg-[var(--surface)] text-[var(--fg-1)] shadow-sm font-semibold"
               : "text-[var(--muted-2)] hover:text-[var(--fg-1)]"
           }`}
           title="Modo Claro"
@@ -148,7 +148,7 @@ export function SidebarThemeToggle({ vertical = false }: { vertical?: boolean })
         onClick={() => setMode("light")}
         className={`flex-1 flex items-center justify-center gap-1.5 py-1 text-[11px] font-medium rounded-lg transition-all cursor-pointer ${
           isLight
-            ? "bg-[var(--surface)] text-[#1D63FF] shadow-sm font-semibold"
+            ? "bg-[var(--surface)] text-[var(--fg-1)] shadow-sm font-semibold"
             : "text-[var(--muted-2)] hover:text-[var(--fg-1)]"
         }`}
       >

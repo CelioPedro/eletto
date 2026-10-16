@@ -24,8 +24,8 @@ export function ElettoLogo({
 
   const content = (
     <div className={`flex items-center gap-2.5 group select-none ${className}`}>
-      {/* Símbolo Isométrico Eletto AI (Padrão Indicium) */}
-      <span className="relative flex-none flex items-center justify-center text-[#1D63FF] transition-transform duration-200 group-hover:scale-105">
+      {/* Símbolo Isométrico Eletto AI (Padrão Swiss Monochrome) */}
+      <span className="relative flex-none flex items-center justify-center text-[var(--fg-1)] transition-transform duration-200 group-hover:scale-105">
         <svg
           width={iconSize}
           height={iconSize}
@@ -63,14 +63,14 @@ export function ElettoLogo({
             strokeLinecap="round"
             strokeLinejoin="round"
           />
-          {/* Faceta Superior com Reflexo Ciano Técnico */}
+          {/* Faceta Superior com Reflexo Monocromático Suave */}
           <path
             d="M12 2.5L20.5 7.4L12 12.3L3.5 7.4L12 2.5Z"
-            fill="#1D63FF"
+            fill="currentColor"
             fillOpacity="0.12"
           />
           {/* Ponto Central de Nexus */}
-          <circle cx="12" cy="12.3" r="1.3" fill="#5CE1E6" />
+          <circle cx="12" cy="12.3" r="1.3" fill="currentColor" />
         </svg>
       </span>
 
@@ -82,7 +82,7 @@ export function ElettoLogo({
               eletto
             </span>
             <span
-              className={`font-mono font-bold text-[#1D63FF] tracking-tight relative ml-0.5 ${aiSize}`}
+              className={`font-mono font-bold text-[var(--fg-1)] tracking-tight relative ml-0.5 ${aiSize}`}
               style={{ fontFeatureSettings: '"tnum"' }}
             >
               AI

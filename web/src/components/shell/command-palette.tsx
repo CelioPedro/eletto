@@ -91,7 +91,7 @@ export function CommandPalette() {
     <div className="palette__backdrop" onClick={() => setPaletteOpen(false)}>
       <div className="palette" onClick={(e) => e.stopPropagation()}>
         <div className="palette__input">
-          <Search className="size-4 text-[#5CE1E6] shrink-0" />
+          <Search className="size-4 text-zinc-400 shrink-0" />
           <input
             ref={inputRef}
             value={q}

@@ -14,9 +14,9 @@ export default function PlanosPage() {
 
       {/* Hero Header */}
       <section className="text-center relative pt-4 pb-2">
-        <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border-2)] bg-[var(--surface)] px-3 py-1 text-xs font-mono text-[var(--accent-2)] mb-4">
-          <span className="size-2 rounded-full bg-blue-500 animate-pulse" />
-          Monetização & Inteligência Forense
+        <div className="tag-pill mb-4">
+          <span className="tag-pill__square" />
+          <span>Monetização & Inteligência Forense</span>
         </div>
 
         <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-[var(--fg-1)] max-w-3xl mx-auto leading-tight">

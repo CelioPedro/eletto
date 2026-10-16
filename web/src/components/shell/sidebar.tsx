@@ -129,7 +129,7 @@ export function Sidebar({ counts }: { counts: SidebarCounts }) {
                 href={l.href}
                 className={`relative size-10 rounded-xl flex items-center justify-center transition-all ${
                   isActive
-                    ? "bg-[#EEF2FF] text-[#1D63FF] dark:bg-white/15 dark:text-white shadow-sm font-semibold"
+                    ? "bg-zinc-200 text-black dark:bg-white/15 dark:text-white shadow-sm font-semibold"
                     : "text-[var(--muted-2)] hover:text-[var(--fg-1)] hover:bg-[var(--hover)]"
                 }`}
                 title={l.label}
@@ -151,7 +151,7 @@ export function Sidebar({ counts }: { counts: SidebarCounts }) {
                 href={l.href}
                 className={`relative size-10 rounded-xl flex items-center justify-center transition-all ${
                   isActive
-                    ? "bg-[#EEF2FF] text-[#1D63FF] dark:bg-white/15 dark:text-white shadow-sm font-semibold"
+                    ? "bg-zinc-200 text-black dark:bg-white/15 dark:text-white shadow-sm font-semibold"
                     : "text-[var(--muted-2)] hover:text-[var(--fg-1)] hover:bg-[var(--hover)]"
                 }`}
                 title={`${l.label}${l.count ? ` (${l.count.toLocaleString("pt-BR")})` : ""}`}
@@ -160,7 +160,7 @@ export function Sidebar({ counts }: { counts: SidebarCounts }) {
                 {hasAlert ? (
                   <span className="absolute top-2 right-2 size-2 rounded-full bg-red-500 animate-pulse ring-2 ring-[var(--sidebar)]" />
                 ) : l.count ? (
-                  <span className="absolute top-2 right-2 size-1.5 rounded-full bg-cyan-400" />
+                  <span className="absolute top-2 right-2 size-1.5 rounded-full bg-white/70" />
                 ) : null}
               </Link>
             );
@@ -267,7 +267,7 @@ export function Sidebar({ counts }: { counts: SidebarCounts }) {
                         {l.count.toLocaleString("pt-BR")}
                       </span>
                     ) : l.badge ? (
-                      <span className="ml-auto font-mono text-[9px] font-semibold tracking-wider text-cyan-500 dark:text-cyan-300 bg-cyan-500/10 dark:bg-cyan-500/15 px-1.5 py-0.5 rounded border border-cyan-500/25">
+                      <span className="ml-auto font-mono text-[9px] font-semibold tracking-wider text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-white/8 px-1.5 py-0.5 rounded-[0px] border border-zinc-300 dark:border-white/15">
                         {l.badge}
                       </span>
                     ) : null}
@@ -282,13 +282,13 @@ export function Sidebar({ counts }: { counts: SidebarCounts }) {
       {/* Bottom Footer Section */}
       <div className="mt-auto pt-3 border-t border-[var(--border-1)] flex flex-col gap-2.5">
         {/* Pro Plan Card */}
-        <div className="rounded-xl border border-[var(--border-1)] bg-[var(--card-tone)] p-3 hover:border-[#1D63FF]/50 transition-all">
+        <div className="rounded-[0px] border border-[var(--border-1)] bg-[var(--card-tone)] p-3 hover:border-white/30 transition-all">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
-              <Zap className="size-3.5 text-[#1D63FF]" />
+              <Zap className="size-3.5 text-[var(--fg-1)]" />
               <span className="font-sans text-xs font-semibold text-[var(--fg-1)]">Eletto Pro</span>
             </div>
-            <span className="font-mono text-[9px] font-bold text-cyan-600 dark:text-cyan-300 bg-cyan-500/10 dark:bg-cyan-500/15 border border-cyan-500/25 px-1.5 py-0.5 rounded">
+            <span className="font-mono text-[9px] font-bold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-white/8 border border-zinc-300 dark:border-white/15 px-1.5 py-0.5 rounded-[0px]">
               PERICIAL
             </span>
           </div>
@@ -297,7 +297,7 @@ export function Sidebar({ counts }: { counts: SidebarCounts }) {
           </p>
           <Link
             href="/planos"
-            className="mt-2.5 flex items-center justify-center w-full py-1.5 text-xs font-semibold rounded-lg bg-[#1D63FF] hover:bg-[#1550D6] text-white transition-colors shadow-sm"
+            className="mt-2.5 flex items-center justify-center w-full py-1.5 text-xs font-semibold rounded-[0px] bg-[var(--fg-1)] hover:opacity-90 text-[var(--bg)] transition-colors shadow-sm"
             style={{ textDecoration: "none" }}
           >
             Conhecer Planos →

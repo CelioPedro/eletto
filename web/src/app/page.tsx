@@ -113,8 +113,8 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         actions={<YearSelect basePath="/" years={expenseYears} value={year} allLabel="todos os anos" />}
       />
 
-      {/* Hero Indicium Cobalt Ultramarine com Refração Fractal Glass */}
-      <div className="animate-in relative z-20 border border-[var(--border-1)] bg-[#020722] text-white px-8 py-20 sm:px-16 sm:py-28">
+      {/* Hero Swiss Architectural Monochrome com Refração Sheer Glass */}
+      <div className="animate-in relative z-20 border border-[var(--border-1)] bg-[#090A0C] text-white px-8 py-20 sm:px-16 sm:py-28">
         <span className="card-dot card-dot--tl" />
         <span className="card-dot card-dot--tr" />
         <span className="card-dot card-dot--bl" />
@@ -123,18 +123,18 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         {/* Cortina de refração fractal glass com fade lateral (isolada para não vazar) */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden>
           <div className="hero-fluted-bg" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#020722] via-[#020722]/85 to-transparent z-[1]" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#090A0C] via-[#090A0C]/85 to-transparent z-[1]" />
         </div>
 
         <div className="relative max-w-3xl z-10">
           <div className="mb-6 flex items-center">
-            <div className="tag-pill border-white/25 bg-[#030B38]/90 backdrop-blur-md text-white shadow-sm">
-              <span className="tag-pill__square bg-[#1D63FF]" />
-              <span className="tracking-widest uppercase font-mono text-[11px] text-[#E2E8F8]">
+            <div className="tag-pill border-white/20 bg-[#121316]/90 backdrop-blur-md text-white shadow-sm">
+              <span className="tag-pill__square bg-white" />
+              <span className="tracking-widest uppercase font-mono text-[11px] text-zinc-200">
                 INTELIGÊNCIA & AUDITORIA ELEITORAL
               </span>
               <span className="opacity-40">·</span>
-              <span className="text-[#5CE1E6] font-mono text-[11px] font-semibold">DADOS OFICIAIS</span>
+              <span className="text-white font-mono text-[11px] font-semibold opacity-90">DADOS OFICIAIS</span>
             </div>
           </div>
 
@@ -142,7 +142,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
             Audite relações, doações e patrimônio de qualquer político brasileiro.
           </h1>
 
-          <p className="mt-6 max-w-xl text-[16px] sm:text-[17px] leading-[1.6] text-[#E2E8F8] font-normal">
+          <p className="mt-6 max-w-xl text-[16px] sm:text-[17px] leading-[1.6] text-zinc-300 font-normal">
             Busca unificada por nome, CPF ou CNPJ. Conexões em rede, doações circulares, fornecedores
             e evolução patrimonial de 12 anos cruzados a partir de fontes oficiais.
           </p>
@@ -182,7 +182,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 border border-[var(--border-1)] divide-y md:divide-y-0 md:divide-x divide-[var(--border-1)] bg-[#030B38]">
+        <div className="grid grid-cols-1 md:grid-cols-3 border border-[var(--border-1)] divide-y md:divide-y-0 md:divide-x divide-[var(--border-1)] bg-[var(--surface)]">
           {/* Card 1: Rastreamento em Rede */}
           <Link
             href="/grafo"
@@ -195,16 +195,16 @@ export default async function Home({ searchParams }: PageProps<"/">) {
             <span className="card-dot card-dot--br" />
 
             <div>
-              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="card-icon text-white group-hover:text-[#1D63FF] transition-colors mb-12">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="card-icon text-white group-hover:text-[#090A0C] transition-colors mb-12">
                 <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
                 <polyline points="16 7 22 7 22 13" />
               </svg>
 
-              <h3 className="card-title text-2xl font-medium tracking-tight text-white group-hover:text-[#040D42] transition-colors mb-3">
+              <h3 className="card-title text-2xl font-medium tracking-tight text-white group-hover:text-[#090A0C] transition-colors mb-3">
                 Rastreie o crescimento
               </h3>
 
-              <p className="card-desc text-[13.5px] leading-relaxed text-[#B4C2E4] group-hover:text-[#3B4C7E] transition-colors">
+              <p className="card-desc text-[13.5px] leading-relaxed text-zinc-400 group-hover:text-[#495057] transition-colors">
                 Mapeamento topológico de conexões ocultas entre candidatos, doadores, parentes e pessoas jurídicas em múltiplos graus de separação.
               </p>
             </div>
@@ -216,7 +216,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
             </div>
           </Link>
 
-          {/* Card 2: Detecção de Anomalias (Card Ativo Branco como no Screenshot 1) */}
+          {/* Card 2: Detecção de Anomalias (Card Ativo Branco) */}
           <Link
             href="/sinais/analise-ia"
             className="card--interactive card--active-white relative p-8 sm:p-12 flex flex-col justify-between group transition-all"
@@ -228,17 +228,17 @@ export default async function Home({ searchParams }: PageProps<"/">) {
             <span className="card-dot card-dot--br" />
 
             <div>
-              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="card-icon text-[#1D63FF] mb-12">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="card-icon text-[#090A0C] mb-12">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                 <line x1="12" y1="8" x2="12" y2="12" />
                 <line x1="12" y1="16" x2="12.01" y2="16" />
               </svg>
 
-              <h3 className="card-title text-2xl font-medium tracking-tight text-[#040D42] mb-3">
+              <h3 className="card-title text-2xl font-medium tracking-tight text-[#090A0C] mb-3">
                 Reduza riscos
               </h3>
 
-              <p className="card-desc text-[13.5px] leading-relaxed text-[#3B4C7E]">
+              <p className="card-desc text-[13.5px] leading-relaxed text-[#495057]">
                 Construa auditorias confiáveis sobre bases sólidas, com governança pericial e detecção de doações circulares, despesas atípicas e notas trianguladas.
               </p>
             </div>
@@ -262,17 +262,17 @@ export default async function Home({ searchParams }: PageProps<"/">) {
             <span className="card-dot card-dot--br" />
 
             <div>
-              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="card-icon text-white group-hover:text-[#1D63FF] transition-colors mb-12">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="card-icon text-white group-hover:text-[#090A0C] transition-colors mb-12">
                 <path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17" />
                 <path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.8-2.8L15 14" />
                 <circle cx="18" cy="5" r="3" />
               </svg>
 
-              <h3 className="card-title text-2xl font-medium tracking-tight text-white group-hover:text-[#040D42] transition-colors mb-3">
+              <h3 className="card-title text-2xl font-medium tracking-tight text-white group-hover:text-[#090A0C] transition-colors mb-3">
                 Reduza custos
               </h3>
 
-              <p className="card-desc text-[13.5px] leading-relaxed text-[#B4C2E4] group-hover:text-[#3B4C7E] transition-colors">
+              <p className="card-desc text-[13.5px] leading-relaxed text-zinc-400 group-hover:text-[#495057] transition-colors">
                 Otimize perícias e investigações ao confrontar adversários em minutos, identificando doadores comuns, mesmos prestadores e emitindo laudos probatórios.
               </p>
             </div>
@@ -339,33 +339,33 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         </div>
       </section>
 
-      {/* SEÇÃO 3: Editorial em 2 Colunas: Metodologia Forense (Referência Screenshot 4) */}
-      <section className="animate-in border border-[var(--border-1)] bg-[#030B38] text-white p-8 sm:p-14" style={{ animationDelay: "160ms" }}>
+      {/* SEÇÃO 3: Editorial em 2 Colunas: Metodologia Forense */}
+      <section className="animate-in border border-[var(--border-1)] bg-[var(--surface)] text-white p-8 sm:p-14" style={{ animationDelay: "160ms" }}>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14">
-          {/* Coluna Esquerda: Título Editorial com Destaque Ciano */}
+          {/* Coluna Esquerda: Título Editorial */}
           <div className="lg:col-span-5 flex flex-col justify-start">
             <div className="mb-6">
               <div className="tag-pill border-white/20 bg-white/5 text-white">
-                <span className="tag-pill__square bg-[#1D63FF]" />
+                <span className="tag-pill__square bg-white" />
                 <span>Nossas tipologias forenses</span>
               </div>
             </div>
 
             <h2 className="text-[clamp(28px,3.8vw,44px)] font-normal text-white tracking-[-0.03em] leading-[1.08] text-balance">
               Expertise aplicada aos desafios da sua{" "}
-              <span className="bg-gradient-to-r from-[#1D63FF] via-[#5CE1E6] to-[#5CE1E6] bg-clip-text text-transparent font-medium">
+              <span className="text-white underline underline-offset-4 decoration-white/40 font-medium">
                 investigação
               </span>
             </h2>
 
-            <p className="mt-6 text-[14px] sm:text-[15px] leading-relaxed text-[#B4C2E4] font-normal">
+            <p className="mt-6 text-[14px] sm:text-[15px] leading-relaxed text-zinc-400 font-normal">
               O contexto investigativo muda tudo: da governança e compliance partidário à instrução probatória em tribunais eleitorais. Aplicamos modelos comprovados para que você avance com velocidade e sem margem de erro.
             </p>
 
             <div className="mt-8 pt-6 border-t border-white/10 flex items-center gap-3">
-              <span className="font-mono text-xs text-[#5CE1E6]">AUDITORIA CONTÍNUA</span>
+              <span className="font-mono text-xs text-zinc-300">AUDITORIA CONTÍNUA</span>
               <span className="text-white/30">·</span>
-              <span className="font-mono text-xs text-[#B4C2E4]">ELEIÇÕES 2014–2026</span>
+              <span className="font-mono text-xs text-zinc-400">ELEIÇÕES 2014–2026</span>
             </div>
           </div>
 
@@ -376,7 +376,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
                 <div className="sm:col-span-5 font-medium text-[15px] text-white tracking-tight">
                   {m.title}
                 </div>
-                <div className="sm:col-span-7 text-[13px] sm:text-[13.5px] leading-relaxed text-[#B4C2E4]">
+                <div className="sm:col-span-7 text-[13px] sm:text-[13.5px] leading-relaxed text-zinc-400">
                   {m.desc}
                 </div>
               </div>
@@ -390,8 +390,8 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         <TopSuppliers years={expenseYears} initialYear={year} />
       </div>
 
-      {/* SEÇÃO 4: CTA Centrado com Dot Matrix (Referência Screenshot 5) */}
-      <section className="animate-in relative overflow-hidden border border-[var(--border-1)] bg-[#030B38] text-white p-12 sm:p-24 text-center" style={{ animationDelay: "200ms" }}>
+      {/* SEÇÃO 4: CTA Centrado com Dot Matrix */}
+      <section className="animate-in relative overflow-hidden border border-[var(--border-1)] bg-[var(--surface)] text-white p-12 sm:p-24 text-center" style={{ animationDelay: "200ms" }}>
         <span className="card-dot card-dot--tl" />
         <span className="card-dot card-dot--tr" />
         <span className="card-dot card-dot--bl" />
@@ -403,7 +403,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         <div className="relative z-10 max-w-2xl mx-auto flex flex-col items-center">
           <div className="mb-6">
             <div className="tag-pill border-white/20 bg-white/5 text-white">
-              <span className="tag-pill__square bg-[#1D63FF]" />
+              <span className="tag-pill__square bg-white" />
               <span>Entre em contato</span>
             </div>
           </div>
@@ -412,7 +412,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
             Pronto para transformar sua investigação com Dados & IA?
           </h2>
 
-          <p className="mt-6 text-[15px] sm:text-[16px] leading-relaxed text-[#B4C2E4] max-w-xl">
+          <p className="mt-6 text-[15px] sm:text-[16px] leading-relaxed text-zinc-400 max-w-xl">
             Vamos conversar sobre como podemos ajudar você a auditar vínculos, rastrear contas de campanha e alcançar conclusões periciais sólidas.
           </p>
 
