@@ -182,11 +182,11 @@ export default async function Home({ searchParams }: PageProps<"/">) {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 border border-[var(--border-1)] divide-y md:divide-y-0 md:divide-x divide-[var(--border-1)] bg-[var(--surface)]">
-          {/* Card 1: Rastreamento em Rede */}
+        <div className="grid grid-cols-1 md:grid-cols-3 border border-[var(--border-1)] divide-y md:divide-y-0 md:divide-x divide-[var(--border-1)] bg-[#030B38]">
+          {/* Card 1: Rastreamento em Rede (Cobalto Escuro) */}
           <Link
             href="/grafo"
-            className="card--interactive relative p-8 sm:p-12 flex flex-col justify-between group transition-all"
+            className="card--interactive bg-[#030B38] relative p-8 sm:p-12 flex flex-col justify-between group transition-all"
             style={{ textDecoration: "none" }}
           >
             <span className="card-dot card-dot--tl" />
@@ -216,10 +216,10 @@ export default async function Home({ searchParams }: PageProps<"/">) {
             </div>
           </Link>
 
-          {/* Card 2: Detecção de Anomalias (Card Ativo Branco) */}
+          {/* Card 2: Detecção de Anomalias (Card Ativo Branco - "cor sim, cor não") */}
           <Link
             href="/sinais/analise-ia"
-            className="card--interactive card--active-white relative p-8 sm:p-12 flex flex-col justify-between group transition-all"
+            className="card--interactive card--active-white bg-white relative p-8 sm:p-12 flex flex-col justify-between group transition-all"
             style={{ textDecoration: "none" }}
           >
             <span className="card-dot card-dot--tl" />
@@ -250,10 +250,10 @@ export default async function Home({ searchParams }: PageProps<"/">) {
             </div>
           </Link>
 
-          {/* Card 3: Comparador e Otimização */}
+          {/* Card 3: Comparador e Otimização (Cobalto Escuro) */}
           <Link
             href="/comparador"
-            className="card--interactive relative p-8 sm:p-12 flex flex-col justify-between group transition-all"
+            className="card--interactive bg-[#030B38] relative p-8 sm:p-12 flex flex-col justify-between group transition-all"
             style={{ textDecoration: "none" }}
           >
             <span className="card-dot card-dot--tl" />
@@ -340,43 +340,43 @@ export default async function Home({ searchParams }: PageProps<"/">) {
       </section>
 
       {/* SEÇÃO 3: Editorial em 2 Colunas: Metodologia Forense */}
-      <section className="animate-in border border-[var(--border-1)] bg-[var(--surface)] text-white p-8 sm:p-14" style={{ animationDelay: "160ms" }}>
+      <section className="animate-in border border-[var(--border-1)] bg-[var(--surface)] text-[var(--fg-1)] p-8 sm:p-14" style={{ animationDelay: "160ms" }}>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14">
           {/* Coluna Esquerda: Título Editorial */}
           <div className="lg:col-span-5 flex flex-col justify-start">
             <div className="mb-6">
-              <div className="tag-pill border-white/20 bg-[#040D42]/85 text-white">
-                <span className="tag-pill__square bg-[#1D63FF]" />
+              <div className="tag-pill">
+                <span className="tag-pill__square" />
                 <span>Nossas tipologias forenses</span>
               </div>
             </div>
 
-            <h2 className="text-[clamp(28px,3.8vw,44px)] font-normal text-white tracking-[-0.03em] leading-[1.08] text-balance">
+            <h2 className="text-[clamp(28px,3.8vw,44px)] font-normal text-[var(--fg-1)] tracking-[-0.03em] leading-[1.08] text-balance">
               Expertise aplicada aos desafios da sua{" "}
-              <span className="text-[#8BB4FF] underline underline-offset-4 decoration-[#1D63FF]/70 font-medium">
+              <span className="text-[#1D63FF] dark:text-[#8BB4FF] underline underline-offset-4 decoration-[#1D63FF]/50 font-medium">
                 investigação
               </span>
             </h2>
 
-            <p className="mt-6 text-[14px] sm:text-[15px] leading-relaxed text-[#B4C2E4] font-normal">
+            <p className="mt-6 text-[14px] sm:text-[15px] leading-relaxed text-[var(--muted)] font-normal">
               O contexto investigativo muda tudo: da governança e compliance partidário à instrução probatória em tribunais eleitorais. Aplicamos modelos comprovados para que você avance com velocidade e sem margem de erro.
             </p>
 
-            <div className="mt-8 pt-6 border-t border-white/10 flex items-center gap-3">
-              <span className="font-mono text-xs text-[#E2E8F8]">AUDITORIA CONTÍNUA</span>
-              <span className="text-white/30">·</span>
-              <span className="font-mono text-xs text-[#B4C2E4]">ELEIÇÕES 2014–2026</span>
+            <div className="mt-8 pt-6 border-t border-[var(--border-1)] flex items-center gap-3">
+              <span className="font-mono text-xs text-[var(--fg-2)]">AUDITORIA CONTÍNUA</span>
+              <span className="text-[var(--muted-2)]">·</span>
+              <span className="font-mono text-xs text-[var(--muted)]">ELEIÇÕES 2014–2026</span>
             </div>
           </div>
 
           {/* Coluna Direita: Linhas Técnicas Separadas por Borda de 1px */}
-          <div className="lg:col-span-7 flex flex-col divide-y divide-white/15 border-t lg:border-t-0 border-white/15">
+          <div className="lg:col-span-7 flex flex-col divide-y divide-[var(--border-1)] border-t lg:border-t-0 border-[var(--border-1)]">
             {methodologies.map((m) => (
               <div key={m.title} className="py-5 sm:py-6 grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-6 items-baseline">
-                <div className="sm:col-span-5 font-medium text-[15px] text-white tracking-tight">
+                <div className="sm:col-span-5 font-medium text-[15px] text-[var(--fg-1)] tracking-tight">
                   {m.title}
                 </div>
-                <div className="sm:col-span-7 text-[13px] sm:text-[13.5px] leading-relaxed text-[#B4C2E4]">
+                <div className="sm:col-span-7 text-[13px] sm:text-[13.5px] leading-relaxed text-[var(--muted)]">
                   {m.desc}
                 </div>
               </div>
@@ -391,7 +391,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
       </div>
 
       {/* SEÇÃO 4: CTA Centrado com Dot Matrix */}
-      <section className="animate-in relative overflow-hidden border border-[var(--border-1)] bg-[var(--surface)] text-white p-12 sm:p-24 text-center" style={{ animationDelay: "200ms" }}>
+      <section className="animate-in relative overflow-hidden border border-[var(--border-1)] bg-[var(--surface)] text-[var(--fg-1)] p-12 sm:p-24 text-center" style={{ animationDelay: "200ms" }}>
         <span className="card-dot card-dot--tl" />
         <span className="card-dot card-dot--tr" />
         <span className="card-dot card-dot--bl" />
@@ -402,17 +402,17 @@ export default async function Home({ searchParams }: PageProps<"/">) {
 
         <div className="relative z-10 max-w-2xl mx-auto flex flex-col items-center">
           <div className="mb-6">
-            <div className="tag-pill border-white/20 bg-[#040D42]/85 text-white">
-              <span className="tag-pill__square bg-[#1D63FF]" />
+            <div className="tag-pill">
+              <span className="tag-pill__square" />
               <span>Entre em contato</span>
             </div>
           </div>
 
-          <h2 className="text-[clamp(32px,4.5vw,54px)] font-normal text-white tracking-[-0.03em] leading-[1.08] text-balance">
+          <h2 className="text-[clamp(32px,4.5vw,54px)] font-normal text-[var(--fg-1)] tracking-[-0.03em] leading-[1.08] text-balance">
             Pronto para transformar sua investigação com Dados & IA?
           </h2>
 
-          <p className="mt-6 text-[15px] sm:text-[16px] leading-relaxed text-[#B4C2E4] max-w-xl">
+          <p className="mt-6 text-[15px] sm:text-[16px] leading-relaxed text-[var(--muted)] max-w-xl">
             Vamos conversar sobre como podemos ajudar você a auditar vínculos, rastrear contas de campanha e alcançar conclusões periciais sólidas.
           </p>
 

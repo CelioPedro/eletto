@@ -304,26 +304,23 @@ a.card:hover, button.card:hover {
   border-color: #D5DFEE;
   color: #040D42;
 }
-:root[data-theme="light"] .card--interactive:hover {
+.card--active-white:hover {
   background: #040D42 !important;
   color: #FFFFFF !important;
   border-color: #040D42 !important;
 }
-:root[data-theme="light"] .card--interactive:hover .card-title,
-:root[data-theme="light"] .card--interactive:hover h3 {
+.card--active-white:hover .card-title,
+.card--active-white:hover h3 {
   color: #FFFFFF !important;
 }
-:root[data-theme="light"] .card--interactive:hover .card-desc,
-:root[data-theme="light"] .card--interactive:hover p {
+.card--active-white:hover .card-desc,
+.card--active-white:hover p {
   color: #B4C2E4 !important;
 }
-:root[data-theme="light"] .card--interactive:hover .card-icon,
-:root[data-theme="light"] .card--interactive:hover svg {
+.card--active-white:hover .card-icon,
+.card--active-white:hover svg {
   color: #FFFFFF !important;
   stroke: #FFFFFF !important;
-}
-:root[data-theme="light"] .card--interactive:hover .card-dot {
-  background-color: #FFFFFF;
 }
 
 /* Swiss corner dots signature */
