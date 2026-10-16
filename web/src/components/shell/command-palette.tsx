@@ -1,7 +1,7 @@
-"use client";
-
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
+import { Search } from "lucide-react";
 import type { SearchResult } from "@/lib/queries";
 import { formatCpfCnpj } from "@/lib/format";
 import { SearchAvatar } from "@/components/search-avatar";
@@ -11,6 +11,8 @@ const SHORTCUTS = [
   { href: "/", label: "Início" },
   { href: "/comparador", label: "Comparador · Frente a Frente" },
   { href: "/grafo", label: "Grafo de correlações" },
+  { href: "/ranking", label: "Bens declarados" },
+  { href: "/emendas", label: "Emendas parlamentares" },
   { href: "/sinais/doacao-circular", label: "Sinais · Doação circular" },
   { href: "/sinais/socio-fornecedor", label: "Sinais · Sócio de fornecedor" },
   { href: "/sinais/analise-ia", label: "Sinais · Análise de IA" },
@@ -32,12 +34,17 @@ export function useCommandPaletteShortcut() {
 }
 
 export function CommandPalette() {
-  const { setPaletteOpen } = useShell();
+  const { paletteOpen, setPaletteOpen } = useShell();
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const [q, setQ] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -78,11 +85,13 @@ export function CommandPalette() {
 
   const shortcuts = SHORTCUTS.filter((s) => s.label.toLowerCase().includes(trimmed.toLowerCase()));
 
-  return (
+  if (!paletteOpen || !mounted) return null;
+
+  return createPortal(
     <div className="palette__backdrop" onClick={() => setPaletteOpen(false)}>
       <div className="palette" onClick={(e) => e.stopPropagation()}>
         <div className="palette__input">
-          <span className="mono" style={{ color: "var(--muted-2)" }}>⌕</span>
+          <Search className="size-4 text-[var(--muted-2)] shrink-0" />
           <input
             ref={inputRef}
             value={q}
@@ -148,6 +157,7 @@ export function CommandPalette() {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

@@ -8,6 +8,7 @@ import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
 import { AuthProvider } from "@/components/auth/auth-context";
 import { AuthModal } from "@/components/auth/auth-modal";
+import { CommandPalette } from "./command-palette";
 import { Footer } from "./footer";
 
 export function AppShell({ counts, children }: { counts: SidebarCounts; children: ReactNode }) {
@@ -19,6 +20,7 @@ export function AppShell({ counts, children }: { counts: SidebarCounts; children
       <AuthProvider>
         <ShellProvider>
           <div className="min-h-screen bg-[var(--bg)]">{children}</div>
+          <CommandPalette />
           <AuthModal />
         </ShellProvider>
       </AuthProvider>
@@ -35,6 +37,7 @@ export function AppShell({ counts, children }: { counts: SidebarCounts; children
             <ContentBody>{children}</ContentBody>
           </div>
         </div>
+        <CommandPalette />
         <AuthModal />
       </ShellProvider>
     </AuthProvider>

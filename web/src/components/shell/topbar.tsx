@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Search } from "lucide-react";
 import { useShell } from "./shell-context";
-import { CommandPalette, useCommandPaletteShortcut } from "./command-palette";
+import { useCommandPaletteShortcut } from "./command-palette";
 import { ElettoLogo } from "@/components/eletto-logo";
 
 export function Topbar() {
@@ -38,13 +38,7 @@ export function Topbar() {
             <Search className="size-4" />
           </button>
         </span>
-        <CommandPaletteMount />
       </div>
     </div>
   );
-}
-
-function CommandPaletteMount() {
-  const { paletteOpen } = useShell();
-  return paletteOpen ? <CommandPalette /> : null;
 }
