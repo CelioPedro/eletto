@@ -3,7 +3,7 @@
 export function GraphHeroTopology() {
   return (
     <div className="relative w-full border border-[var(--border-1)] bg-[var(--surface)] p-5 sm:p-7 overflow-hidden">
-      {/* Corner dots suíços */}
+      {/* Corner dots suíços do container */}
       <span className="card-dot card-dot--tl" />
       <span className="card-dot card-dot--tr" />
       <span className="card-dot card-dot--bl" />
@@ -35,10 +35,10 @@ export function GraphHeroTopology() {
         </div>
       </div>
 
-      {/* SVG Diagrama Pericial com Geometria e Espaçamentos Perfeitos */}
+      {/* SVG Diagrama Pericial com Quatro Quinas e Triangulação Circular Suave */}
       <div className="relative z-10 w-full overflow-x-auto py-2">
         <svg
-          viewBox="0 0 880 260"
+          viewBox="0 0 880 250"
           className="w-full min-w-[760px] h-auto select-none"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
@@ -73,11 +73,19 @@ export function GraphHeroTopology() {
           </defs>
 
           {/* ============================================================== */}
+          {/* DETALHES DAS QUATRO QUINAS FORENSES (VIEWFINDER RETICLES)      */}
+          {/* ============================================================== */}
+          <path d="M 18 32 L 18 16 L 34 16" stroke="var(--border-2)" strokeWidth="1.5" />
+          <path d="M 862 32 L 862 16 L 846 16" stroke="var(--border-2)" strokeWidth="1.5" />
+          <path d="M 18 218 L 18 234 L 34 234" stroke="var(--border-2)" strokeWidth="1.5" />
+          <path d="M 862 218 L 862 234 L 846 234" stroke="var(--border-2)" strokeWidth="1.5" />
+
+          {/* ============================================================== */}
           {/* CAMADA 1: NÓS E CONEXÕES FANTASMAS (SEM COLISÕES COM TEXTO)   */}
           {/* ============================================================== */}
 
           {/* Nó Ghost 1: Coligação B (Extremo Superior Esquerdo) */}
-          <g opacity="0.45" transform="translate(75, 70)">
+          <g opacity="0.45" transform="translate(80, 68)">
             <circle r="16" fill="var(--card-tone)" stroke="var(--border-2)" strokeWidth="1" strokeDasharray="3 3" />
             <path d="M -4 5 C -4 2, -2 0, 0 0 C 2 0, 4 2, 4 5 Z M 0 -1.5 C -2 -1.5, -3 -2.5, -3 -4.5 C -3 -6.5, -2 -7.5, 0 -7.5 C 2 -7.5, 3 -6.5, 3 -4.5 C 3 -2.5, 2 -1.5, 0 -1.5 Z" fill="var(--muted-2)" />
             <text y="26" fill="var(--muted-2)" fontSize="8" fontFamily="monospace" textAnchor="middle">
@@ -85,10 +93,10 @@ export function GraphHeroTopology() {
             </text>
           </g>
           {/* Linha Ghost 1 -> Nó 1 (Ombro superior esquerdo) */}
-          <line x1="91" y1="78" x2="152" y2="135" stroke="var(--border-1)" strokeWidth="1" strokeDasharray="4 4" opacity="0.4" />
+          <line x1="96" y1="76" x2="152" y2="135" stroke="var(--border-1)" strokeWidth="1" strokeDasharray="4 4" opacity="0.4" />
 
-          {/* Nó Ghost 2: Fornecedor Satélite (Deslocado para o vale inferior sem colisão) */}
-          <g opacity="0.45" transform="translate(570, 222)">
+          {/* Nó Ghost 2: Fornecedor Satélite (Vale inferior direito sem colisão) */}
+          <g opacity="0.45" transform="translate(570, 218)">
             <rect x="-16" y="-11" width="32" height="22" fill="var(--card-tone)" stroke="var(--border-2)" strokeWidth="1" strokeDasharray="3 3" />
             <text y="3" fill="var(--muted-2)" fontSize="7" fontFamily="monospace" textAnchor="middle">
               CNPJ
@@ -98,10 +106,10 @@ export function GraphHeroTopology() {
             </text>
           </g>
           {/* Linha Central -> Nó Ghost 2 */}
-          <line x1="469" y1="168" x2="554" y2="214" stroke="var(--border-1)" strokeWidth="1" strokeDasharray="4 4" opacity="0.4" />
+          <line x1="469" y1="168" x2="554" y2="210" stroke="var(--border-1)" strokeWidth="1" strokeDasharray="4 4" opacity="0.4" />
 
           {/* Nó Ghost 3: Empresa Holding (Extremo Superior Direito) */}
-          <g opacity="0.45" transform="translate(805, 70)">
+          <g opacity="0.45" transform="translate(800, 68)">
             <circle r="16" fill="var(--card-tone)" stroke="var(--border-2)" strokeWidth="1" strokeDasharray="3 3" />
             <path d="M -4 4 L 4 4 L 4 -2 L -4 -2 Z M -2 -2 L -2 -4 L 2 -4 L 2 -2" stroke="var(--muted-2)" strokeWidth="1" fill="none" />
             <text y="26" fill="var(--muted-2)" fontSize="8" fontFamily="monospace" textAnchor="middle">
@@ -109,16 +117,15 @@ export function GraphHeroTopology() {
             </text>
           </g>
           {/* Linha Sócio -> Nó Ghost 3 */}
-          <line x1="789" y1="78" x2="728" y2="135" stroke="var(--border-1)" strokeWidth="1" strokeDasharray="4 4" opacity="0.4" />
+          <line x1="784" y1="76" x2="728" y2="135" stroke="var(--border-1)" strokeWidth="1" strokeDasharray="4 4" opacity="0.4" />
 
           {/* ============================================================== */}
-          {/* CAMADA 2: ARCO SUPERIOR E ALERTA DE TRIANGULAÇÃO CIRCULAR       */}
+          {/* CAMADA 2: TRIANGULAÇÃO CIRCULAR (CURVA SUAVE PARABÓLICA LIMPA) */}
           {/* ============================================================== */}
 
-          {/* Arco Superior de Triangulação Circular (Nó 3 -> Nó 1) */}
-          {/* Inicia na borda externa do Nó 3 e aterrissa na borda externa do Nó 1 SEM colidir com os chips */}
+          {/* Arco Contínuo Suave Nó 3 -> Nó 1 (Sem ganchos nem curvas retas) */}
           <path
-            d="M 734 140 C 748 68, 580 46, 440 46 C 300 46, 132 68, 146 140"
+            d="M 663 110 C 560 38, 320 38, 217 110"
             fill="none"
             stroke="#F43F5E"
             strokeWidth="1.75"
@@ -126,15 +133,15 @@ export function GraphHeroTopology() {
             markerEnd="url(#arrow-rose)"
           />
 
-          {/* Badge Superior de Alerta (Centralizado, 10px acima do ápice da curva) */}
-          <g transform="translate(290, 8)">
-            <rect width="300" height="26" fill="var(--surface)" stroke="#F43F5E" strokeWidth="1.25" rx="0" />
-            <rect x="0" y="0" width="4" height="26" fill="#F43F5E" />
-            <circle cx="15" cy="13" r="3" fill="#F43F5E" className="animate-pulse" />
-            <text x="26" y="16.5" fill="var(--fg-1)" fontSize="9.5" fontFamily="monospace" fontWeight="bold">
+          {/* Badge Superior de Alerta de Triangulação Circular (Elegante e Centralizado) */}
+          <g transform="translate(305, 12)">
+            <rect width="270" height="25" fill="var(--surface)" stroke="#F43F5E" strokeWidth="1.25" rx="0" />
+            <rect x="0" y="0" width="4" height="25" fill="#F43F5E" />
+            <circle cx="15" cy="12.5" r="3" fill="#F43F5E" className="animate-pulse" />
+            <text x="26" y="16" fill="var(--fg-1)" fontSize="9" fontFamily="monospace" fontWeight="bold">
               TRIANGULAÇÃO CIRCULAR DETECTADA
             </text>
-            <text x="240" y="16.5" fill="#F43F5E" fontSize="9.5" fontFamily="monospace" fontWeight="bold">
+            <text x="215" y="16" fill="#F43F5E" fontSize="9" fontFamily="monospace" fontWeight="bold">
               R$ 420.000
             </text>
           </g>
@@ -154,7 +161,7 @@ export function GraphHeroTopology() {
             className="flow-line-animated"
             markerEnd="url(#arrow-blue)"
           />
-          {/* Cápsula de Dados do Vetor 1 (Simétrica e acima da linha com espaço) */}
+          {/* Cápsula de Dados do Vetor 1 */}
           <g transform="translate(254, 122)">
             <rect width="116" height="25" fill="var(--surface)" stroke="var(--border-1)" strokeWidth="1" rx="0" />
             <line x1="0" y1="0" x2="3" y2="0" stroke="#1D63FF" strokeWidth="2" />
@@ -177,7 +184,7 @@ export function GraphHeroTopology() {
             className="flow-line-animated"
             markerEnd="url(#arrow-green)"
           />
-          {/* Cápsula de Dados do Vetor 2 (Simétrica e acima da linha com espaço) */}
+          {/* Cápsula de Dados do Vetor 2 */}
           <g transform="translate(510, 122)">
             <rect width="116" height="25" fill="var(--surface)" stroke="var(--border-1)" strokeWidth="1" rx="0" />
             <line x1="0" y1="0" x2="3" y2="0" stroke="#10B981" strokeWidth="2" />
@@ -190,7 +197,7 @@ export function GraphHeroTopology() {
           </g>
 
           {/* ============================================================== */}
-          {/* CAMADA 4: OS 3 NÓS CENTRAIS COM ESPAÇAMENTOS PERFEITOS         */}
+          {/* CAMADA 4: OS 3 NÓS CENTRAIS COM ESPAÇAMENTOS EQUILIBRADOS       */}
           {/* ============================================================== */}
 
           {/* NÓ 1: CANDIDATO ALVO (X: 180, Y: 155) */}
@@ -212,7 +219,7 @@ export function GraphHeroTopology() {
             <line x1="0" y1="-38" x2="0" y2="-34" stroke="#1D63FF" strokeWidth="1.5" />
             <line x1="0" y1="34" x2="0" y2="38" stroke="#1D63FF" strokeWidth="1.5" />
 
-            {/* Micro-chip superior (com espaço limpo acima do círculo) */}
+            {/* Micro-chip superior */}
             <g transform="translate(-34, -52)">
               <rect width="68" height="15" fill="var(--surface)" stroke="#1D63FF" strokeWidth="1" rx="0" />
               <text x="34" y="10.5" fill="#1D63FF" fontSize="7.5" fontFamily="monospace" fontWeight="bold" textAnchor="middle">
@@ -252,7 +259,7 @@ export function GraphHeroTopology() {
             <line x1="0" y1="-35" x2="0" y2="-31" stroke="var(--border-2)" strokeWidth="1.5" />
             <line x1="0" y1="31" x2="0" y2="35" stroke="var(--border-2)" strokeWidth="1.5" />
 
-            {/* Micro-chip superior (com espaço limpo acima do quadrado) */}
+            {/* Micro-chip superior */}
             <g transform="translate(-44, -52)">
               <rect width="88" height="15" fill="var(--surface)" stroke="var(--border-2)" strokeWidth="1" rx="0" />
               <text x="44" y="10.5" fill="var(--fg-1)" fontSize="7.5" fontFamily="monospace" fontWeight="bold" textAnchor="middle">
@@ -260,7 +267,7 @@ export function GraphHeroTopology() {
               </text>
             </g>
 
-            {/* Tipografia de identificação inferior (100% limpa e legível sem nenhum nó colidindo) */}
+            {/* Tipografia de identificação inferior */}
             <text y="50" fill="var(--fg-1)" fontSize="11" fontFamily="sans-serif" fontWeight="bold" textAnchor="middle">
               FORNECEDOR DE CAMPANHA
             </text>
@@ -291,7 +298,7 @@ export function GraphHeroTopology() {
             <line x1="0" y1="-38" x2="0" y2="-34" stroke="#10B981" strokeWidth="1.5" />
             <line x1="0" y1="34" x2="0" y2="38" stroke="#10B981" strokeWidth="1.5" />
 
-            {/* Micro-chip superior (com espaço limpo acima do círculo) */}
+            {/* Micro-chip superior */}
             <g transform="translate(-37, -52)">
               <rect width="74" height="15" fill="var(--surface)" stroke="#10B981" strokeWidth="1" rx="0" />
               <text x="37" y="10.5" fill="#10B981" fontSize="7.5" fontFamily="monospace" fontWeight="bold" textAnchor="middle">
@@ -310,7 +317,7 @@ export function GraphHeroTopology() {
         </svg>
       </div>
 
-      {/* Rodapé técnico do Hero com proporção e alinhamento equilibrado */}
+      {/* Rodapé técnico do Hero */}
       <div className="relative z-10 mt-3 pt-3 border-t border-[var(--border-1)] flex flex-wrap items-center justify-between gap-3 text-[10.5px] font-mono text-[var(--muted)]">
         <div className="flex flex-wrap items-center gap-4">
           <span className="flex items-center gap-1.5">
