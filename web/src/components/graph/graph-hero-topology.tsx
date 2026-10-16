@@ -87,7 +87,10 @@ export function GraphHeroTopology() {
           {/* Nó Ghost 1: Coligação B (Extremo Superior Esquerdo) */}
           <g opacity="0.45" transform="translate(80, 68)">
             <circle r="16" fill="var(--card-tone)" stroke="var(--border-2)" strokeWidth="1" strokeDasharray="3 3" />
-            <path d="M -4 5 C -4 2, -2 0, 0 0 C 2 0, 4 2, 4 5 Z M 0 -1.5 C -2 -1.5, -3 -2.5, -3 -4.5 C -3 -6.5, -2 -7.5, 0 -7.5 C 2 -7.5, 3 -6.5, 3 -4.5 C 3 -2.5, 2 -1.5, 0 -1.5 Z" fill="var(--muted-2)" />
+            <g transform="translate(-7, -7) scale(0.58)" stroke="var(--muted-2)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none">
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </g>
             <text y="26" fill="var(--muted-2)" fontSize="8" fontFamily="monospace" textAnchor="middle">
               COLIGAÇÃO B
             </text>
@@ -95,12 +98,18 @@ export function GraphHeroTopology() {
           {/* Linha Ghost 1 -> Nó 1 (Ombro superior esquerdo) */}
           <line x1="96" y1="76" x2="152" y2="135" stroke="var(--border-1)" strokeWidth="1" strokeDasharray="4 4" opacity="0.4" />
 
-          {/* Nó Ghost 2: Fornecedor Satélite (Vale inferior direito sem colisão) */}
+          {/* Nó Ghost 2: Fornecedor Satélite (Vale inferior direito) */}
           <g opacity="0.45" transform="translate(570, 218)">
             <rect x="-16" y="-11" width="32" height="22" fill="var(--card-tone)" stroke="var(--border-2)" strokeWidth="1" strokeDasharray="3 3" />
-            <text y="3" fill="var(--muted-2)" fontSize="7" fontFamily="monospace" textAnchor="middle">
-              CNPJ
-            </text>
+            <g transform="translate(-6.5, -8.5) scale(0.55)" stroke="var(--muted-2)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none">
+              <rect width="16" height="20" x="4" y="2" rx="2" />
+              <path d="M9 22v-4h6v4" />
+              <path d="M8 6h.01" />
+              <path d="M16 6h.01" />
+              <path d="M12 6h.01" />
+              <path d="M12 10h.01" />
+              <path d="M12 14h.01" />
+            </g>
             <text y="21" fill="var(--muted-2)" fontSize="8" fontFamily="monospace" textAnchor="middle">
               FORNECEDOR SATÉLITE
             </text>
@@ -111,7 +120,9 @@ export function GraphHeroTopology() {
           {/* Nó Ghost 3: Empresa Holding (Extremo Superior Direito) */}
           <g opacity="0.45" transform="translate(800, 68)">
             <circle r="16" fill="var(--card-tone)" stroke="var(--border-2)" strokeWidth="1" strokeDasharray="3 3" />
-            <path d="M -4 4 L 4 4 L 4 -2 L -4 -2 Z M -2 -2 L -2 -4 L 2 -4 L 2 -2" stroke="var(--muted-2)" strokeWidth="1" fill="none" />
+            <g transform="translate(-7, -7) scale(0.58)" stroke="var(--muted-2)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none">
+              <path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+            </g>
             <text y="26" fill="var(--muted-2)" fontSize="8" fontFamily="monospace" textAnchor="middle">
               EMPRESA HOLDING
             </text>
@@ -207,11 +218,12 @@ export function GraphHeroTopology() {
             <circle r="34" fill="var(--surface)" stroke="#1D63FF" strokeWidth="1.75" />
             <circle r="27" fill="var(--card-tone)" stroke="var(--border-1)" strokeWidth="1" />
 
-            {/* Ícone vetor de autoridade política */}
-            <path
-              d="M -7 9 C -7 4, -3.5 1, 0 1 C 3.5 1, 7 4, 7 9 Z M 0 -1.5 C -3 -1.5, -5 -3.5, -5 -6.5 C -5 -9.5, -3 -11.5, 0 -11.5 C 3 -11.5, 5 -9.5, 5 -6.5 C 5 -3.5, 3 -1.5, 0 -1.5 Z"
-              fill="#1D63FF"
-            />
+            {/* Ícone Lucide UserCheck: Perfil de Agente Político Validado */}
+            <g transform="translate(-11.5, -11.5) scale(0.96)" stroke="#1D63FF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <polyline points="16 11 18 13 22 9" />
+            </g>
 
             {/* Retícula de mira */}
             <line x1="-38" y1="0" x2="-34" y2="0" stroke="#1D63FF" strokeWidth="1.5" />
@@ -245,13 +257,16 @@ export function GraphHeroTopology() {
             <rect x="-31" y="-31" width="62" height="62" fill="var(--surface)" stroke="var(--border-2)" strokeWidth="1.5" rx="0" />
             <rect x="-24" y="-24" width="48" height="48" fill="var(--card-tone)" stroke="var(--border-1)" strokeWidth="1" />
 
-            {/* Ícone arquitetônico corporativo */}
-            <path
-              d="M -9 10 L -9 -10 L 3 -10 L 3 10 Z M 3 10 L 3 -4 L 10 -4 L 10 10 Z M -5 -6 L -1 -6 M -5 -1 L -1 -1 M -5 4 L -1 4 M 6 0 L 8 0 M 6 5 L 8 5"
-              stroke="var(--fg-1)"
-              strokeWidth="1.4"
-              strokeLinecap="round"
-            />
+            {/* Ícone Lucide Building2: Sede Corporativa & Fornecedor de Campanha */}
+            <g transform="translate(-11.5, -11.5) scale(0.96)" stroke="var(--fg-1)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none">
+              <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" />
+              <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" />
+              <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2" />
+              <path d="M10 6h4" />
+              <path d="M10 10h4" />
+              <path d="M10 14h4" />
+              <path d="M10 18h4" />
+            </g>
 
             {/* Retícula de mira */}
             <line x1="-35" y1="0" x2="-31" y2="0" stroke="var(--border-2)" strokeWidth="1.5" />
@@ -283,14 +298,13 @@ export function GraphHeroTopology() {
             <circle r="34" fill="var(--surface)" stroke="#10B981" strokeWidth="1.75" />
             <circle r="27" fill="var(--card-tone)" stroke="var(--border-1)" strokeWidth="1" />
 
-            {/* Ícone vetor de sócio / doador */}
-            <path
-              d="M -7 6 L 7 6 L 7 -3 L -7 -3 Z M -3 -3 L -3 -6 L 3 -6 L 3 -3 M -7 1.5 L 7 1.5"
-              stroke="#10B981"
-              strokeWidth="1.4"
-              fill="none"
-              strokeLinecap="round"
-            />
+            {/* Ícone Lucide BriefcaseBusiness: Executivo / Sócio de Capital / Investidor */}
+            <g transform="translate(-11.5, -11.5) scale(0.96)" stroke="#10B981" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none">
+              <path d="M12 12h.01" />
+              <path d="M16 6V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+              <path d="M22 13a18.15 18.15 0 0 1-20 0" />
+              <rect width="20" height="14" x="2" y="6" rx="2" />
+            </g>
 
             {/* Retícula de mira */}
             <line x1="-38" y1="0" x2="-34" y2="0" stroke="#10B981" strokeWidth="1.5" />
