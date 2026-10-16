@@ -114,20 +114,17 @@ export default async function Home({ searchParams }: PageProps<"/">) {
       />
 
       {/* Hero Indicium Cobalt Ultramarine com Refração Fractal Glass */}
-      <div className="animate-in relative overflow-hidden border border-[var(--border-1)] bg-[#020722] text-white px-8 py-20 sm:px-16 sm:py-28">
+      <div className="animate-in relative z-20 border border-[var(--border-1)] bg-[#020722] text-white px-8 py-20 sm:px-16 sm:py-28">
         <span className="card-dot card-dot--tl" />
         <span className="card-dot card-dot--tr" />
         <span className="card-dot card-dot--bl" />
         <span className="card-dot card-dot--br" />
         
-        {/* Cortina de refração fractal glass com fade lateral */}
-        <div className="hero-fluted-bg" aria-hidden />
-
-        {/* Gradiente de proteção total de contraste para a tipografia à esquerda */}
-        <div
-          className="absolute inset-0 bg-gradient-to-r from-[#020722] via-[#020722]/85 to-transparent pointer-events-none z-[1]"
-          aria-hidden
-        />
+        {/* Cortina de refração fractal glass com fade lateral (isolada para não vazar) */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden>
+          <div className="hero-fluted-bg" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#020722] via-[#020722]/85 to-transparent z-[1]" />
+        </div>
 
         <div className="relative max-w-3xl z-10">
           <div className="mb-6 flex items-center">

@@ -168,7 +168,7 @@ export function SearchBox({ className = "" }: { className?: string }) {
       {/* Search Input Bar (Identical in both idle and active states) */}
       <form
         onSubmit={handleSubmit}
-        className={`group flex w-full items-stretch border transition-all rounded-[3px] overflow-hidden ${
+        className={`group flex w-full items-stretch border transition-all rounded-[0px] overflow-hidden ${
           open
             ? "border-[#1D63FF] bg-[#040D42]/95 shadow-2xl ring-2 ring-[#1D63FF]/30"
             : "border-white/28 bg-[#040D42]/80 hover:border-white/50 backdrop-blur-md"
@@ -214,7 +214,7 @@ export function SearchBox({ className = "" }: { className?: string }) {
 
       {/* Seamless Integrated Dropdown Results (Positioned directly attached to the bottom) */}
       {open ? (
-        <div className="absolute top-full left-0 right-0 z-50 mt-1.5 rounded-lg border border-white/20 bg-[#020722]/98 backdrop-blur-2xl shadow-2xl overflow-hidden max-h-[380px] overflow-y-auto no-scrollbar animate-in fade-in slide-in-from-top-1 duration-150">
+        <div className="absolute top-full left-0 right-0 z-50 mt-1.5 rounded-[0px] border border-white/20 bg-[#020722]/98 backdrop-blur-2xl shadow-2xl overflow-hidden max-h-[380px] overflow-y-auto no-scrollbar animate-in fade-in slide-in-from-top-1 duration-150">
           {!hasQuery ? (
             // Default Shortcuts View
             <div className="p-2">
@@ -230,7 +230,7 @@ export function SearchBox({ className = "" }: { className?: string }) {
                       type="button"
                       onClick={() => handleSelect(s.href)}
                       onMouseEnter={() => setSelectedIndex(idx)}
-                      className={`w-full flex items-center justify-between px-3 py-2 text-left rounded-md transition-colors cursor-pointer text-xs sm:text-[13px] ${
+                      className={`w-full flex items-center justify-between px-3 py-2 text-left rounded-[0px] transition-colors cursor-pointer text-xs sm:text-[13px] ${
                         isSelected
                           ? "bg-[#1D63FF]/25 text-white font-medium border border-[#1D63FF]/40"
                           : "text-[#E2E8F8] hover:bg-white/10"
@@ -279,7 +279,7 @@ export function SearchBox({ className = "" }: { className?: string }) {
                     type="button"
                     onClick={() => handleSelect(targetHref)}
                     onMouseEnter={() => setSelectedIndex(idx)}
-                    className={`w-full flex items-center gap-3 px-3 py-2 text-left rounded-md transition-all cursor-pointer ${
+                    className={`w-full flex items-center gap-3 px-3 py-2 text-left rounded-[0px] transition-all cursor-pointer ${
                       isSelected
                         ? "bg-[#1D63FF]/30 border border-[#1D63FF]/50 text-white"
                         : "text-[#E2E8F8] hover:bg-white/10 border border-transparent"
