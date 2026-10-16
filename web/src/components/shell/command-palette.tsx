@@ -91,12 +91,12 @@ export function CommandPalette() {
     <div className="palette__backdrop" onClick={() => setPaletteOpen(false)}>
       <div className="palette" onClick={(e) => e.stopPropagation()}>
         <div className="palette__input">
-          <Search className="size-4 text-[var(--muted-2)] shrink-0" />
+          <Search className="size-4 text-[#5CE1E6] shrink-0" />
           <input
             ref={inputRef}
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Buscar candidato, página, ação…"
+            placeholder="buscar por nome, CPF ou CNPJ…"
           />
           <span className="input__kbd">Esc</span>
         </div>
