@@ -2,8 +2,53 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { User, BadgeCheck, ChevronsUpDown } from "lucide-react";
+import { ChevronsUpDown } from "lucide-react";
 import { useAuth } from "./auth-context";
+
+function VerifiedIcon({ className = "size-3.5" }: { className?: string }) {
+  return (
+    <svg className={`${className} shrink-0`} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <circle cx="8" cy="8" r="8" fill="#1D63FF" />
+      <path
+        d="M4.75 8.25L7 10.5L11.5 5.5"
+        stroke="white"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function ProfileAvatar({
+  className = "size-8",
+  bgClass = "bg-[#1D63FF]",
+  fill = "white",
+}: {
+  className?: string;
+  bgClass?: string;
+  fill?: string;
+}) {
+  return (
+    <div
+      className={`rounded-full ${bgClass} overflow-hidden flex items-center justify-center flex-none shadow-xs ${className}`}
+      aria-hidden="true"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        className="w-full h-full"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle cx="12" cy="7.75" r="4.25" fill={fill} />
+        <path
+          d="M3 22.5c0-4.6 4-8.2 9-8.2s9 3.6 9 8.2v2H3v-2z"
+          fill={fill}
+        />
+      </svg>
+    </div>
+  );
+}
 
 export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean }) {
   const { user, loading, openAuthModal, logout, togglePlan } = useAuth();
@@ -39,11 +84,11 @@ export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean 
         <button
           type="button"
           onClick={() => openAuthModal("login")}
-          className="size-10 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/15 text-white/80 hover:text-white border border-white/15 transition-all cursor-pointer"
+          className="size-10 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/15 text-white/80 hover:text-white border border-white/15 transition-all cursor-pointer p-0"
           title="Acessar conta (Login / Cadastro)"
           aria-label="Acessar conta"
         >
-          <User className="size-4" />
+          <ProfileAvatar className="size-10" bgClass="bg-white/15" fill="rgba(255,255,255,0.85)" />
         </button>
       );
     }
@@ -55,9 +100,7 @@ export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean 
         className="w-full flex items-center justify-between gap-2.5 rounded-xl border border-[var(--border-1)] bg-[var(--card-tone)] hover:border-[var(--accent)] hover:bg-[var(--hover)] p-2.5 transition-all cursor-pointer text-left group"
       >
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="flex size-8 items-center justify-center rounded-full bg-[var(--hover)] text-[var(--fg-1)] text-xs group-hover:scale-105 transition-transform flex-none border border-[var(--border-1)]">
-            <User className="size-4" />
-          </div>
+          <ProfileAvatar className="size-8" bgClass="bg-[var(--hover)]" fill="var(--muted-2)" />
           <div className="flex flex-col min-w-0">
             <span className="text-xs font-semibold text-[var(--fg-1)]">Acessar Conta</span>
             <span className="text-[10.5px] text-[var(--muted-2)] font-mono leading-tight">Fazer login ou cadastro</span>
@@ -78,13 +121,15 @@ export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean 
         <button
           type="button"
           onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="size-10 rounded-full flex items-center justify-center bg-[#1D63FF] text-white shadow-md hover:brightness-110 border border-white/20 transition-all cursor-pointer relative"
+          className="size-10 rounded-full flex items-center justify-center p-0 hover:brightness-110 border border-white/20 transition-all cursor-pointer relative"
           title={`${user.name} (${isPro ? "Pro" : "Free"})`}
           aria-label="Menu do Perfil"
         >
-          <User className="size-5" />
+          <ProfileAvatar className="size-10" />
           {isPro && (
-            <BadgeCheck className="size-3.5 text-white fill-[#1D63FF] absolute -bottom-0.5 -right-0.5" />
+            <span className="absolute -bottom-0.5 -right-0.5 ring-2 ring-[var(--sidebar)] rounded-full">
+              <VerifiedIcon className="size-3.5" />
+            </span>
           )}
         </button>
 
@@ -101,10 +146,10 @@ export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean 
             <div className="space-y-1.5 mb-3">
               <div className="flex items-center justify-between text-[11px]">
                 <span className="text-[var(--muted)]">Status do Plano:</span>
-                <span className={`font-semibold font-mono flex items-center gap-1 ${isPro ? "text-[#1D63FF] dark:text-[#8BB4FF]" : "text-[var(--fg-2)]"}`}>
+                <span className={`font-semibold font-mono flex items-center gap-1.5 ${isPro ? "text-[#1D63FF] dark:text-[#8BB4FF]" : "text-[var(--fg-2)]"}`}>
                   {isPro ? (
                     <>
-                      <BadgeCheck className="size-3.5 shrink-0" />
+                      <VerifiedIcon className="size-3.5" />
                       <span>Assinante pro</span>
                     </>
                   ) : (
@@ -169,9 +214,7 @@ export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean 
         aria-label="Menu do Perfil"
       >
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="flex size-8 items-center justify-center rounded-full bg-[#1D63FF] text-white flex-none shadow-xs">
-            <User className="size-4" />
-          </div>
+          <ProfileAvatar className="size-8" />
           <div className="flex flex-col min-w-0">
             <span className="text-xs font-semibold text-[var(--fg-1)] truncate leading-snug">
               {user.name}
@@ -184,8 +227,8 @@ export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean 
 
         <div className="flex items-center gap-2 flex-none">
           {isPro ? (
-            <div className="flex items-center gap-1 text-[#1D63FF] dark:text-[#8BB4FF]">
-              <BadgeCheck className="size-3.5 shrink-0" />
+            <div className="flex items-center gap-1.5 text-[#1D63FF] dark:text-[#8BB4FF]">
+              <VerifiedIcon className="size-3.5" />
               <span className="font-mono text-[10.5px] leading-none">pro</span>
             </div>
           ) : (
@@ -209,10 +252,10 @@ export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean 
           <div className="space-y-1.5 mb-3">
             <div className="flex items-center justify-between text-[11px]">
               <span className="text-[var(--muted)]">Status do Plano:</span>
-              <span className={`font-semibold font-mono flex items-center gap-1 ${isPro ? "text-[#1D63FF] dark:text-[#8BB4FF]" : "text-[var(--fg-2)]"}`}>
+              <span className={`font-semibold font-mono flex items-center gap-1.5 ${isPro ? "text-[#1D63FF] dark:text-[#8BB4FF]" : "text-[var(--fg-2)]"}`}>
                 {isPro ? (
                   <>
-                    <BadgeCheck className="size-3.5 shrink-0" />
+                    <VerifiedIcon className="size-3.5" />
                     <span>Assinante pro</span>
                   </>
                 ) : (
