@@ -135,12 +135,23 @@ export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean 
 
         {dropdownOpen ? (
           <div className="absolute bottom-0 left-full ml-3 w-64 rounded-xl border border-[var(--border-2)] bg-[var(--card-tone)] p-3.5 z-50 text-xs shadow-2xl backdrop-blur-md">
-            <div className="border-b border-[var(--border-1)] pb-2.5 mb-2.5">
-              <div className="font-semibold text-[var(--fg-1)] truncate text-xs">{user.name}</div>
-              <div className="font-mono text-[10.5px] text-[var(--muted-2)] truncate mt-0.5">{user.email}</div>
-              {user.organization ? (
-                <div className="text-[11px] text-[var(--muted)] truncate mt-0.5">{user.organization}</div>
-              ) : null}
+            <div className="border-b border-[var(--border-1)] pb-2.5 mb-2.5 flex items-center gap-2.5">
+              <ProfileAvatar className="size-9" />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="font-semibold text-[var(--fg-1)] truncate text-[13px]">{user.name}</span>
+                  {isPro && (
+                    <div className="inline-flex items-center gap-1 text-[#1D63FF] dark:text-[#8BB4FF] flex-none">
+                      <VerifiedIcon className="size-3.5" />
+                      <span className="font-mono text-[10.5px] leading-none">pro</span>
+                    </div>
+                  )}
+                </div>
+                <div className="font-mono text-[10.5px] text-[var(--muted-2)] truncate mt-0.5">{user.email}</div>
+                {user.organization ? (
+                  <div className="text-[11px] text-[var(--muted)] truncate mt-0.5">{user.organization}</div>
+                ) : null}
+              </div>
             </div>
 
             <div className="space-y-1.5 mb-3">
@@ -213,26 +224,29 @@ export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean 
         className="w-full flex items-center justify-between gap-2 rounded-xl border border-[var(--border-1)] bg-[var(--card-tone)] hover:border-[var(--accent)] hover:bg-[var(--hover)] p-2.5 transition-all cursor-pointer text-left"
         aria-label="Menu do Perfil"
       >
-        <div className="flex items-center gap-2.5 min-w-0">
-          <ProfileAvatar className="size-8" />
-          <div className="flex flex-col min-w-0">
-            <span className="text-xs font-semibold text-[var(--fg-1)] truncate leading-snug">
-              {user.name}
-            </span>
-            <span className="text-[10.5px] text-[var(--muted-2)] font-mono truncate leading-none mt-0.5">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          <ProfileAvatar className="size-9" />
+          <div className="flex flex-col min-w-0 flex-1">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="text-[13.5px] font-semibold text-[var(--fg-1)] truncate leading-tight">
+                {user.name}
+              </span>
+              {isPro && (
+                <div className="inline-flex items-center gap-1 text-[#1D63FF] dark:text-[#8BB4FF] flex-none">
+                  <VerifiedIcon className="size-3.5" />
+                  <span className="font-mono text-[10.5px] leading-none">pro</span>
+                </div>
+              )}
+            </div>
+            <span className="text-[11px] text-[var(--muted-2)] font-mono truncate leading-none mt-1">
               {user.organization || user.email}
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-none">
-          {isPro ? (
-            <div className="flex items-center gap-1.5 text-[#1D63FF] dark:text-[#8BB4FF]">
-              <VerifiedIcon className="size-3.5" />
-              <span className="font-mono text-[10.5px] leading-none">pro</span>
-            </div>
-          ) : (
-            <span className="font-mono text-[10.5px] text-[var(--muted-2)] leading-none">free</span>
+        <div className="flex items-center gap-1 flex-none ml-1">
+          {!isPro && (
+            <span className="font-mono text-[10.5px] text-[var(--muted-2)] leading-none mr-1">free</span>
           )}
           <ChevronsUpDown className="size-3.5 text-[var(--muted-2)] shrink-0" />
         </div>
@@ -241,12 +255,23 @@ export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean 
       {/* Upward Popover Menu */}
       {dropdownOpen ? (
         <div className="absolute bottom-full left-0 mb-2 w-full rounded-xl border border-[var(--border-2)] bg-[var(--card-tone)] p-3.5 z-50 text-xs shadow-2xl backdrop-blur-md animate-in fade-in zoom-in-95">
-          <div className="border-b border-[var(--border-1)] pb-2.5 mb-2.5">
-            <div className="font-semibold text-[var(--fg-1)] truncate text-xs">{user.name}</div>
-            <div className="font-mono text-[10.5px] text-[var(--muted-2)] truncate mt-0.5">{user.email}</div>
-            {user.organization ? (
-              <div className="text-[11px] text-[var(--muted)] truncate mt-0.5">{user.organization}</div>
-            ) : null}
+          <div className="border-b border-[var(--border-1)] pb-2.5 mb-2.5 flex items-center gap-2.5">
+            <ProfileAvatar className="size-9" />
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="font-semibold text-[var(--fg-1)] truncate text-[13px]">{user.name}</span>
+                {isPro && (
+                  <div className="inline-flex items-center gap-1 text-[#1D63FF] dark:text-[#8BB4FF] flex-none">
+                    <VerifiedIcon className="size-3.5" />
+                    <span className="font-mono text-[10.5px] leading-none">pro</span>
+                  </div>
+                )}
+              </div>
+              <div className="font-mono text-[10.5px] text-[var(--muted-2)] truncate mt-0.5">{user.email}</div>
+              {user.organization ? (
+                <div className="text-[11px] text-[var(--muted)] truncate mt-0.5">{user.organization}</div>
+              ) : null}
+            </div>
           </div>
 
           <div className="space-y-1.5 mb-3">
