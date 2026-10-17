@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { User, BadgeCheck, ChevronsUpDown } from "lucide-react";
 import { useAuth } from "./auth-context";
 
 export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean }) {
@@ -24,7 +25,7 @@ export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean 
     return (
       <div className="w-full">
         {collapsed ? (
-          <div className="size-10 rounded-xl animate-pulse bg-white/10" />
+          <div className="size-10 rounded-full animate-pulse bg-white/10" />
         ) : (
           <div className="h-12 w-full rounded-xl animate-pulse bg-white/10" />
         )}
@@ -38,11 +39,11 @@ export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean 
         <button
           type="button"
           onClick={() => openAuthModal("login")}
-          className="size-10 rounded-xl flex items-center justify-center bg-white/10 hover:bg-white/15 text-white/80 hover:text-white border border-white/15 transition-all cursor-pointer"
+          className="size-10 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/15 text-white/80 hover:text-white border border-white/15 transition-all cursor-pointer"
           title="Acessar conta (Login / Cadastro)"
           aria-label="Acessar conta"
         >
-          <span className="text-sm">👤</span>
+          <User className="size-4" />
         </button>
       );
     }
@@ -54,8 +55,8 @@ export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean 
         className="w-full flex items-center justify-between gap-2.5 rounded-xl border border-[var(--border-1)] bg-[var(--card-tone)] hover:border-[var(--accent)] hover:bg-[var(--hover)] p-2.5 transition-all cursor-pointer text-left group"
       >
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-[var(--hover)] text-[var(--fg-1)] text-xs group-hover:scale-105 transition-transform flex-none border border-[var(--border-1)]">
-            👤
+          <div className="flex size-8 items-center justify-center rounded-full bg-[var(--hover)] text-[var(--fg-1)] text-xs group-hover:scale-105 transition-transform flex-none border border-[var(--border-1)]">
+            <User className="size-4" />
           </div>
           <div className="flex flex-col min-w-0">
             <span className="text-xs font-semibold text-[var(--fg-1)]">Acessar Conta</span>
@@ -77,11 +78,14 @@ export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean 
         <button
           type="button"
           onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="size-10 rounded-xl flex items-center justify-center bg-[#1D63FF] text-white font-mono text-sm font-bold shadow-md hover:brightness-110 border border-white/20 transition-all cursor-pointer"
+          className="size-10 rounded-full flex items-center justify-center bg-[#1D63FF] text-white shadow-md hover:brightness-110 border border-white/20 transition-all cursor-pointer relative"
           title={`${user.name} (${isPro ? "Pro" : "Free"})`}
           aria-label="Menu do Perfil"
         >
-          {user.name.charAt(0).toUpperCase()}
+          <User className="size-5" />
+          {isPro && (
+            <BadgeCheck className="size-3.5 text-white fill-[#1D63FF] absolute -bottom-0.5 -right-0.5" />
+          )}
         </button>
 
         {dropdownOpen ? (
@@ -97,8 +101,15 @@ export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean 
             <div className="space-y-1.5 mb-3">
               <div className="flex items-center justify-between text-[11px]">
                 <span className="text-[var(--muted)]">Status do Plano:</span>
-                <span className={`font-semibold font-mono ${isPro ? "text-[var(--fg-1)]" : "text-[var(--fg-2)]"}`}>
-                  {isPro ? "Assinante Pro" : "Conta Gratuita"}
+                <span className={`font-semibold font-mono flex items-center gap-1 ${isPro ? "text-[#1D63FF] dark:text-[#8BB4FF]" : "text-[var(--fg-2)]"}`}>
+                  {isPro ? (
+                    <>
+                      <BadgeCheck className="size-3.5 shrink-0" />
+                      <span>Assinante pro</span>
+                    </>
+                  ) : (
+                    "Conta Gratuita"
+                  )}
                 </span>
               </div>
             </div>
@@ -150,7 +161,7 @@ export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean 
 
   return (
     <div className="relative w-full" ref={containerRef}>
-      {/* Profile Toggle Card - Image 1 & 2 inspired */}
+      {/* Profile Toggle Card */}
       <button
         type="button"
         onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -158,8 +169,8 @@ export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean 
         aria-label="Menu do Perfil"
       >
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="flex size-8 items-center justify-center rounded-[0px] bg-[#1D63FF] text-white font-mono text-xs font-bold flex-none shadow-sm">
-            {user.name.charAt(0).toUpperCase()}
+          <div className="flex size-8 items-center justify-center rounded-full bg-[#1D63FF] text-white flex-none shadow-xs">
+            <User className="size-4" />
           </div>
           <div className="flex flex-col min-w-0">
             <span className="text-xs font-semibold text-[var(--fg-1)] truncate leading-snug">
@@ -171,17 +182,16 @@ export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean 
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 flex-none">
-          <span
-            className={`px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider rounded-[0px] border ${
-              isPro
-                ? "bg-[#1D63FF] text-white border-[#1D63FF]"
-                : "bg-[var(--hover)] text-[var(--muted)] border-[var(--border-1)]"
-            }`}
-          >
-            {isPro ? "PRO" : "FREE"}
-          </span>
-          <span className="text-[11px] text-[var(--muted-2)]">↕</span>
+        <div className="flex items-center gap-2 flex-none">
+          {isPro ? (
+            <div className="flex items-center gap-1 text-[#1D63FF] dark:text-[#8BB4FF]">
+              <BadgeCheck className="size-3.5 shrink-0" />
+              <span className="font-mono text-[10.5px] leading-none">pro</span>
+            </div>
+          ) : (
+            <span className="font-mono text-[10.5px] text-[var(--muted-2)] leading-none">free</span>
+          )}
+          <ChevronsUpDown className="size-3.5 text-[var(--muted-2)] shrink-0" />
         </div>
       </button>
 
@@ -199,8 +209,15 @@ export function SidebarUserProfile({ collapsed = false }: { collapsed?: boolean 
           <div className="space-y-1.5 mb-3">
             <div className="flex items-center justify-between text-[11px]">
               <span className="text-[var(--muted)]">Status do Plano:</span>
-              <span className={`font-semibold font-mono ${isPro ? "text-[#1D63FF]" : "text-[var(--fg-2)]"}`}>
-                {isPro ? "Assinante Pro" : "Conta Gratuita"}
+              <span className={`font-semibold font-mono flex items-center gap-1 ${isPro ? "text-[#1D63FF] dark:text-[#8BB4FF]" : "text-[var(--fg-2)]"}`}>
+                {isPro ? (
+                  <>
+                    <BadgeCheck className="size-3.5 shrink-0" />
+                    <span>Assinante pro</span>
+                  </>
+                ) : (
+                  "Conta Gratuita"
+                )}
               </span>
             </div>
             {!isPro ? (
