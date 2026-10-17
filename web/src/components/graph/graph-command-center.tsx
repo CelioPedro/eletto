@@ -139,11 +139,6 @@ export function GraphCommandCenter({ onAddNode, onQueryChange }: GraphCommandCen
                 onClick={() => handleSelectTarget(t)}
                 className="card--interactive relative p-3.5 border border-[var(--border-1)] bg-[var(--surface)] hover:border-[#1D63FF] transition-all cursor-pointer group flex flex-col justify-between"
               >
-                <span className="card-dot card-dot--tl" />
-                <span className="card-dot card-dot--tr" />
-                <span className="card-dot card-dot--bl" />
-                <span className="card-dot card-dot--br" />
-
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2">
                     <span className="font-mono text-[10.5px] font-bold px-1.5 py-0.2 bg-[var(--card-tone)] border border-[var(--border-1)] text-[var(--fg-1)]">
@@ -187,8 +182,6 @@ export function GraphCommandCenter({ onAddNode, onQueryChange }: GraphCommandCen
           <div className="flex flex-col gap-3">
             {/* Vetor 1 */}
             <div className="relative p-3.5 border border-[var(--border-1)] bg-[var(--surface)]">
-              <span className="card-dot card-dot--tl" />
-              <span className="card-dot card-dot--tr" />
               <div className="flex items-start gap-2.5">
                 <span className="w-2 h-2 mt-1.5 bg-[#F43F5E] flex-none" />
                 <div>
@@ -204,8 +197,6 @@ export function GraphCommandCenter({ onAddNode, onQueryChange }: GraphCommandCen
 
             {/* Vetor 2 */}
             <div className="relative p-3.5 border border-[var(--border-1)] bg-[var(--surface)]">
-              <span className="card-dot card-dot--tl" />
-              <span className="card-dot card-dot--tr" />
               <div className="flex items-start gap-2.5">
                 <span className="w-2 h-2 mt-1.5 bg-[#10B981] flex-none" />
                 <div>
@@ -221,8 +212,6 @@ export function GraphCommandCenter({ onAddNode, onQueryChange }: GraphCommandCen
 
             {/* Vetor 3 */}
             <div className="relative p-3.5 border border-[var(--border-1)] bg-[var(--surface)]">
-              <span className="card-dot card-dot--tl" />
-              <span className="card-dot card-dot--tr" />
               <div className="flex items-start gap-2.5">
                 <span className="w-2 h-2 mt-1.5 bg-[#1D63FF] flex-none" />
                 <div>

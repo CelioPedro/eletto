@@ -640,11 +640,6 @@ function GraphCanvasInner() {
         {/* Selected Node Inspector Panel */}
         {selectedNode ? (
           <div className="absolute top-4 right-4 w-84 rounded-[0px] border border-[var(--border-1)] bg-[var(--surface)] p-5 shadow-2xl z-20">
-            <span className="card-dot card-dot--tl" />
-            <span className="card-dot card-dot--tr" />
-            <span className="card-dot card-dot--bl" />
-            <span className="card-dot card-dot--br" />
-
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">

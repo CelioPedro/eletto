@@ -379,11 +379,6 @@ export function ComparatorView({ initialData, c1Id, c2Id }: ComparatorViewProps)
                   onClick={() => handleApplyPreset(d.c1, d.c2)}
                   className="card--interactive relative p-5 sm:p-6 border border-[var(--border-1)] bg-[var(--surface)] transition-all cursor-pointer group"
                 >
-                  <span className="card-dot card-dot--tl" />
-                  <span className="card-dot card-dot--tr" />
-                  <span className="card-dot card-dot--bl" />
-                  <span className="card-dot card-dot--br" />
-
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <h4 className="card-title font-medium text-base text-[var(--fg-1)] group-hover:text-[#040D42] transition-colors">
                       {d.title}

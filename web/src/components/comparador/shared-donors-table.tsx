@@ -19,11 +19,6 @@ export function SharedDonorsTable({
 }: SharedDonorsTableProps) {
   return (
     <div className="relative border border-[var(--border-1)] bg-[var(--surface)]">
-      <span className="card-dot card-dot--tl" />
-      <span className="card-dot card-dot--tr" />
-      <span className="card-dot card-dot--bl" />
-      <span className="card-dot card-dot--br" />
-
       {/* Header da Tabela */}
       <div className="p-5 sm:p-6 border-b border-[var(--border-1)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
