@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Scale, FileText } from "lucide-react";
 import {
   getPersonHeader, getPersonFinance, getPersonCandidacies, getPersonCampaignOrgs,
   getPersonSocialMedia, getPersonAssets, getPersonSignals, getCycleEdgeAmounts,
@@ -55,29 +56,24 @@ export default async function PoliticoPage({ params, searchParams }: PageProps<"
             <div className="flex items-center gap-2">
               <Link
                 href={`/politico/${person.id}/peca-juridica`}
-                className="hidden sm:inline-flex items-center gap-1.5 rounded-md border border-indigo-500/40 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 px-3 py-1.5 text-[11.5px] font-semibold transition-all shadow-xs"
+                className="hidden sm:inline-flex items-center justify-center gap-1.5 h-8 px-3 rounded-md border border-[#1D63FF]/30 bg-[#1D63FF]/8 hover:bg-[#1D63FF]/15 hover:border-[#1D63FF] text-[var(--fg-1)] text-xs font-medium transition-all shadow-xs"
                 title="Redigir Minuta de Notícia-Crime ou Representação com IA"
               >
-                <span>⚖ Minuta Jurídica (IA)</span>
+                <Scale className="size-3.5 text-[#1D63FF] shrink-0" />
+                <span>Minuta Jurídica (IA)</span>
               </Link>
               <ExportProButton
                 datasetName={`Dados de ${displayName}`}
                 label="Exportar Planilha"
                 sampleColumns={["Ano", "Cargo", "Partido", "Bens Declarados", "Total Doações", "Total Despesas"]}
-                size="sm"
               />
               <Link
                 href={`/politico/${person.id}/dossie`}
-                className="inline-flex items-center gap-1.5 rounded-md bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white px-3 py-1.5 text-[11.5px] font-semibold transition-all shadow-xs"
+                className="inline-flex items-center justify-center gap-1.5 h-8 px-3 rounded-md bg-[#1D63FF] hover:bg-[#1550D6] text-white text-xs font-semibold transition-all shadow-xs"
                 title="Gerar Dossiê Pericial em PDF para este agente político"
               >
-                <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                  <line x1="16" y1="13" x2="8" y2="13" />
-                  <line x1="16" y1="17" x2="8" y2="17" />
-                </svg>
-                Dossiê Pericial (PDF)
+                <FileText className="size-3.5 shrink-0" />
+                <span>Dossiê Pericial (PDF)</span>
               </Link>
               <YearSelect basePath={`/politico/${person.id}`} years={financeYears} value={year} />
             </div>
@@ -128,27 +124,24 @@ export default async function PoliticoPage({ params, searchParams }: PageProps<"
             <div className="flex flex-wrap items-center gap-2">
               <Link
                 href={`/politico/${person.id}/peca-juridica`}
-                className="inline-flex items-center gap-1.5 rounded-md border border-indigo-500/40 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 px-3 py-1.5 text-[11.5px] font-semibold transition-all shadow-xs"
+                className="inline-flex items-center justify-center gap-1.5 h-8 px-3 rounded-md border border-[#1D63FF]/30 bg-[#1D63FF]/8 hover:bg-[#1D63FF]/15 hover:border-[#1D63FF] text-[var(--fg-1)] text-xs font-medium transition-all shadow-xs"
                 title="Redigir Petição ou Notícia-Crime Eleitoral com IA"
               >
-                <span>⚖ Minuta Jurídica (IA)</span>
+                <Scale className="size-3.5 text-[#1D63FF] shrink-0" />
+                <span>Minuta Jurídica (IA)</span>
               </Link>
               <ExportProButton
                 datasetName={`Dados de ${displayName}`}
-                label="Exportar Planilha (Pro)"
+                label="Exportar Planilha"
                 sampleColumns={["Ano", "Cargo", "Partido", "Bens Declarados", "Total Doações", "Total Despesas"]}
-                size="sm"
               />
               <Link
                 href={`/politico/${person.id}/dossie`}
-                className="inline-flex items-center gap-2 rounded-md border border-[var(--border-2)] bg-[var(--card-tone)] hover:bg-[var(--hover)] hover:border-[var(--accent)] px-3 py-1.5 text-[11.5px] font-medium text-[var(--fg-1)] transition-all shadow-xs"
+                className="inline-flex items-center justify-center gap-1.5 h-8 px-3 rounded-md bg-[#1D63FF] hover:bg-[#1550D6] text-white text-xs font-semibold transition-all shadow-xs"
+                title="Gerar Dossiê Pericial em PDF para este agente político"
               >
-                <svg className="size-3.5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="6 9 6 2 18 2 18 9" />
-                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                  <rect x="6" y="14" width="12" height="8" />
-                </svg>
-                <span>Gerar Dossiê Pericial (PDF)</span>
+                <FileText className="size-3.5 shrink-0" />
+                <span>Dossiê Pericial (PDF)</span>
               </Link>
             </div>
           </div>
