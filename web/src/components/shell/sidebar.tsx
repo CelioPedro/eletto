@@ -335,13 +335,10 @@ export function Sidebar({ counts }: { counts: SidebarCounts }) {
           {/* Header */}
           <div className="relative z-10 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" className="shrink-0" aria-hidden="true">
-                <path d="M4 13L9 3" stroke="#8BB4FF" strokeWidth="2.4" strokeLinecap="round" />
-                <path d="M8 13L13 3" stroke="#1D63FF" strokeWidth="2.4" strokeLinecap="round" />
-              </svg>
+              <ElettoLogo size="sm" iconOnly href="" />
               <span className="font-sans text-[13px] font-semibold text-white tracking-tight">Eletto Pro</span>
             </div>
-            <span className="rounded-md border border-[#1D63FF]/45 bg-[#1D63FF]/20 px-2 py-0.5 font-mono text-[9px] font-bold text-[#8BB4FF] tracking-wider uppercase backdrop-blur-xs">
+            <span className="rounded-md border border-white/30 bg-white/15 px-2 py-0.5 font-mono text-[9px] font-bold text-white tracking-wider uppercase backdrop-blur-xs shadow-xs">
               PERICIAL
             </span>
           </div>
