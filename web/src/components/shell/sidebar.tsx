@@ -18,7 +18,6 @@ import {
   PanelLeft,
   Minus,
   Plus,
-  Zap,
 } from "lucide-react";
 import type { SidebarCounts } from "@/lib/stats";
 import { SidebarUserProfile } from "@/components/auth/sidebar-user-profile";
@@ -281,26 +280,85 @@ export function Sidebar({ counts }: { counts: SidebarCounts }) {
 
       {/* Bottom Footer Section */}
       <div className="mt-auto pt-3 border-t border-[var(--border-1)] flex flex-col gap-2.5">
-        {/* Pro Plan Card */}
-        <div className="rounded-[0px] border border-[var(--border-1)] bg-[var(--card-tone)] p-3 hover:border-[#1D63FF]/40 transition-all">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <Zap className="size-3.5 text-[#1D63FF]" />
-              <span className="font-sans text-xs font-semibold text-[var(--fg-1)]">Eletto Pro</span>
+        {/* Pro Plan Card - Topologia Forense Sofisticada */}
+        <div className="relative overflow-hidden rounded-xl border border-[#1D63FF]/35 bg-gradient-to-b from-[#040D42] via-[#051152] to-[#03092C] p-3.5 shadow-lg shadow-[#040D42]/40 transition-all hover:border-[#1D63FF]/55 group">
+          {/* Background Network Graph SVG */}
+          <svg
+            className="absolute -right-4 -top-3 w-44 h-36 pointer-events-none opacity-45 select-none"
+            viewBox="0 0 180 140"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <defs>
+              <radialGradient id="pro-card-glow" cx="0.75" cy="0.3" r="0.6">
+                <stop offset="0%" stopColor="#1D63FF" stopOpacity="0.45" />
+                <stop offset="60%" stopColor="#1D63FF" stopOpacity="0.12" />
+                <stop offset="100%" stopColor="#1D63FF" stopOpacity="0" />
+              </radialGradient>
+            </defs>
+
+            {/* Ambient glow */}
+            <rect width="180" height="140" fill="url(#pro-card-glow)" />
+
+            {/* Network connection lines */}
+            <path
+              d="M60 40 L100 25 L145 40 L170 20 M100 25 L120 70 L160 85 M145 40 L120 70 M60 40 L75 85 L120 70 M75 85 L105 125 L150 115 M120 70 L150 115 M160 85 L150 115"
+              stroke="#1D63FF"
+              strokeWidth="0.8"
+              strokeOpacity="0.45"
+              strokeDasharray="2 2"
+            />
+            <path
+              d="M100 25 L145 40 M120 70 L160 85 M75 85 L120 70 M120 70 L150 115"
+              stroke="#8BB4FF"
+              strokeWidth="1"
+              strokeOpacity="0.6"
+            />
+
+            {/* Nodes */}
+            <circle cx="60" cy="40" r="2" fill="#8BB4FF" fillOpacity="0.6" />
+            <circle cx="100" cy="25" r="3" fill="#8BB4FF" />
+            <circle cx="100" cy="25" r="6" fill="#1D63FF" fillOpacity="0.25" />
+            <circle cx="145" cy="40" r="3.5" fill="#FFFFFF" />
+            <circle cx="145" cy="40" r="7" fill="#1D63FF" fillOpacity="0.3" />
+            <circle cx="170" cy="20" r="2" fill="#8BB4FF" fillOpacity="0.5" />
+            <circle cx="120" cy="70" r="4" fill="#8BB4FF" />
+            <circle cx="120" cy="70" r="8" fill="#1D63FF" fillOpacity="0.35" />
+            <circle cx="75" cy="85" r="2.5" fill="#8BB4FF" fillOpacity="0.7" />
+            <circle cx="160" cy="85" r="3" fill="#8BB4FF" />
+            <circle cx="150" cy="115" r="3.5" fill="#FFFFFF" />
+            <circle cx="150" cy="115" r="7" fill="#1D63FF" fillOpacity="0.25" />
+            <circle cx="105" cy="125" r="2" fill="#8BB4FF" fillOpacity="0.6" />
+          </svg>
+
+          {/* Header */}
+          <div className="relative z-10 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" className="shrink-0" aria-hidden="true">
+                <path d="M4 13L9 3" stroke="#8BB4FF" strokeWidth="2.4" strokeLinecap="round" />
+                <path d="M8 13L13 3" stroke="#1D63FF" strokeWidth="2.4" strokeLinecap="round" />
+              </svg>
+              <span className="font-sans text-[13px] font-semibold text-white tracking-tight">Eletto Pro</span>
             </div>
-            <span className="font-mono text-[9px] font-bold text-[#1D63FF] dark:text-[#8BB4FF] bg-[#1D63FF]/10 dark:bg-[#1D63FF]/20 border border-[#1D63FF]/30 dark:border-[#1D63FF]/40 px-1.5 py-0.5 rounded-[0px]">
+            <span className="rounded-md border border-[#1D63FF]/45 bg-[#1D63FF]/20 px-2 py-0.5 font-mono text-[9px] font-bold text-[#8BB4FF] tracking-wider uppercase backdrop-blur-xs">
               PERICIAL
             </span>
           </div>
-          <p className="mt-1.5 text-[11px] leading-relaxed text-[var(--muted)]">
+
+          {/* Description */}
+          <p className="relative z-10 mt-2 text-[11px] leading-relaxed text-[#B4C2E4] font-sans">
             Dossiês com hash SHA-256 e grafo sem limites.
           </p>
+
+          {/* Button with Cobalt-Azure gradient */}
           <Link
             href="/planos"
-            className="mt-2.5 flex items-center justify-center w-full py-1.5 text-xs font-semibold rounded-[0px] bg-[#1D63FF] hover:bg-[#1550D6] text-white transition-colors shadow-sm"
+            className="group/btn relative z-10 mt-3 flex items-center justify-center gap-1.5 w-full py-2 px-3 text-xs font-semibold rounded-lg bg-gradient-to-r from-[#1D63FF] via-[#246BFD] to-[#0088FF] hover:from-[#1550D6] hover:to-[#0077E6] text-white shadow-md shadow-[#1D63FF]/25 hover:shadow-[#1D63FF]/40 active:scale-[0.99] transition-all"
             style={{ textDecoration: "none" }}
           >
-            Conhecer Planos →
+            <span>Conhecer Planos</span>
+            <span className="transition-transform group-hover/btn:translate-x-0.5">→</span>
           </Link>
         </div>
 
