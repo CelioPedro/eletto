@@ -281,7 +281,7 @@ export function Sidebar({ counts }: { counts: SidebarCounts }) {
       {/* Bottom Footer Section */}
       <div className="mt-auto pt-3 border-t border-[var(--border-1)] flex flex-col gap-2.5">
         {/* Pro Plan Card - Topologia Forense Sofisticada */}
-        <div className="relative overflow-hidden rounded-xl border border-[#1D63FF]/35 bg-gradient-to-b from-[#040D42] via-[#051152] to-[#03092C] p-3.5 shadow-lg shadow-[#040D42]/40 transition-all hover:border-[#1D63FF]/55 group">
+        <div className="relative overflow-hidden rounded-xl border border-[#1D63FF]/35 bg-gradient-to-b from-[#0E1526] via-[#101930] to-[#0A0F1D] p-3.5 shadow-lg shadow-[#040D42]/40 transition-all hover:border-[#1D63FF]/55 group">
           {/* Background Network Graph SVG */}
           <svg
             className="absolute -right-4 -top-3 w-44 h-36 pointer-events-none opacity-45 select-none"

@@ -169,9 +169,7 @@ export function SearchBox({ className = "" }: { className?: string }) {
       <form
         onSubmit={handleSubmit}
         className={`group flex w-full items-stretch border transition-all rounded-[0px] overflow-hidden ${
-          open
-            ? "border-[#1D63FF] bg-[#040D42]/95 shadow-2xl ring-2 ring-[#1D63FF]/30"
-            : "border-white/28 bg-[#040D42]/80 hover:border-white/50 backdrop-blur-md"
+          open ? "border-[#1D63FF] bg-[var(--search-bg)] shadow-2xl ring-2 ring-[#1D63FF]/30" : "border-white/28 bg-[var(--search-bg)] hover:border-white/50 backdrop-blur-md"
         }`}
       >
         <div className="flex flex-1 items-center gap-3 px-4 sm:px-5 py-3.5 sm:py-4">
@@ -214,7 +212,7 @@ export function SearchBox({ className = "" }: { className?: string }) {
 
       {/* Seamless Integrated Dropdown Results (Positioned directly attached to the bottom) */}
       {open ? (
-        <div className="absolute top-full left-0 right-0 z-50 mt-1.5 rounded-[0px] border border-white/20 bg-[#020722]/98 backdrop-blur-2xl shadow-2xl overflow-hidden max-h-[380px] overflow-y-auto no-scrollbar animate-in fade-in slide-in-from-top-1 duration-150">
+        <div className="absolute top-full left-0 right-0 z-50 mt-1.5 rounded-[0px] border border-white/20 bg-[var(--search-dropdown-bg)] backdrop-blur-2xl shadow-2xl overflow-hidden max-h-[380px] overflow-y-auto no-scrollbar animate-in fade-in slide-in-from-top-1 duration-150">
           {!hasQuery ? (
             // Default Shortcuts View
             <div className="p-2">
@@ -237,7 +235,7 @@ export function SearchBox({ className = "" }: { className?: string }) {
                       }`}
                     >
                       <span className="truncate">{s.label}</span>
-                      <span className="font-mono text-[10px] uppercase text-[#E2E8F8] bg-[#1D63FF]/20 px-1.5 py-0.5 border border-[#1D63FF]/35 shrink-0 ml-2">
+                      <span className="font-mono text-[10px] uppercase text-[#1D63FF] dark:text-[#E2E8F8] bg-[#1D63FF]/20 px-1.5 py-0.5 border border-[#1D63FF]/35 shrink-0 ml-2">
                         {s.category}
                       </span>
                     </button>

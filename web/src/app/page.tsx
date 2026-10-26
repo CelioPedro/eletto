@@ -114,7 +114,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
       />
 
       {/* Hero Swiss Architectural com Fundo Cobalto Profundo e Refração Sheer Glass */}
-      <div className="animate-in relative z-20 border border-[var(--border-1)] bg-[#020722] text-white px-8 py-20 sm:px-16 sm:py-28">
+      <div className="animate-in relative z-20 border border-[var(--border-1)] bg-[var(--hero-bg)] text-white px-8 py-20 sm:px-16 sm:py-28">
         <span className="card-dot card-dot--tl" />
         <span className="card-dot card-dot--tr" />
         <span className="card-dot card-dot--bl" />
@@ -123,12 +123,12 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         {/* Cortina de refração fractal glass com fade lateral */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden>
           <div className="hero-fluted-bg" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#020722] via-[#020722]/85 to-transparent z-[1]" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[var(--hero-fade)] via-[var(--hero-fade)]/85 to-transparent z-[1]" />
         </div>
 
         <div className="relative max-w-3xl z-10">
           <div className="mb-6 flex items-center">
-            <div className="tag-pill border-white/20 bg-[#040D42]/85 backdrop-blur-md text-white shadow-sm">
+            <div className="tag-pill border-white/20 bg-[var(--hero-tag-bg)] backdrop-blur-md text-white shadow-sm">
               <span className="tag-pill__square bg-[#1D63FF]" />
               <span className="tracking-widest uppercase font-mono text-[11px] text-[#E2E8F8]">
                 INTELIGÊNCIA & AUDITORIA ELEITORAL
@@ -182,11 +182,11 @@ export default async function Home({ searchParams }: PageProps<"/">) {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 border border-[var(--border-1)] divide-y md:divide-y-0 md:divide-x divide-[var(--border-1)] bg-[#030B38]">
+        <div className="grid grid-cols-1 md:grid-cols-3 border border-[var(--border-1)] divide-y md:divide-y-0 md:divide-x divide-[var(--border-1)] bg-[var(--cards-grid-bg)]">
           {/* Card 1: Rastreamento em Rede (Cobalto Escuro) */}
           <Link
             href="/grafo"
-            className="card--interactive bg-[#030B38] relative p-8 sm:p-12 flex flex-col justify-between group transition-all"
+            className="card--interactive bg-[var(--card-dark-bg)] relative p-8 sm:p-12 flex flex-col justify-between group transition-all"
             style={{ textDecoration: "none" }}
           >
             <span className="card-dot card-dot--tl" />
@@ -253,7 +253,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
           {/* Card 3: Comparador e Otimização (Cobalto Escuro) */}
           <Link
             href="/comparador"
-            className="card--interactive bg-[#030B38] relative p-8 sm:p-12 flex flex-col justify-between group transition-all"
+            className="card--interactive bg-[var(--card-dark-bg)] relative p-8 sm:p-12 flex flex-col justify-between group transition-all"
             style={{ textDecoration: "none" }}
           >
             <span className="card-dot card-dot--tl" />
